@@ -1,0 +1,15 @@
+.idea/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Local/generated data that exceeds GitHub's normal file size limit.
+depth_fault_detection/data/simulation_dataset.pth
+
+# Common local outputs.
+*.log
+*.tmp
+.DS_Store

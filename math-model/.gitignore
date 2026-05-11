@@ -1,0 +1,11 @@
+__pycache__/
+*.csv
+*.png
+*.log
+*.npz
+.vscode/
+.idea/
+.venv/
+.DS_Store
+*.idea/
+*.pyc
