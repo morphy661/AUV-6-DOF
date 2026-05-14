@@ -257,6 +257,165 @@ def plot_residual_examples(data, true_data, labels, label_names_dict=label_names
         print(f" 残差Image saved to:: {save_path}")
 
 
+
+
+# =========================================================
+# Helper: presentation-friendly FTC / diagnosis text
+# =========================================================
+def format_ftc_action_for_display(action_text, final_fault_name=None):
+    """
+    Convert old FTC action names into more realistic AUV recovery actions
+    for presentation and plotting.
+    """
+
+    if action_text is None:
+        action_text = ""
+
+    action_text = str(action_text)
+
+    if "Power Cut" in action_text and "USV Winch Recovery" in action_text:
+        return "Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon"
+
+    if "USV Winch Recovery" in action_text:
+        return "Emergency Buoyancy Ascent + Acoustic Beacon"
+
+    if "Abort & Slow Surface" in action_text:
+        return "Abort Mission + Controlled Emergency Ascent"
+
+    if "Hover Locked" in action_text:
+        return "Safe Hover / Depth-Hold Using Estimated Depth"
+
+    if "Filtered" in action_text and "Adaptive" not in action_text:
+        return "Spike Rejection Filter"
+
+    if "Adaptive Filtering" in action_text:
+        return "Adaptive Smoothing Filter"
+
+    if "Normal Cruising" in action_text:
+        return "Normal Cruising"
+
+    return action_text
+
+
+def build_diagnosis_basis(final_fault_name):
+    """
+    Build a concise diagnosis criterion explanation for the mission report box.
+    """
+
+    name = str(final_fault_name).upper()
+
+    if "NO_FAULT" in name or "NORMAL" in name:
+        return (
+            "Criterion: all residuals remain within normal thresholds.\n"
+            "Signals: depth, DVL velocity, and motor current are consistent."
+        )
+
+    if "BIAS" in name:
+        return (
+            "Criterion: persistent non-zero depth residual with small slope.\n"
+            "Signal: depth sensor residual."
+        )
+
+    if "DRIFT" in name:
+        return (
+            "Criterion: depth residual shows continuous increasing/decreasing trend.\n"
+            "Signals: residual slope and residual range."
+        )
+
+    if "STUCK" in name:
+        return (
+            "Criterion: depth reading is nearly constant while vehicle motion continues.\n"
+            "Recovery: isolate sensor, abort mission, and command emergency ascent."
+        )
+
+    if "SPIKE" in name:
+        return (
+            "Criterion: isolated one-step depth jump exceeds threshold.\n"
+            "FTC: reject spike and keep normal control."
+        )
+
+    if "NOISE" in name:
+        return (
+            "Criterion: repeated high-frequency depth residual fluctuation.\n"
+            "FTC: activate adaptive smoothing filter."
+        )
+
+    if "ENTANGLED" in name:
+        return (
+            "Criterion: high cmd_vz + low DVL_vz + current higher than expected.\n"
+            "Sources: DVL velocity + motor current sensor."
+        )
+
+    if "BROKEN" in name:
+        return (
+            "Criterion: high cmd_vz + low DVL_vz + current lower than expected.\n"
+            "Sources: DVL velocity + motor current sensor."
+        )
+
+    return "Criterion: AI-rule fused diagnosis."
+
+
+def _safe_last_valid(values, default="N/A"):
+    """
+    Return the last non-empty / non-NaN value from a sequence.
+    """
+    for value in reversed(values):
+        if value is None:
+            continue
+
+        if isinstance(value, float) and np.isnan(value):
+            continue
+
+        if str(value) == "":
+            continue
+
+        return value
+
+    return default
+
+
+
+
+# =========================================================
+# Helper: compact diagnosis / evidence / recovery codes
+# =========================================================
+def get_diagnosis_evidence_recovery_codes(final_fault_name, action_text=None):
+    """
+    Return compact codes for figure display:
+        D-code: final diagnosis class
+        E-code: diagnosis evidence / sensor basis
+        R-code: recovery or FTC action
+    The full meaning is listed in the code explanation table.
+    """
+
+    name = str(final_fault_name).upper()
+
+    if "NO_FAULT" in name or "NORMAL" in name:
+        return "D0", "E7", "R0"
+
+    if "BIAS" in name:
+        return "D1", "E1", "R5"
+
+    if "DRIFT" in name:
+        return "D2", "E2", "R4"
+
+    if "STUCK" in name:
+        return "D3", "E3", "R3"
+
+    if "SPIKE" in name:
+        return "D4", "E4", "R1"
+
+    if "NOISE" in name:
+        return "D5", "E5", "R2"
+
+    if "BROKEN" in name:
+        return "D6", "E6", "R3"
+
+    if "ENTANGLED" in name:
+        return "D7", "E6", "R3"
+
+    return "D?", "E?", "R?"
+
 # =========================================================
 # 6. 论文/汇报专用：容错控制 (FTC) 动态响应曲线
 # =========================================================
@@ -295,7 +454,7 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
         f"------------------------\n"
         f" True Fault : {true_fault_name}\n"
         f" AI Predict : {ai_diagnosis}\n"
-        f" AI Action  : {ai_action}"
+        f" FTC Action : {format_ftc_action_for_display(ai_action, ai_diagnosis)}"
     )
 
     # 使用 bbox 添加一个半透明的文本框
@@ -324,3 +483,361 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
 
     plt.savefig(save_path, dpi=300)
     plt.close()
+def plot_ftc_diagnosis_response(
+        logs,
+        fault_time,
+        ai_intervention_time,
+        save_path,
+        true_fault_name="Unknown",
+        ai_diagnosis="None",
+        ai_action="None",
+        spike_times=None
+):
+    """
+    Enhanced FTC diagnosis response figure.
+
+    This figure is designed for thesis / presentation use.
+    It shows:
+        1. Depth response
+        2. Residuals
+        3. Thruster behavior
+        4. AI / rule / final diagnosis and FTC state
+    """
+
+    if logs is None or len(logs) == 0:
+        print("No logs to plot.")
+        return
+
+    times = np.array([log.get("time", 0.0) for log in logs])
+
+    # =========================================================
+    # 1. Depth data
+    # =========================================================
+    true_depths = np.array([log.get("true_depth", np.nan) for log in logs])
+    sensor_depths = np.array([log.get("depth", np.nan) for log in logs])
+    target_depths = np.array([log.get("target_z", np.nan) for log in logs])
+
+    # =========================================================
+    # 2. Residual data
+    # =========================================================
+    tracking_errors = np.array([
+        log.get("residuals", {}).get("tracking_error", np.nan)
+        for log in logs
+    ])
+
+    velocity_residuals = np.array([
+        log.get("residuals", {}).get("velocity_residual", np.nan)
+        for log in logs
+    ])
+
+    current_residuals = np.array([
+        log.get("residuals", {}).get("current_residual", np.nan)
+        for log in logs
+    ])
+
+    # =========================================================
+    # 3. Thruster data
+    # =========================================================
+    cmd_vz = np.array([
+        log.get("thruster", {}).get("cmd_vz", np.nan)
+        for log in logs
+    ])
+
+    actual_vz = np.array([
+        log.get("thruster", {}).get("actual_vz", np.nan)
+        for log in logs
+    ])
+
+    motor_current = np.array([
+        log.get("thruster", {}).get("current", np.nan)
+        for log in logs
+    ])
+
+    expected_current = np.array([
+        log.get("residuals", {}).get("expected_current", np.nan)
+        for log in logs
+    ])
+
+    # =========================================================
+    # 4. Diagnosis data
+    # =========================================================
+    ai_pred = np.array([
+        log.get("ai_pred", 0)
+        for log in logs
+    ])
+
+    rule_pred = np.array([
+        log.get("rule_pred", 0)
+        for log in logs
+    ])
+
+    final_pred = np.array([
+        log.get("final_pred", 0)
+        for log in logs
+    ])
+
+    ftc_locked = np.array([
+        1 if log.get("ftc_is_locked", False) else 0
+        for log in logs
+    ])
+
+    # =========================================================
+    # Get final diagnosis reason
+    # =========================================================
+    final_reason = "No strong diagnosis reason recorded."
+
+    # Convert final diagnosis name to fault id.
+    # Use upper() so "Spike", "spike", and "SPIKE" can all be recognized.
+    name_to_id = {
+        "NO_FAULT": 0,
+        "NORMAL": 0,
+        "BIAS": 1,
+        "DRIFT": 2,
+        "STUCK": 3,
+        "SPIKE": 4,
+        "NOISE": 5,
+        "NOISE_INCREASE": 5,
+        "INCREASED NOISE": 5,
+        "ENTANGLED": 6,
+        "THRUSTER_ENTANGLED": 6,
+        "BROKEN": 7,
+        "THRUSTER_BROKEN": 7,
+    }
+
+    target_fault_id = name_to_id.get(str(ai_diagnosis).upper(), None)
+
+    invalid_reasons = [
+        "",
+        "No diagnosis has been triggered yet.",
+        "All residuals are within normal thresholds.",
+    ]
+
+    # 1) First, find the reason at the moment when final_pred equals
+    #    the final diagnosis. This is the most reliable for locked faults.
+    if target_fault_id is not None:
+        matched_reasons = [
+            log.get("diagnosis_reason", "")
+            for log in logs
+            if log.get("final_pred", 0) == target_fault_id
+            and log.get("diagnosis_reason", "") not in invalid_reasons
+        ]
+
+        if len(matched_reasons) > 0:
+            final_reason = matched_reasons[-1]
+
+    # 2) For transient faults such as SPIKE, final_pred may quickly return
+    #    to 0. Therefore, also search rule_pred for the same target fault.
+    if final_reason == "No strong diagnosis reason recorded." and target_fault_id is not None:
+        matched_reasons = [
+            log.get("diagnosis_reason", "")
+            for log in logs
+            if log.get("rule_pred", 0) == target_fault_id
+            and log.get("diagnosis_reason", "") not in invalid_reasons
+        ]
+
+        if len(matched_reasons) > 0:
+            final_reason = matched_reasons[-1]
+
+    # 3) Fallback: use any valid diagnosis reason.
+    if final_reason == "No strong diagnosis reason recorded.":
+        diagnosis_reasons = [
+            log.get("diagnosis_reason", "")
+            for log in logs
+            if log.get("diagnosis_reason", "") not in invalid_reasons
+        ]
+
+        if len(diagnosis_reasons) > 0:
+            final_reason = diagnosis_reasons[-1]
+
+    # Prevent very long text box
+    if len(final_reason) > 120:
+        final_reason = final_reason[:120] + "..."
+
+    # =========================================================
+    # Plot
+    # =========================================================
+    fig, axes = plt.subplots(
+        4, 1,
+        figsize=(15, 12),
+        sharex=True,
+        gridspec_kw={"height_ratios": [1.3, 1.1, 1.1, 0.9]}
+    )
+
+    fig.suptitle(
+        f"Enhanced FTC Diagnosis and Recovery Response - {true_fault_name}",
+        fontsize=16,
+        fontweight="bold"
+    )
+
+    # ---------------------------------------------------------
+    # Subplot 1: Depth response
+    # ---------------------------------------------------------
+    axes[0].plot(times, target_depths, label="Target Depth", linestyle="--", linewidth=2)
+    axes[0].plot(times, true_depths, label="True Physical Depth", linewidth=2.2)
+    axes[0].plot(times, sensor_depths, label="Measured Depth", linewidth=1.8, alpha=0.85)
+
+    axes[0].set_ylabel("Depth (m)")
+    axes[0].set_title("1) Depth Response")
+    axes[0].grid(True, linestyle="--", alpha=0.5)
+    axes[0].legend(loc="upper left")
+
+    # ---------------------------------------------------------
+    # Subplot 2: Residuals
+    # ---------------------------------------------------------
+    axes[1].plot(times, tracking_errors, label="Tracking Error $e_z$")
+    axes[1].plot(times, velocity_residuals, label="Velocity Residual $r_v$")
+    axes[1].plot(times, current_residuals, label="Current Residual $r_I$")
+
+    # Example threshold lines
+    axes[1].axhline(3.0, linestyle="--", linewidth=1.2, alpha=0.7, label="Tracking Threshold")
+    axes[1].axhline(-3.0, linestyle="--", linewidth=1.2, alpha=0.7)
+
+    axes[1].set_ylabel("Residual")
+    axes[1].set_title("2) Residuals for Diagnosis")
+    axes[1].grid(True, linestyle="--", alpha=0.5)
+    axes[1].legend(loc="upper left")
+
+    # ---------------------------------------------------------
+    # Subplot 3: Thruster behavior
+    # ---------------------------------------------------------
+    axes[2].plot(times, cmd_vz, label="Commanded $v_z$")
+    axes[2].plot(times, actual_vz, label="Actual $v_z$")
+    axes[2].plot(times, motor_current, label="Measured Motor Current")
+    axes[2].plot(times, expected_current, label="Expected Current", linestyle="--")
+
+    axes[2].set_ylabel("Thruster")
+    axes[2].set_title("3) Thruster Command, Velocity, and Current")
+    axes[2].grid(True, linestyle="--", alpha=0.5)
+    axes[2].legend(loc="upper left")
+
+    # ---------------------------------------------------------
+    # Subplot 4: Diagnosis state
+    # ---------------------------------------------------------
+    axes[3].step(
+        times,
+        ai_pred,
+        where="post",
+        label="AI Prediction",
+        alpha=0.28,
+        linewidth=1.0
+    )
+    axes[3].step(
+        times,
+        rule_pred,
+        where="post",
+        label="Rule Prediction",
+        alpha=0.35,
+        linewidth=1.0
+    )
+    axes[3].step(
+        times,
+        final_pred,
+        where="post",
+        label="Final Diagnosis",
+        linewidth=2.6
+    )
+    axes[3].step(
+        times,
+        ftc_locked * 8,
+        where="post",
+        label="FTC / Recovery Locked x8",
+        linestyle="--",
+        linewidth=1.5
+    )
+
+    axes[3].set_ylabel("Fault ID")
+    axes[3].set_xlabel("Mission Time (s)")
+    axes[3].set_title("4) Diagnosis Result and FTC State")
+    axes[3].set_yticks(list(label_names.keys()))
+    axes[3].set_yticklabels([label_names[i] for i in label_names.keys()], fontsize=8)
+    axes[3].grid(True, linestyle="--", alpha=0.5)
+    axes[3].legend(loc="upper left")
+
+    # =========================================================
+    # Vertical lines: fault and AI/FTC intervention
+    # =========================================================
+    for ax in axes:
+        if fault_time is not None and fault_time > 0:
+            ax.axvline(
+                x=fault_time,
+                linestyle="-.",
+                linewidth=1.8,
+                alpha=0.9,
+                label="Fault Injected"
+            )
+
+        if ai_intervention_time is not None and ai_intervention_time > 0:
+            ax.axvline(
+                x=ai_intervention_time,
+                linestyle="-.",
+                linewidth=1.8,
+                alpha=0.9,
+                label="AI / FTC Activated"
+            )
+
+    # Spike markers
+    if spike_times and len(spike_times) > 0:
+        # Remove dense repeated spike markers.
+        # A single spike can stay inside the history window for many steps,
+        # so plotting every logged time makes the figure unreadable.
+        filtered_spike_times = []
+        min_gap = 3.0  # seconds
+
+        for st in sorted(spike_times):
+            if len(filtered_spike_times) == 0:
+                filtered_spike_times.append(st)
+            elif st - filtered_spike_times[-1] >= min_gap:
+                filtered_spike_times.append(st)
+
+        for st in filtered_spike_times:
+            for ax in axes:
+                ax.axvline(
+                    x=st,
+                    linestyle=":",
+                    alpha=0.45,
+                    linewidth=1.2
+                )
+
+    # =========================================================
+    # Text box: compact mission report using diagnosis codes
+    # =========================================================
+    diagnosis_code, evidence_code, recovery_code = get_diagnosis_evidence_recovery_codes(
+        ai_diagnosis,
+        ai_action
+    )
+
+    # If final diagnosis is normal, avoid showing an old transient reason.
+    if str(ai_diagnosis).upper() in ["NO_FAULT", "NORMAL"]:
+        final_reason = "All residuals are within normal thresholds."
+
+    info_text = (
+        f"[Mission Report]\n"
+        f"True Fault: {true_fault_name}\n"
+        f"Final Diagnosis: {ai_diagnosis}\n"
+        f"Diagnosis Code: {diagnosis_code}\n"
+        f"Evidence Code: {evidence_code}\n"
+        f"Recovery Code: {recovery_code}"
+    )
+
+    axes[0].text(
+        0.985, 0.06,
+        info_text,
+        transform=axes[0].transAxes,
+        fontsize=9.2,
+        verticalalignment="bottom",
+        horizontalalignment="right",
+        bbox=dict(
+            boxstyle="round,pad=0.45",
+            facecolor="white",
+            edgecolor="gray",
+            alpha=0.88
+        )
+    )
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    plt.savefig(save_path, dpi=300)
+    plt.close()
+
+    print(f"Enhanced FTC diagnosis response saved to: {save_path}")

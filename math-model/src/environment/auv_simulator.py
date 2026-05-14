@@ -1,20 +1,35 @@
 import numpy as np
-from environment.simulation_config import AUVModel
-from typing import Dict, Tuple, List, Optional
+from typing import Dict, List
 
 
 class Simulator:
-    """升级版 AUV + USV 系统仿真器"""
+    """AUV + USV system simulator with optional multi-sensor outputs."""
 
-    def __init__(self, auv_model: AUVModel, depth_sensor=None, fault_injector=None):
+    def __init__(
+            self,
+            auv_model,
+            depth_sensor=None,
+            fault_injector=None,
+            imu_sensor=None,
+            dvl_sensor=None,
+            current_sensor=None,
+            battery_sensor=None
+    ):
         self.auv = auv_model
         self.depth_sensor = depth_sensor
         self.fault_injector = fault_injector
+
+        # Optional additional sensors
+        self.imu_sensor = imu_sensor
+        self.dvl_sensor = dvl_sensor
+        self.current_sensor = current_sensor
+        self.battery_sensor = battery_sensor
+
         self.time = 0.0
         self.trajectory = []
         self.sensor_logs = []
 
-        # --- 新增：USV 初始状态 ---
+        # Simplified USV state
         self.usv_position = np.array([0.0, 0.0, 0.0])
 
     def step(
@@ -24,13 +39,13 @@ class Simulator:
             command_yaw: float
     ) -> Dict:
         # ===============================
-        # 1. 更新真实物理状态（Ground Truth）
+        # 1. Update ground-truth AUV state
         # ===============================
         self.auv.update(dt, command_velocity, command_yaw)
         self.time += dt
 
         # ===============================
-        # 2. 模拟 USV 随动逻辑 (简化版)
+        # 2. Simulated USV following logic
         # ===============================
         gps_noise = np.random.normal(0, 0.2, size=2)
         self.usv_position[0] = self.auv.position[0] + gps_noise[0]
@@ -38,9 +53,9 @@ class Simulator:
         self.usv_position[2] = 0.0
 
         # ===============================
-        # 3. 传感器测量与深度故障注入
+        # 3. Depth measurement and fault injection
         # ===============================
-        true_depth = self.auv.position[2]
+        true_depth = float(self.auv.position[2])
 
         if self.depth_sensor is not None:
             depth_measured = self.depth_sensor.measure(true_depth=true_depth, dt=dt)
@@ -52,60 +67,50 @@ class Simulator:
                 depth_measured,
                 self.auv.mission_time
             )
+
         # ===============================
-        # 我们用垂直指令 (Vz) 来作为“指令转速(RPM)”的代理变量
-        cmd_vz = command_velocity[2]
+        # 4. Thruster command / feedback signals
+        # ===============================
+        cmd_vz = float(command_velocity[2])
+        actual_vz = float(self.auv.velocity[2])
 
-        # 正常情况下，实际速度会逐渐逼近指令速度。这里直接取 auv 的当前速度作为“实际反馈”
-        actual_vz = self.auv.velocity[2]
-
-        # 模拟电机电流 (Amps)：基础待机电流(2A) + 与指令绝对值成正比的负载电流 + 随机噪声
+        # Default current model, used when no independent CurrentSensor is provided.
         base_current = 2.0
-        current_noise = np.random.normal(0, 0.1)
-        motor_current = base_current + (abs(cmd_vz) * 15.0) + current_noise
+        current_noise = np.random.normal(0.0, 0.1)
+        expected_current = base_current + abs(cmd_vz) * 15.0
+        motor_current = expected_current + current_noise
 
-        # ---------------------------------------------------------
-        # 核心修改：获取当前故障标签，并制造“物理特征扭曲”
-        # ---------------------------------------------------------
+        # Current active fault label
         current_fault_label = 0
         if self.fault_injector is not None:
             current_fault_label = self.fault_injector.get_fault_label(self.time)
 
+        # ---------------------------------------------------------
+        # Physical distortion for actuator faults
+        # ---------------------------------------------------------
         if current_fault_label == 6:
-            # ==========================================
-            # 🚨 真正的卡死：强制剥夺垂直物理动力！
-            # ==========================================
-            # 1. 真实的物理速度强制阻断 (让 AUV 在水里完全停住或者自由落体，这里设为受阻力缓慢下沉的微小速度，比如 0.05)
+            # THRUSTER_ENTANGLED:
+            # The propeller is blocked, so vertical speed becomes very small
+            # while motor current becomes abnormally high.
             self.auv.velocity[2] *= 0.05
-
-            # 2. 传感器读到的速度自然也变成了极小值
-            actual_vz = self.auv.velocity[2]
-
-            # 3. 堵转大电流必须极其夸张 (比如直接拉到 40A 以上)，因为电机转不动但指令还在满载
-            motor_current = 45.0 + np.random.normal(0, 2.0)
+            actual_vz = float(self.auv.velocity[2])
+            motor_current = 45.0 + np.random.normal(0.0, 2.0)
 
         elif current_fault_label == 7:
-            # ==========================================
-            # 🚨 真正的断桨：电机空转，推力为零！
-            # ==========================================
-            # 1. 失去推力，速度掉到底
+            # THRUSTER_BROKEN:
+            # The propeller is broken or detached, so thrust is lost and
+            # the motor current becomes abnormally low.
             self.auv.velocity[2] *= 0.05
-            actual_vz = self.auv.velocity[2]
-
-            # 2. 电流变成极小的空转电流
+            actual_vz = float(self.auv.velocity[2])
             motor_current = base_current + current_noise + 0.5
-            # ---------------------------------------------------------
 
         # ===============================
-        # 4. 核心：构建多维传感器数据包
+        # 5. Build basic sensor packet
         # ===============================
-
-        #  安全获取 target_z 的逻辑：
-        # 尝试从 AUVModel 获取 target_z，如果模型中没有这个属性，默认给 0.0，防止报错
-        current_target_z = getattr(self.auv, 'target_z', 0.0)
+        current_target_z = float(getattr(self.auv, "target_z", 0.0))
 
         sensor_packet = {
-            "time": self.auv.mission_time,
+            "time": float(self.auv.mission_time),
 
             "position": self.auv.position.copy(),
             "velocity": self.auv.velocity.copy(),
@@ -113,33 +118,78 @@ class Simulator:
             "thruster": {
                 "cmd_vz": cmd_vz,
                 "actual_vz": actual_vz,
-                "current": motor_current,
-                "yaw_cmd": command_yaw
+                "current": float(motor_current),
+                "expected_current": float(expected_current),
+                "current_residual": float(motor_current - expected_current),
+                "yaw_cmd": float(command_yaw),
             },
 
-            "imu": {
-                "orientation": self.auv.orientation.copy(),
-                "angular_velocity": self.auv.angular_velocity.copy(),
-                "linear_acceleration": self.auv.velocity / dt
-            },
-
-            "depth": depth_measured,
-
-            # 极其关键的新增：将 target_z 正式打包进日志！
+            "depth": float(depth_measured),
             "target_z": current_target_z,
 
             "usv_gps": self.usv_position.copy(),
             "relative_pos": {
-                "delta_x": self.auv.position[0] - self.usv_position[0],
-                "delta_y": self.auv.position[1] - self.usv_position[1]
+                "delta_x": float(self.auv.position[0] - self.usv_position[0]),
+                "delta_y": float(self.auv.position[1] - self.usv_position[1]),
             },
 
             "true_depth": true_depth,
-            "fault_label": current_fault_label
+            "fault_label": int(current_fault_label),
         }
 
         # ===============================
-        # 5. 日志记录
+        # 6. Additional AUV sensors
+        # ===============================
+
+        # 6.1 IMU
+        # Prefer the independent IMU sensor if available.
+        # Otherwise keep the old built-in IMU-like packet for compatibility.
+        if self.imu_sensor is not None:
+            sensor_packet["imu"] = self.imu_sensor.read(self.auv)
+        else:
+            sensor_packet["imu"] = {
+                "orientation": self.auv.orientation.copy(),
+                "angular_velocity": self.auv.angular_velocity.copy(),
+                "linear_acceleration": self.auv.velocity / max(dt, 1e-8),
+            }
+
+        # 6.2 DVL
+        if self.dvl_sensor is not None:
+            sensor_packet["dvl"] = self.dvl_sensor.read(self.auv)
+
+        # 6.3 Current Sensor
+        # The external CurrentSensor is used to create an explicit sensor module.
+        # The measured current is also synchronized back to thruster["current"]
+        # so the existing residual observer and diagnosis rules remain compatible.
+        if self.current_sensor is not None:
+            fault_mode = None
+
+            if current_fault_label == 6:
+                fault_mode = "entangled"
+            elif current_fault_label == 7:
+                fault_mode = "broken"
+
+            current_data = self.current_sensor.read(
+                cmd_vz=cmd_vz,
+                fault_mode=fault_mode
+            )
+
+            sensor_packet["current_sensor"] = current_data
+
+            sensor_packet["thruster"]["current"] = float(current_data["measured_current"])
+            sensor_packet["thruster"]["expected_current"] = float(current_data["expected_current"])
+            sensor_packet["thruster"]["current_residual"] = float(current_data["current_residual"])
+
+        # 6.4 Battery Sensor
+        if self.battery_sensor is not None:
+            motor_current_for_battery = sensor_packet["thruster"].get("current", 0.0)
+            sensor_packet["battery"] = self.battery_sensor.read(
+                motor_current=motor_current_for_battery,
+                dt=dt
+            )
+
+        # ===============================
+        # 7. Logs
         # ===============================
         self.trajectory.append(self.auv.position.copy())
         self.sensor_logs.append(sensor_packet)
@@ -152,7 +202,7 @@ class Simulator:
             control_function,
             dt: float = 0.1
     ) -> List[Dict]:
-        """运行一个完整的任务"""
+        """Run a complete mission."""
 
         steps = int(duration / dt)
         sensor_data = None

@@ -2,12 +2,17 @@ import os
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 import numpy as np
-from my_utils import plot_ftc_response
+from my_utils import plot_ftc_response, plot_ftc_diagnosis_response
 import sys
 from pathlib import Path
 import random
 import torch
 from model1 import AUVFaultDetector  # 导入模型类
+from diagnosis import ResidualObserver, DiagnosisStrategy
+from sensors.imu_sensor import IMUSensor
+from sensors.dvl_sensor import DVLSensor
+from sensors.current_sensor import CurrentSensor
+from sensors.battery_sensor import BatterySensor
 
 # =======================================================
 # 加载 AI 大脑 (适配最新的 14维 PINN 架构)
@@ -121,6 +126,78 @@ def create_fault(target_fault_type=None, is_training=False):
 
 
 # ======================
+# FTC / Recovery Strategy Mapping
+# ======================
+def get_recovery_action(fault_id):
+    """
+    Map confirmed fault ID to a realistic FTC / recovery action.
+
+    This keeps the current implementation focused on available emergency actions:
+        - filtering for transient/noisy sensor faults
+        - safe hover for bias
+        - controlled emergency ascent for drift
+        - emergency buoyancy ascent + acoustic beacon for severe faults
+        - power cut + emergency ascent for thruster faults
+
+    Future work can extend this to current-aware recovery probability optimization.
+    """
+
+    if fault_id == 0:
+        return "Normal Cruising"
+
+    if fault_id == 1:
+        return "Safe Hover / Depth-Hold Using Estimated Depth"
+
+    if fault_id == 2:
+        return "Abort Mission + Controlled Emergency Ascent"
+
+    if fault_id == 3:
+        return "Emergency Buoyancy Ascent + Acoustic Beacon"
+
+    if fault_id == 4:
+        return "Spike Rejection Filter"
+
+    if fault_id == 5:
+        return "Adaptive Smoothing Filter"
+
+    if fault_id in [6, 7]:
+        return "Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon"
+
+    return "Unknown Recovery Action"
+
+
+def get_recovery_command(action_text, current_depth, safe_cmd_yaw):
+    """
+    Convert FTC / recovery action text into a simplified control command.
+
+    Note:
+    In this simulation, upward emergency ascent is represented by negative vz.
+    In a real AUV, 'Emergency Buoyancy Ascent' would be implemented by
+    buoyancy release / drop-weight / ballast mechanism rather than thruster thrust.
+    """
+
+    action_text = str(action_text)
+
+    # Stop after reaching near surface
+    if current_depth < 1.0:
+        return np.array([0.0, 0.0, 0.0]), 0.0
+
+    if "Safe Hover" in action_text or "Depth-Hold" in action_text:
+        return np.array([0.0, 0.0, 0.0]), safe_cmd_yaw
+
+    if "Controlled Emergency Ascent" in action_text:
+        return np.array([0.0, 0.0, -0.5]), safe_cmd_yaw
+
+    if "Emergency Buoyancy Ascent" in action_text:
+        return np.array([0.0, 0.0, -2.0]), safe_cmd_yaw
+
+    if "Power Cut" in action_text:
+        return np.array([0.0, 0.0, 0.0]), 0.0
+
+    return np.array([0.0, 0.0, 0.0]), safe_cmd_yaw
+
+
+# ======================
 # 核心任务调度器 (Mission Executor)
 # ======================
 def execute_mission(fault_type=None, is_demo=False, duration_override=None):
@@ -128,10 +205,21 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     depth_sensor = DepthSensor()
     fault_injector = create_fault(target_fault_type=fault_type)
 
+    imu_sensor = IMUSensor()
+    dvl_sensor = DVLSensor()
+    current_sensor = CurrentSensor()
+    battery_sensor = BatterySensor()
+    residual_observer = ResidualObserver()
+    diagnosis_strategy = DiagnosisStrategy()
+
     simulator = Simulator(
         auv_model=auv,
         depth_sensor=depth_sensor,
-        fault_injector=fault_injector
+        fault_injector=fault_injector,
+        imu_sensor=imu_sensor,
+        dvl_sensor=dvl_sensor,
+        current_sensor=current_sensor,
+        battery_sensor=battery_sensor
     )
 
     try:
@@ -142,7 +230,8 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     except FileNotFoundError:
         mean, std = 0, 1
 
-    controller_buffer = []
+    controller_buffer = [] #给 AI 模型用，保存 7 维特征。
+    diagnosis_history = [] #给规则诊断用，保存 sensor_data + residuals。
 
     # 系统状态标志
     system_locked = False
@@ -153,30 +242,68 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     record_time = [-1.0]
     final_diagnosis = "NO_FAULT"
     final_action = "Normal Cruising"
+    # BIAS is a soft fault. Delay confirmation to avoid confusing early DRIFT as BIAS.
+    bias_candidate_start_time = None
+    bias_confirm_delay = 10.0
 
+    locked_fault_id = 0          # 用于锁定型故障：BIAS / DRIFT / STUCK / ENTANGLED / BROKEN
+    soft_fault_id = 0            # 用于非锁定型持续故障：NOISE_INCREASE
+    confirmed_reason = "No diagnosis has been triggered yet."
     # 安全指令缓存与时间记录
     safe_cmd_vel = np.array([0.0, 0.0, 0.0])
     safe_cmd_yaw = 0.0
     spike_filtered_times = []
-
+    last_spike_time = -999.0
+    spike_cooldown = 3.0
     def ftc_controller(sensor_data):
-        nonlocal controller_buffer
+        nonlocal controller_buffer, diagnosis_history
         nonlocal system_locked, is_safe_mode
-        nonlocal final_diagnosis, final_action
+        nonlocal final_diagnosis, final_action, locked_fault_id, soft_fault_id, confirmed_reason
         nonlocal safe_cmd_vel, safe_cmd_yaw
         nonlocal is_filtering, last_clean_depth
-
+        nonlocal last_spike_time
+        nonlocal bias_candidate_start_time
         # 初始化状态机的持久化变量
         if not hasattr(ftc_controller, "dynamic_setpoint"):
             ftc_controller.dynamic_setpoint = sensor_data["depth"]
         if not hasattr(ftc_controller, "fault_counter"):
             ftc_controller.fault_counter = 0
             ftc_controller.current_pred = 0
+        # 诊断日志打印（每 30 秒打印一次）
+        #if int(sensor_data["time"]) % 30 == 0 and abs(sensor_data["time"] - round(sensor_data["time"])) < 0.05:
+            #print("Sensor check:")
+            #print("DVL:", sensor_data.get("dvl", None))
+            #print("Current Sensor:", sensor_data.get("current_sensor", None))
+            #print("Battery:", sensor_data.get("battery", None))
 
         def finalize_return(cmd_vel, cmd_yaw):
+            """统一写入 FTC 与诊断日志，保证图像中的 Final Diagnosis / Reason / Action 一致。"""
             sensor_data["ftc_diagnosis"] = final_diagnosis
             sensor_data["ftc_action"] = final_action
             sensor_data["ftc_is_locked"] = system_locked
+
+            if "diagnosis_reason" not in sensor_data:
+                sensor_data["diagnosis_reason"] = confirmed_reason
+
+            if "ai_pred" not in sensor_data:
+                sensor_data["ai_pred"] = 0
+
+            if "rule_pred" not in sensor_data:
+                sensor_data["rule_pred"] = 0
+
+            if "final_pred" not in sensor_data:
+                sensor_data["final_pred"] = 0
+
+            # 锁定型故障：确认后持续保持最终故障标签
+            if system_locked and locked_fault_id != 0:
+                sensor_data["final_pred"] = locked_fault_id
+                sensor_data["diagnosis_reason"] = confirmed_reason
+
+            # 非锁定型持续故障：例如 NOISE，保持诊断显示，但不锁死控制器
+            elif soft_fault_id != 0:
+                sensor_data["final_pred"] = soft_fault_id
+                sensor_data["diagnosis_reason"] = confirmed_reason
+
             return cmd_vel, cmd_yaw
 
         raw_depth = sensor_data["depth"]
@@ -213,23 +340,33 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             last_clean_depth = raw_depth
             normal_cmd_vel, normal_cmd_yaw = simple_controller(sensor_data, auv)
 
+        # Cache the latest normal command as a safe fallback command.
+        # This is used by Safe Hover / Controlled Ascent recovery modes.
+        safe_cmd_vel = normal_cmd_vel.copy()
+        safe_cmd_yaw = normal_cmd_yaw
+
+        # ========================================================
+        # 新增：Residual Observer
+        # 使用当前控制器输出的垂向速度作为 cmd_vz
+        # ========================================================
+        sensor_data["thruster"]["cmd_vz"] = float(normal_cmd_vel[2])
+        residuals = residual_observer.compute(sensor_data)
+        sensor_data["residuals"] = residuals
+
+        diagnosis_history.append(sensor_data.copy())
+        if len(diagnosis_history) > 50:
+            diagnosis_history.pop(0)
+
         # ========================================================
         # 模块 2：最高优先级拦截 (Absolute Deadlock)
         # ========================================================
         if system_locked:
-            if "USV Winch" in final_action:
-                if sensor_data["depth"] < 1.0: return finalize_return(np.array([0.0, 0.0, 0.0]), 0.0)
-                return finalize_return(np.array([0.0, 0.0, -2.0]), safe_cmd_yaw)
-            elif "Hover" in final_action:
-                return finalize_return(np.array([0.0, 0.0, 0.0]), safe_cmd_yaw)
-            elif "Emergency" in final_action:
-                if sensor_data["depth"] < 1.0: return finalize_return(np.array([0.0, 0.0, 0.0]), 0.0)
-                return finalize_return(np.array([0.0, 0.0, -2.0]), safe_cmd_yaw)
-            elif "Slow Surface" in final_action:
-                if sensor_data["depth"] < 1.0: return finalize_return(np.array([0.0, 0.0, 0.0]), 0.0)
-                return finalize_return(np.array([0.0, 0.0, -0.5]), safe_cmd_yaw)
-            elif "Power Cut" in final_action:
-                return finalize_return(np.array([0.0, 0.0, 0.0]), 0.0)
+            recovery_cmd_vel, recovery_cmd_yaw = get_recovery_command(
+                action_text=final_action,
+                current_depth=sensor_data["depth"],
+                safe_cmd_yaw=safe_cmd_yaw
+            )
+            return finalize_return(recovery_cmd_vel, recovery_cmd_yaw)
 
         # ========================================================
         # 模块 3：AI 预测与物理护城河 (AI Inference & Physical Moat)
@@ -238,6 +375,13 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         f_target = ftc_controller.dynamic_setpoint
         f_error = f_target - f_depth
         pred = 0
+
+        # 默认诊断变量，防止窗口长度不足 50 时后续逻辑引用未定义变量
+        ai_pred = 0
+        rule_pred = 0
+        diagnosis_source = "none"
+        diagnosis_reason = confirmed_reason
+        diagnosis_confidence = "Low"
 
         current_features = [
             f_depth, f_target, f_error,
@@ -276,10 +420,10 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
                 pred = 3
 
             # 运行状态日志打印
-            if 40 <= sensor_data['time'] <= 70:
-                state_str = "CRUISE" if is_cruising else "HOVER"
-                print(
-                    f"Time: {sensor_data['time']:.1f}s | Pred: {pred} | Cmd: {normal_cmd_vel[2]:.4f} | Error: {tracking_error:.4f} | State: {state_str}")
+            #if 40 <= sensor_data['time'] <= 70:
+            #    state_str = "CRUISE" if is_cruising else "HOVER"
+            #    print(
+            #        f"Time: {sensor_data['time']:.1f}s | Pred: {pred} | Cmd: {normal_cmd_vel[2]:.4f} | Error: {tracking_error:.4f} | State: {state_str}")
 
             if is_cruising:
                 # 巡航态下允许较大的跟随误差
@@ -302,18 +446,87 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 
             # 脉冲物理约束
             if pred == 4 and abs(raw_seq[-1, 0] - raw_seq[-2, 0]) < 1.0: pred = 0
+            # ========================================================
+            # 新增：Rule-based diagnosis + AI fusion
+            # ========================================================
+            ai_pred = pred
 
+            diagnosis_result = diagnosis_strategy.diagnose(
+                sensor_data=sensor_data,
+                residuals=residuals,
+                history=diagnosis_history,
+                ai_pred=ai_pred
+            )
+
+            rule_pred = diagnosis_result.fault_id
+            diagnosis_source = diagnosis_result.source
+            diagnosis_reason = diagnosis_result.reason
+            diagnosis_confidence = diagnosis_result.confidence
+
+            # ========================================================
+            # New fusion priority
+            # ========================================================
+            # 1. 如果系统已经由锁定型故障接管，则保持锁定故障标签
+            if system_locked and locked_fault_id != 0:
+                pred = locked_fault_id
+
+            # 2. 如果 NOISE 已经确认并进入滤波状态，不允许后续局部 SPIKE 抢走最终诊断
+            elif is_filtering and soft_fault_id == 5:
+                pred = 5
+
+            # 3. 如果规则诊断有明确物理证据，则优先使用规则结果
+            elif diagnosis_source == "rule" and rule_pred != 0:
+                pred = rule_pred
+
+            # 4. 否则使用 AI 预测
+            else:
+                pred = ai_pred
+
+            sensor_data["ai_pred"] = ai_pred
+            sensor_data["rule_pred"] = rule_pred
+            sensor_data["final_pred"] = pred
+            sensor_data["diagnosis_reason"] = diagnosis_reason
+            sensor_data["diagnosis_confidence"] = diagnosis_confidence
+            sensor_data["diagnosis_source"] = diagnosis_source
+
+            if 40 <= sensor_data["time"] <= 80:
+                print(
+                    f"Time: {sensor_data['time']:.1f}s | "
+                    f"AI={ai_pred}, Rule={rule_pred}, Final={pred}, "
+                    f"Source={diagnosis_source}"
+                )
         # ========================================================
         # 模块 4：双轨防抖系统 (The "Two-Lane" Debouncer)
         # ========================================================
         # 轨道 A：瞬态故障 (SPIKE)
-        if pred == 4:
-            print(f"[{sensor_data['time']:.1f}s] SPIKE! Filtered.")
-            spike_filtered_times.append(sensor_data['time'])
-            final_diagnosis = "SPIKE"
-            final_action = "Filtered"
-            return finalize_return(normal_cmd_vel, normal_cmd_yaw)
+        # ========================================================
+        # Transient fault lane: SPIKE
+        # SPIKE is only filtered immediately when it is an isolated spike.
+        # It must not override NOISE_INCREASE or other persistent faults.
+        # ========================================================
+        if (
+                pred == 4
+                and not is_filtering
+                and diagnosis_source == "rule"
+                and rule_pred == 4
+        ):
+            current_time = sensor_data["time"]
 
+            # 防止同一个 spike 在历史窗口中被重复触发很多次
+            if current_time - last_spike_time >= spike_cooldown:
+                print(f"[{current_time:.1f}s] SPIKE! Filtered.")
+
+                spike_filtered_times.append(current_time)
+                last_spike_time = current_time
+
+            final_diagnosis = "SPIKE"
+            final_action = get_recovery_action(4)
+            confirmed_reason = diagnosis_reason
+
+            sensor_data["final_pred"] = 4
+            sensor_data["diagnosis_reason"] = confirmed_reason
+
+            return finalize_return(normal_cmd_vel, normal_cmd_yaw)
         # 轨道 B：稳态故障读条逻辑
         if pred != 0:
             if pred == ftc_controller.current_pred:
@@ -326,7 +539,14 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             ftc_controller.current_pred = 0
 
         # 获取诊断阈值
-        threshold_map = {1: 3, 2: 5, 3: 6, 5: 10, 6: 10, 7: 10}
+        threshold_map = {
+            1: 5,  # BIAS
+            2: 6,  # DRIFT
+            3: 6,  # STUCK
+            5: 8,  # NOISE_INCREASE
+            6: 8,  # THRUSTER_ENTANGLED
+            7: 8,  # THRUSTER_BROKEN
+        }
         confirm_threshold = threshold_map.get(ftc_controller.current_pred, 999)
 
         # ========================================================
@@ -335,45 +555,98 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         if ftc_controller.fault_counter >= confirm_threshold:
             confirmed_fault = ftc_controller.current_pred
 
-            if record_time[0] < 0:
-                record_time[0] = sensor_data['time']
+            confirmed_reason = sensor_data.get("diagnosis_reason", diagnosis_reason)
+
+            # Reset BIAS candidate timer when the confirmed fault is not BIAS.
+            # This prevents an old BIAS candidate from affecting later decisions.
+            if confirmed_fault != 1:
+                bias_candidate_start_time = None
 
             if confirmed_fault == 5 and not is_filtering:
-                print(
-                    f"[{sensor_data['time']:.1f}s] NOISE_INCREASE! Starting self-healing: Activating adaptive smoothing filter!")
+                print(f"[{sensor_data['time']:.1f}s] NOISE_INCREASE! Adaptive Smoothing Filter activated.")
+
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+
                 final_diagnosis = "NOISE"
-                final_action = "Adaptive Filtering"
+                final_action = get_recovery_action(5)
+                soft_fault_id = 5
                 is_filtering = True
 
+                return finalize_return(normal_cmd_vel, normal_cmd_yaw)
+
             elif confirmed_fault == 1 and not is_filtering:
-                print(f"[{sensor_data['time']:.1f}s] BIAS! Hover Locked.")
-                final_diagnosis, final_action = "BIAS", "Hover Locked"
+                # BIAS is a soft sensor fault.
+                # Do not hard-lock immediately, because early DRIFT can look like BIAS.
+                if bias_candidate_start_time is None:
+                    bias_candidate_start_time = sensor_data["time"]
+
+                # Print only around whole seconds to avoid flooding the console.
+                if abs(sensor_data["time"] - round(sensor_data["time"])) < 0.05:
+                    print(
+                        f"[{sensor_data['time']:.1f}s] BIAS candidate! "
+                        f"Monitoring before lock."
+                    )
+
+                # Keep normal control during the confirmation delay.
+                # This gives DRIFT time to develop a clear residual trend.
+                if sensor_data["time"] - bias_candidate_start_time < bias_confirm_delay:
+                    final_diagnosis = "NO_FAULT"
+                    final_action = "Normal Cruising"
+                    return finalize_return(normal_cmd_vel, normal_cmd_yaw)
+
+                # Confirm BIAS only if it remains stable for enough time.
+                print(f"[{sensor_data['time']:.1f}s] BIAS confirmed! Safe Hover / Depth-Hold activated.")
+
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+
+                final_diagnosis = "BIAS"
+                final_action = get_recovery_action(1)
+                locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(np.array([0.0, 0.0, 0.0]), safe_cmd_yaw)
+
+                return finalize_return(
+                    *get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw)
+                )
 
             elif confirmed_fault == 2 and not is_filtering:
-                print(f"[{sensor_data['time']:.1f}s] DRIFT! Abort.")
-                final_diagnosis, final_action = "DRIFT", "Abort & Slow Surface"
+                print(f"[{sensor_data['time']:.1f}s] DRIFT! Abort Mission + Controlled Emergency Ascent.")
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+                final_diagnosis = "DRIFT"
+                final_action = get_recovery_action(2)
+                locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(np.array([0.0, 0.0, -0.5]), safe_cmd_yaw)
+                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
 
             elif confirmed_fault == 3 and not is_filtering:
-                print(f"[{sensor_data['time']:.1f}s] STUCK! USV Winch Recovery")
-                final_diagnosis, final_action = "STUCK", "USV Winch Recovery"
+                print(f"[{sensor_data['time']:.1f}s] STUCK! Emergency Buoyancy Ascent + Acoustic Beacon.")
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+                final_diagnosis = "STUCK"
+                final_action = get_recovery_action(3)
+                locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(np.array([0.0, 0.0, -2.0]), safe_cmd_yaw)
+                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
 
             elif confirmed_fault == 6:
-                print(f"[{sensor_data['time']:.1f}s] ENTANGLED! Power Cut & USV Winch Recovery")
-                final_diagnosis, final_action = "ENTANGLED", "Power Cut & USV Winch Recovery"
+                print(f"[{sensor_data['time']:.1f}s] ENTANGLED! Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon.")
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+                final_diagnosis, final_action = "ENTANGLED", get_recovery_action(6)
+                locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(np.array([0.0, 0.0, -2.0]), safe_cmd_yaw)
+                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
 
             elif confirmed_fault == 7:
-                print(f"[{sensor_data['time']:.1f}s] BROKEN! Power Cut & USV Winch Recovery")
-                final_diagnosis, final_action = "BROKEN", "Power Cut & USV Winch Recovery"
+                print(f"[{sensor_data['time']:.1f}s] BROKEN! Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon.")
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+                final_diagnosis, final_action = "BROKEN", get_recovery_action(7)
+                locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(np.array([0.0, 0.0, -2.0]), safe_cmd_yaw)
+                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
 
         # 正常指令输出
         safe_cmd_vel = normal_cmd_vel * 0.5 if is_safe_mode else normal_cmd_vel
@@ -416,7 +689,19 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         ai_action=final_action,
         spike_times=spike_filtered_times
     )
+    # 绘制增强版诊断 FTC 响应图
+    enhanced_save_name = save_name.replace(".png", "_Enhanced_Diagnosis.png")
 
+    plot_ftc_diagnosis_response(
+        logs=simulator.sensor_logs,
+        fault_time=actual_fault_time,
+        ai_intervention_time=actual_ai_time,
+        save_path=enhanced_save_name,
+        true_fault_name=true_fault_str,
+        ai_diagnosis=final_diagnosis,
+        ai_action=final_action,
+        spike_times=spike_filtered_times
+    )
     # Mode 1 演示模式专属输出
     if is_demo:
         from utils.visualization import visualize_trajectory
@@ -465,11 +750,19 @@ def generate_dataset(num_missions=1000):
         auv = create_rich_training_auv()
         depth_sensor = DepthSensor()
         fault_injector = create_fault(is_training=True)
+        imu_sensor = IMUSensor()
+        dvl_sensor = DVLSensor()
+        current_sensor = CurrentSensor()
+        battery_sensor = BatterySensor()
 
         simulator = Simulator(
             auv_model=auv,
             depth_sensor=depth_sensor,
-            fault_injector=fault_injector
+            fault_injector=fault_injector,
+            imu_sensor=imu_sensor,
+            dvl_sensor=dvl_sensor,
+            current_sensor=current_sensor,
+            battery_sensor=battery_sensor
         )
 
         def controller(sensor_data):
