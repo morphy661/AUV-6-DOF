@@ -283,16 +283,26 @@ class DiagnosisStrategy:
             and recent_residual_range > cfg.drift_min_recent_range
         )
 
-        if (
-            recent_depth_change < cfg.stuck_depth_change_threshold
-            and velocity_active
-            and not drift_like_trend
-            and latest_abs_residual < cfg.drift_recent_residual_threshold
-        ):
+        cmd_vz = float(residuals.get("cmd_vz", 0.0))
+        tracking_error = abs(float(residuals.get("tracking_error", 0.0)))
+
+        command_active = abs(cmd_vz) > 0.25
+        tracking_demand_exists = tracking_error > 2.0
+
+        stuck_like = (
+                recent_depth_change < cfg.stuck_depth_change_threshold
+                and (command_active or tracking_demand_exists)
+                and not drift_like_trend
+        )
+
+        if stuck_like:
             return DiagnosisResult(
                 fault_id=3,
                 fault_name=FAULT_NAMES[3],
-                reason="Stuck: depth reading is almost constant while vertical velocity is active.",
+                reason=(
+                    "Stuck: depth reading is almost constant while the controller "
+                    "still has vertical command or tracking demand."
+                ),
                 confidence="High",
                 source="rule",
             )
@@ -310,6 +320,25 @@ class DiagnosisStrategy:
         #   - residual changes continuously over time
         #   - no dominant single step explains the residual change
         # ------------------------------------------------------------------
+        early_drift_like = (
+                len(depth_residual_series) >= cfg.drift_min_samples
+                and latest_abs_residual > cfg.bias_residual_threshold
+                and abs(recent_residual_slope) > cfg.bias_max_slope_threshold
+                and recent_residual_range > 1.5
+                and max_residual_step <= cfg.bias_step_threshold
+        )
+
+        if early_drift_like:
+            return DiagnosisResult(
+                fault_id=2,
+                fault_name=FAULT_NAMES[2],
+                reason=(
+                    "Drift: residual is changing continuously, so BIAS confirmation "
+                    "is blocked."
+                ),
+                confidence="Medium",
+                source="rule",
+            )
         bias_step_like = (
             latest_abs_residual > cfg.bias_residual_threshold
             and max_residual_step > cfg.bias_step_threshold

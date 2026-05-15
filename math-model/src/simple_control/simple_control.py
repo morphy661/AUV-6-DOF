@@ -88,11 +88,22 @@ def simple_controller(sensor_data, auv):
         command_velocity = (command_velocity / actual_speed) * max_allowable_speed
 
     # 3. 偏航角与停止逻辑
+    # ==========================================
     direction = target_pos - current_pos
     target_yaw = np.arctan2(direction[1], direction[0])
 
     final_distance = np.linalg.norm(auv.destination - current_pos)
-    if final_distance < 0.1:
+
+    # Only stop when all waypoints have been completed.
+    # Important:
+    # destination may be equal to the initial point [0, 0, 0].
+    # If we only check final_distance, the AUV will stop immediately at mission start.
+    all_waypoints_completed = (
+        not hasattr(auv, "waypoints")
+        or len(auv.waypoints) == 0
+    )
+
+    if all_waypoints_completed and final_distance < 0.1:
         imu_data = sensor_data.get("imu", {})
 
         if "orientation" in imu_data:
@@ -102,4 +113,5 @@ def simple_controller(sensor_data, auv):
 
         return np.zeros(3), current_yaw
 
+    # Normal case: always return command and yaw.
     return command_velocity, target_yaw

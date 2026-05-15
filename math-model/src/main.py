@@ -32,15 +32,24 @@ model = AUVFaultDetector(
 try:
     model_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\best_model_stage2_multisensor.pth"
 
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    print("Successfully loaded Stage 2 multi-sensor model weights!")
-except FileNotFoundError:
-    print("Warning: Stage 2 model file was not found. Dataset generation mode can still run.")
-except RuntimeError as e:
-    print("Warning: Model structure does not match the saved weights.")
-    print("Please retrain the Stage 2 model before running online FTC inference.")
-    print(e)
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Stage 2 model file not found: {model_path}")
 
+    model.load_state_dict(
+        torch.load(model_path, map_location=DEVICE, weights_only=True)
+    )
+    print("Successfully loaded Stage 2 multi-sensor model weights!")
+    print("Model path:", model_path)
+
+except FileNotFoundError as e:
+    raise FileNotFoundError(e)
+
+except RuntimeError as e:
+    raise RuntimeError(
+        "Model structure does not match the saved weights. "
+        "Please check model1.py and the trained model architecture.\n"
+        f"{e}"
+    )
 model.eval()
 
 # =======================================================
@@ -64,7 +73,110 @@ from utils.visualization import visualize_trajectory, animate_trajectory
 # ======================
 # AUV 模型配置
 # ======================
-def create_auv():
+def get_route_waypoints(route_profile="standard"):
+    """Return waypoint sets for different mission profiles.
+
+    standard:
+        Original route used for baseline FTC evaluation.
+    comprehensive:
+        Rich full-mission route covering shallow cruise, deep cruise,
+        large depth changes, turns, reverse motion, and return-to-surface.
+    shallow_cruise:
+        Shallow-water cruise with small depth changes.
+    deep_cruise:
+        Deep-water cruise and large-depth operation.
+    zigzag_depth:
+        Frequent depth changes to improve robustness against DRIFT/STUCK false alarms.
+    """
+    if route_profile == "standard":
+        return [
+            [0, 0, 0],
+            [0, 0, 60],
+            [20, 20, 60],
+            [40, 20, 30],
+            [80, 40, 500],
+            [120, 60, 500],
+            [80, 40, 300],
+            [40, 20, 100],
+            [0, 0, 0],
+        ]
+
+    if route_profile == "comprehensive":
+        return [
+            [0, 0, 0],
+            [0, 0, 50],
+            [80, 0, 50],
+            [120, 40, 80],
+            [160, 40, 120],
+            [240, 40, 120],
+            [280, 80, 350],
+            [360, 120, 350],
+            [420, 160, 500],
+            [460, 160, 500],
+            [380, 100, 500],
+            [320, 80, 300],
+            [240, 120, 300],
+            [200, 80, 380],
+            [160, 40, 180],
+            [100, 20, 100],
+            [40, -20, 40],
+            [0, 0, 0],
+        ]
+
+    if route_profile == "shallow_cruise":
+        return [
+            [0, 0, 0],
+            [0, 0, 40],
+            [60, 0, 40],
+            [120, 30, 60],
+            [180, 0, 50],
+            [240, -30, 70],
+            [180, -60, 50],
+            [80, -20, 40],
+            [0, 0, 0],
+        ]
+
+    if route_profile == "deep_cruise":
+        return [
+            [0, 0, 0],
+            [0, 0, 100],
+            [40, 20, 300],
+            [100, 40, 500],
+            [200, 40, 500],
+            [280, 100, 500],
+            [200, 160, 500],
+            [120, 100, 400],
+            [40, 40, 200],
+            [0, 0, 0],
+        ]
+
+    if route_profile == "zigzag_depth":
+        return [
+            [0, 0, 0],
+            [0, 0, 80],
+            [40, 20, 150],
+            [80, 40, 80],
+            [120, 60, 220],
+            [160, 80, 120],
+            [200, 100, 300],
+            [160, 60, 180],
+            [80, 20, 100],
+            [0, 0, 0],
+        ]
+
+    raise ValueError(f"Unknown route_profile: {route_profile}")
+
+
+TRAINING_ROUTE_PROFILES = [
+    "standard",
+    "comprehensive",
+    "shallow_cruise",
+    "deep_cruise",
+    "zigzag_depth",
+]
+
+
+def create_auv(route_profile="standard"):
     config = AUVConfig(
         mass=50.0, length=1.5, width=0.5, height=0.5,
         max_velocity_x=3.0, max_velocity_y=3.0, max_velocity_z=3.0,
@@ -73,17 +185,17 @@ def create_auv():
         max_angular_acceleration=0.2, battery_capacity=500.0,
         power_consumption_idle=10.0, power_consumption_per_velocity=5.0
     )
+
     auv = AUVModel(config)
-    waypoints = [
-        [0, 0, 0], [0, 0, 60], [20, 20, 60], [40, 20, 30],
-        [80, 40, 500], [120, 60, 500], [80, 40, 300], [40, 20, 100], [0, 0, 0]
-    ]
+    waypoints = get_route_waypoints(route_profile)
     auv.set_waypoints(waypoints)
-    auv.set_destination(350, 0, 100)
+    final_wp = waypoints[-1]
+    auv.set_destination(final_wp[0], final_wp[1], final_wp[2])
+    auv.route_profile = route_profile
     return auv
 
 
-def create_rich_training_auv():
+def create_rich_training_auv(route_profile="standard"):
     config = AUVConfig(
         mass=50.0, length=1.5, width=0.5, height=0.5,
         max_velocity_x=2.0, max_velocity_y=2.0, max_velocity_z=2.0,
@@ -92,44 +204,70 @@ def create_rich_training_auv():
         max_angular_acceleration=0.2, battery_capacity=500.0,
         power_consumption_idle=10.0, power_consumption_per_velocity=5.0
     )
+
     auv = AUVModel(config)
-    waypoints = [
-        [0, 0, 0], [0, 0, 60], [20, 20, 60], [40, 20, 30],
-        [80, 40, 500], [120, 60, 500], [80, 40, 300], [40, 20, 100], [0, 0, 0]
-    ]
+    waypoints = get_route_waypoints(route_profile)
     auv.set_waypoints(waypoints)
-    auv.set_destination(350, 0, 100)
+
+    final_wp = waypoints[-1]
+    auv.set_destination(final_wp[0], final_wp[1], final_wp[2])
+    auv.route_profile = route_profile
     return auv
 
 
 # ======================
 # 创建随机故障注入器
 # ======================
-def create_fault(target_fault_type=None, is_training=False):
-    if is_training:
+def create_fault(target_fault_type=None, is_training=False, start_time_override=None):
+    if start_time_override is not None:
+        start_time = float(start_time_override)
+
+        if target_fault_type is None:
+            target_fault_type = random.choice(list(FaultType))
+
+    elif is_training:
         start_time = random.uniform(30.0, 750.0)
         target_fault_type = random.choice(list(FaultType))
+
     elif target_fault_type is None:
         target_fault_type = random.choice(list(FaultType))
         start_time = random.uniform(100, 200.0)
+
     else:
         start_time = random.uniform(40.0, 60.0)
+
+    # ======================================================
+    # SPIKE probability policy
+    # ======================================================
+    # Training:
+    #   Use a relatively higher probability so the model can learn enough
+    #   transient spike patterns.
+    #
+    # Online / Mode 1 / Mode 2 / Mode 5:
+    #   Use a lower probability so SPIKE represents isolated transient events,
+    #   not continuous noise-like degradation.
+    if is_training:
+        spike_prob = 0.005
+    else:
+        spike_prob = 0.001
 
     return SystemFaultInjector(
         fault_type=target_fault_type,
         start_time=start_time,
-        # 1. 偏差故障：设置在 5.0 到 12.0 米之间
+
+        # 1. Bias fault
         bias=random.choice([-1, 1]) * random.uniform(5.0, 12.0),
-        # 2. 脉冲故障：设置触发概率和幅值
-        spike_prob=0.005,
+
+        # 2. Spike fault
+        spike_prob=spike_prob,
         spike_magnitude=random.choice([-1, 1]) * random.uniform(8.0, 15.0),
-        # 3. 噪声故障：设置噪声标准差
+
+        # 3. Increased noise fault
         noise_std=random.uniform(0.5, 1.0),
-        # 4. 漂移故障：设置漂移率
+
+        # 4. Drift fault
         drift_rate=random.choice([-1, 1]) * random.uniform(0.5, 1.0)
     )
-
-
 # ======================
 # FTC / Recovery Strategy Mapping
 # ======================
@@ -205,10 +343,20 @@ def get_recovery_command(action_text, current_depth, safe_cmd_yaw):
 # ======================
 # 核心任务调度器 (Mission Executor)
 # ======================
-def execute_mission(fault_type=None, is_demo=False, duration_override=None):
-    auv = create_auv()
+def execute_mission(
+        fault_type=None,
+        is_demo=False,
+        duration_override=None,
+        fault_start_time=None,
+        route_profile="standard"
+):
+    auv = create_auv(route_profile=route_profile)
     depth_sensor = DepthSensor()
-    fault_injector = create_fault(target_fault_type=fault_type)
+    fault_injector = create_fault(
+        target_fault_type=fault_type,
+        is_training=False,
+        start_time_override=fault_start_time
+    )
 
     imu_sensor = IMUSensor()
     dvl_sensor = DVLSensor()
@@ -227,13 +375,17 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         battery_sensor=battery_sensor
     )
 
-    try:
-        mean = np.load(
-            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\mean_stage2.npy")
-        std = np.load(
-            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage2.npy")
-    except FileNotFoundError:
-        mean, std = 0, 1
+    mean_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\mean_stage2.npy"
+    std_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage2.npy"
+
+    mean = np.load(mean_path).reshape(-1)
+    std = np.load(std_path).reshape(-1)
+
+    if mean.shape[0] != MODEL_INPUT_DIM or std.shape[0] != MODEL_INPUT_DIM:
+        raise ValueError(
+            f"Stage 2 normalization dimension mismatch: "
+            f"mean={mean.shape}, std={std.shape}, expected={MODEL_INPUT_DIM}"
+        )
 
     controller_buffer = [] # 给 AI 模型用，保存 Stage 2 的 20 维原始多传感器特征。
     diagnosis_history = [] #给规则诊断用，保存 sensor_data + residuals。
@@ -249,7 +401,10 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     final_action = "Normal Cruising"
     # BIAS is a soft fault. Delay confirmation to avoid confusing early DRIFT as BIAS.
     bias_candidate_start_time = None
-    bias_confirm_delay = 10.0
+    # BIAS needs a longer observation period on long complex routes,
+    # otherwise early DRIFT or waypoint-transition residuals can be locked as BIAS.
+    bias_confirm_delay = 12
+    last_waypoint_change_time = -999.0
 
     locked_fault_id = 0          # 用于锁定型故障：BIAS / DRIFT / STUCK / ENTANGLED / BROKEN
     soft_fault_id = 0            # 用于非锁定型持续故障：NOISE_INCREASE
@@ -260,6 +415,7 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     spike_filtered_times = []
     last_spike_time = -999.0
     spike_cooldown = 3.0
+    spike_recovery_window = 12
     def ftc_controller(sensor_data):
         nonlocal controller_buffer, diagnosis_history
         nonlocal system_locked, is_safe_mode
@@ -268,12 +424,23 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         nonlocal is_filtering, last_clean_depth
         nonlocal last_spike_time
         nonlocal bias_candidate_start_time
+        nonlocal last_waypoint_change_time
         # 初始化状态机的持久化变量
         if not hasattr(ftc_controller, "dynamic_setpoint"):
             ftc_controller.dynamic_setpoint = sensor_data["depth"]
         if not hasattr(ftc_controller, "fault_counter"):
             ftc_controller.fault_counter = 0
             ftc_controller.current_pred = 0
+
+        # Track waypoint switches. Immediately after a waypoint transition,
+        # target/depth residuals can jump even in NO_FAULT, so sensor faults
+        # should not be confirmed for a short guard window.
+        current_wp_count = len(getattr(auv, "waypoints", []))
+        if not hasattr(ftc_controller, "last_wp_count"):
+            ftc_controller.last_wp_count = current_wp_count
+        elif current_wp_count != ftc_controller.last_wp_count:
+            last_waypoint_change_time = sensor_data["time"]
+            ftc_controller.last_wp_count = current_wp_count
         # 诊断日志打印（每 30 秒打印一次）
         #if int(sensor_data["time"]) % 30 == 0 and abs(sensor_data["time"] - round(sensor_data["time"])) < 0.05:
             #print("Sensor check:")
@@ -378,7 +545,6 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         # ========================================================
         f_depth = smoothed_depth if is_filtering else sensor_data["depth"]
         f_target = ftc_controller.dynamic_setpoint
-        f_error = f_target - f_depth
         pred = 0
 
         # 默认诊断变量，防止窗口长度不足 50 时后续逻辑引用未定义变量
@@ -440,10 +606,21 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             # 动态意图保护
             tracking_error = abs(sensor_data["depth"] - ftc_controller.dynamic_setpoint)
             is_cruising = abs(ftc_controller.dynamic_setpoint - final_goal_z) > 0.1
+            cmd_abs = abs(normal_cmd_vel[2])
+            actual_vz_abs = abs(sensor_data["thruster"]["actual_vz"])
 
-            # 【真理拦截】：巡航态下深度变化过小判定为卡死
-            if is_cruising and abs(raw_seq[-1, 0] - raw_seq[-10, 0]) < 0.01:
-                pred = 3
+            is_aggressive_vertical_maneuver = (
+                    is_cruising
+                    and (
+                            cmd_abs > 0.8
+                            or actual_vz_abs > 0.6
+                            or tracking_error > 2.0
+                    )
+            )
+
+            # Do NOT force STUCK only from small depth change here.
+            # On long routes this can create false STUCK/BIAS around waypoint transitions.
+            # STUCK should come from the rule-based diagnosis layer.
 
             # 运行状态日志打印
             #if 40 <= sensor_data['time'] <= 70:
@@ -472,6 +649,23 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 
             # 脉冲物理约束
             if pred == 4 and abs(raw_seq[-1, 0] - raw_seq[-2, 0]) < 1.0: pred = 0
+            # AI-only DRIFT/STUCK predictions during aggressive vertical maneuver are unreliable.
+            # Let the rule layer decide later; do not pass these weak AI candidates forward.
+            if is_aggressive_vertical_maneuver and pred == 2:
+                pred = 0
+                diagnosis_reason = (
+                    "Suppressed DRIFT during aggressive waypoint transition."
+                )
+
+            elif (
+                    is_aggressive_vertical_maneuver
+                    and pred == 3
+                    and not (diagnosis_source == "rule" and rule_pred == 3)
+            ):
+                pred = 0
+                diagnosis_reason = (
+                    "Suppressed weak AI-only STUCK during aggressive waypoint transition."
+                )
             # ========================================================
             # 新增：Rule-based diagnosis + AI fusion
             # ========================================================
@@ -496,7 +690,8 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             if system_locked and locked_fault_id != 0:
                 pred = locked_fault_id
 
-            # 2. 如果 NOISE 已经确认并进入滤波状态，不允许后续局部 SPIKE 抢走最终诊断
+            # 2. 如果 NOISE 已经确认并进入滤波状态，保持 NOISE 显示。
+            #    但更严重的锁定型故障应在确认阶段覆盖 soft fault。
             elif is_filtering and soft_fault_id == 5:
                 pred = 5
 
@@ -508,6 +703,88 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             else:
                 pred = ai_pred
 
+            # 5. Waypoint transition / aggressive maneuver guard.
+            #    Right after a waypoint switch, suppress soft sensor candidates.
+            waypoint_guard_active = (sensor_data["time"] - last_waypoint_change_time) < 8.0
+            if waypoint_guard_active and pred in [1, 2, 3]:
+                pred = 0
+                diagnosis_reason = (
+                    "Suppressed BIAS/DRIFT/STUCK during waypoint transition guard."
+                )
+            # ========================================================
+            # BIAS / DRIFT / STUCK arbitration
+            # ========================================================
+            # Purpose:
+            #   1. Prevent early DRIFT from being locked as BIAS.
+            #   2. Prevent confirmed BIAS candidates from being stolen by STUCK.
+            #   3. Keep true STUCK detectable when no BIAS candidate exists.
+            # ========================================================
+
+            error_trend_5s = 0.0
+            latest_depth_error = sensor_data["depth"] - sensor_data["target_z"]
+
+            if len(diagnosis_history) >= 50:
+                recent_errors = np.array([
+                    h["depth"] - h.get("target_z", h["depth"])
+                    for h in diagnosis_history[-50:]
+                ], dtype=np.float32)
+
+                error_trend_5s = float(recent_errors[-1] - recent_errors[0])
+                recent_error_range = float(np.max(recent_errors) - np.min(recent_errors))
+            else:
+                recent_error_range = 0.0
+
+            is_drift_like_error = (
+                    abs(latest_depth_error) > 5.0
+                    and abs(error_trend_5s) > 2.0
+                    and recent_error_range > 2.0
+            )
+
+            is_stable_bias_like_error = (
+                    abs(latest_depth_error) > 5.0
+                    and abs(error_trend_5s) < 1.0
+                    and recent_error_range < 2.0
+            )
+
+            # Case 1:
+            # If the current candidate is BIAS but the residual is still changing,
+            # it is more likely DRIFT than BIAS.
+            if pred == 1 and is_drift_like_error:
+                pred = 2
+                bias_candidate_start_time = None
+                diagnosis_reason = (
+                    "BIAS candidate converted to DRIFT because depth residual "
+                    "is continuously changing."
+                )
+
+            # Case 2:
+            # If BIAS has already been under monitoring and the residual is stable,
+            # do not let STUCK steal it.
+            # This fixes: BIAS -> STUCK at around 388s.
+            elif (
+                    bias_candidate_start_time is not None
+                    and pred == 3
+                    and is_stable_bias_like_error
+            ):
+                pred = 1
+                diagnosis_reason = (
+                    "STUCK suppressed because a stable BIAS candidate is already being monitored."
+                )
+            # During large vertical maneuvers, suppress weak DRIFT.
+            # But allow rule-confirmed STUCK because a stuck depth reading can occur exactly
+            # while the controller is demanding vertical motion.
+            elif is_aggressive_vertical_maneuver and pred == 2:
+                pred = 0
+                diagnosis_reason = (
+                    "Suppressed weak DRIFT during aggressive waypoint transition."
+                )
+            elif is_aggressive_vertical_maneuver and pred == 3:
+                if not (diagnosis_source == "rule" and rule_pred == 3):
+                    pred = 0
+                    diagnosis_reason = (
+                        "Suppressed weak AI STUCK during aggressive waypoint transition."
+                    )
+
             sensor_data["ai_pred"] = ai_pred
             sensor_data["rule_pred"] = rule_pred
             sensor_data["final_pred"] = pred
@@ -515,11 +792,18 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             sensor_data["diagnosis_confidence"] = diagnosis_confidence
             sensor_data["diagnosis_source"] = diagnosis_source
 
-            if 40 <= sensor_data["time"] <= 80:
+            # Long-mission diagnostic print: one line every 30 seconds.
+            if (
+                    int(sensor_data["time"]) % 30 == 0
+                    and abs(sensor_data["time"] - round(sensor_data["time"])) < 0.05
+            ):
                 print(
                     f"Time: {sensor_data['time']:.1f}s | "
+                    f"TrueLabel={sensor_data.get('fault_label', -1)}, "
                     f"AI={ai_pred}, Rule={rule_pred}, Final={pred}, "
-                    f"Source={diagnosis_source}"
+                    f"Source={diagnosis_source}, "
+                    f"Depth={sensor_data['depth']:.2f}, "
+                    f"Target={sensor_data['target_z']:.2f}"
                 )
         # ========================================================
         # 模块 4：双轨防抖系统 (The "Two-Lane" Debouncer)
@@ -551,6 +835,29 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             sensor_data["diagnosis_reason"] = confirmed_reason
 
             return finalize_return(normal_cmd_vel, normal_cmd_yaw)
+        # --------------------------------------------------------
+        # Spike recovery guard
+        # After a transient spike is filtered, do not allow
+        # DRIFT/STUCK to be locked immediately due to residual shock.
+        # --------------------------------------------------------
+        time_since_spike = sensor_data["time"] - last_spike_time
+
+        if time_since_spike < spike_recovery_window and pred in [2, 3]:
+            pred = 0
+            sensor_data["final_pred"] = 0
+            sensor_data["diagnosis_reason"] = (
+                f"Transient spike recovery guard active "
+                f"({time_since_spike:.1f}s after spike)."
+            )
+        # Reset stale BIAS candidate whenever the current frame is not BIAS.
+        # This prevents old transient BIAS candidates from being confirmed later.
+        if pred != 1 and not (
+                bias_candidate_start_time is not None
+                and pred == 3
+                and is_stable_bias_like_error
+        ):
+            bias_candidate_start_time = None
+
         # 轨道 B：稳态故障读条逻辑
         if pred != 0:
             if pred == ftc_controller.current_pred:
@@ -567,7 +874,7 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             1: 5,  # BIAS
             2: 6,  # DRIFT
             3: 6,  # STUCK
-            5: 8,  # NOISE_INCREASE
+            5: 20,  # NOISE_INCREASE
             6: 8,  # THRUSTER_ENTANGLED
             7: 8,  # THRUSTER_BROKEN
         }
@@ -601,7 +908,17 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 
             elif confirmed_fault == 1 and not is_filtering:
                 # BIAS is a soft sensor fault.
-                # Do not hard-lock immediately, because early DRIFT can look like BIAS.
+                # Do not hard-lock immediately, because early DRIFT or waypoint transitions can look like BIAS.
+                waypoint_guard_active = (sensor_data["time"] - last_waypoint_change_time) < 8.0
+                if waypoint_guard_active:
+                    bias_candidate_start_time = None
+                    ftc_controller.fault_counter = 0
+                    ftc_controller.current_pred = 0
+                    final_diagnosis = "NO_FAULT"
+                    final_action = "Normal Cruising"
+                    confirmed_reason = "BIAS confirmation delayed during waypoint transition guard."
+                    return finalize_return(normal_cmd_vel, normal_cmd_yaw)
+
                 if bias_candidate_start_time is None:
                     bias_candidate_start_time = sensor_data["time"]
 
@@ -689,18 +1006,29 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 
     simulator.run_mission(duration=duration, control_function=ftc_controller, dt=0.1)
 
-    actual_fault_time = fault_injector.start_time
+    if fault_injector.fault_type == FaultType.NO_FAULT:
+        actual_fault_time = None
+    else:
+        actual_fault_time = fault_injector.start_time
     actual_ai_time = record_time[0] if record_time[0] > 0 else None
 
     import time  # 导入 time 模块
 
     # 生成保存文件名
+    # Long-mission timing tests include the forced fault start time to avoid overwriting files.
+    if fault_start_time is not None:
+        time_tag = f"_T{int(fault_start_time)}s"
+    else:
+        time_tag = ""
+
+    route_tag = f"_{route_profile}"
+
     if is_demo:
         time_str = time.strftime("%H%M%S")
-        save_name = f"results/FTC_Response_Demo_{true_fault_str}_{time_str}.png"
+        save_name = f"results/FTC_Response_Demo_{true_fault_str}{time_tag}{route_tag}_{time_str}.png"
     else:
         time_str = ""
-        save_name = f"results/FTC_Response_{true_fault_str}.png"
+        save_name = f"results/FTC_Response_{true_fault_str}{time_tag}{route_tag}.png"
 
     # 绘制 2D 容错响应图
     plot_ftc_response(
@@ -728,8 +1056,7 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
     )
     # Mode 1 演示模式专属输出
     if is_demo:
-        from utils.visualization import visualize_trajectory
-        static_traj_name = f"results/Trajectory_3D_Demo_{true_fault_str}_{time_str}.png"
+        static_traj_name = f"results/Trajectory_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.png"
         print(f" Generating static 3D trajectory map...")
 
         visualize_trajectory(
@@ -745,7 +1072,6 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
             show=False
         )
 
-        from utils.visualization import animate_trajectory
         print(" Generating 3D animation for USV collaborative mission...")
 
         animate_trajectory(
@@ -771,7 +1097,8 @@ def generate_dataset(num_missions=1000):
         if (mission + 1) % 10 == 0:
             print(f"Progress: {mission + 1}/{num_missions}")
 
-        auv = create_rich_training_auv()
+        route_profile = random.choice(TRAINING_ROUTE_PROFILES)
+        auv = create_rich_training_auv(route_profile=route_profile)
         depth_sensor = DepthSensor()
         fault_injector = create_fault(is_training=True)
         imu_sensor = IMUSensor()
@@ -886,6 +1213,67 @@ def generate_dataset(num_missions=1000):
 
 
 # ======================
+# 长航线故障时间测试
+# ======================
+def run_long_mission_timing_evaluation():
+    """Run long-mission timing tests with fixed fault start times.
+
+    Recommended workflow:
+        1. First run NO_FAULT on the comprehensive route to verify no false alarm.
+        2. Then enable the difficult sensor faults.
+        3. Finally use test_times = [80, 300, 600, 900] for full evaluation.
+    """
+    print("\n Starting Channel 5: Long mission fault timing evaluation.")
+
+    route_profile = "comprehensive"
+    duration = 1200
+
+    # First safe default:
+    #   test_times = [300]
+    # Full evaluation:
+    #   test_times = [80, 300, 600, 900]
+    test_times = [300]
+
+    # Start with NO_FAULT enabled for route robustness checking.
+    # Uncomment more faults after NO_FAULT passes.
+    test_faults = [
+        FaultType.NO_FAULT,
+        FaultType.BIAS,
+        FaultType.DRIFT,
+        FaultType.STUCK,
+        FaultType.SPIKE,
+        FaultType.NOISE_INCREASE,
+        FaultType.THRUSTER_ENTANGLED,
+        FaultType.THRUSTER_BROKEN,
+    ]
+
+    print(f" Route profile: {route_profile}")
+    print(f" Mission duration: {duration}s")
+    print(f" Test times: {test_times}")
+    print(f" Test faults: {[f.name for f in test_faults]}")
+
+    for fault_time in test_times:
+        print("\n" + "=" * 70)
+        print(f" Long mission test group: fault_start_time = {fault_time}s")
+        print("=" * 70)
+
+        for f_type in test_faults:
+            print(f"\n Testing [{f_type.name}] at t = {fault_time}s on route [{route_profile}]")
+
+            execute_mission(
+                fault_type=f_type,
+                duration_override=duration,
+                fault_start_time=fault_time,
+                is_demo=False,
+                route_profile=route_profile
+            )
+
+            print(f" Finished [{f_type.name}] at t = {fault_time}s on route [{route_profile}]")
+
+    print("\n Long mission timing evaluation completed.")
+
+
+# ======================
 # 控制台多模式启动菜单
 # ======================
 if __name__ == "__main__":
@@ -895,16 +1283,17 @@ if __name__ == "__main__":
     print(" [2] Batch evaluation mode (traverses all fault types)")
     print(" [3] Generate training dataset (automatically build simulation data)")
     print(" [4] Generate Baseline Trajectory (Perfect NO_FAULT case)")
+    print(" [5] Long mission fault timing evaluation")
     print("=" * 60)
 
-    mode_choice = input("Please enter your choice (1, 2, 3, or 4): ").strip()
+    mode_choice = input("Please enter your choice (1, 2, 3, 4, or 5): ").strip()
 
     if mode_choice == '2':
         print("\n Starting Channel 2: Batch evaluation mode.")
         demo_faults = list(FaultType)
         for f_type in demo_faults:
             print(f"\n Testing scenario: [{f_type.name}]")
-            execute_mission(fault_type=f_type, duration_override=180)
+            execute_mission(fault_type=f_type, duration_override=180, route_profile="standard")
             print(f" {f_type.name} materials have been saved to the results folder.")
         print("\n All reports generated successfully!")
 
@@ -920,8 +1309,11 @@ if __name__ == "__main__":
 
     elif mode_choice == '4':
         print("\n Starting Channel 4: Generating Baseline Trajectory...")
-        execute_mission(fault_type=FaultType.NO_FAULT, duration_override=1000, is_demo=True)
+        execute_mission(fault_type=FaultType.NO_FAULT, duration_override=1000, is_demo=True, route_profile="standard")
         print("\n Baseline trajectory saved successfully!")
+
+    elif mode_choice == '5':
+        run_long_mission_timing_evaluation()
 
     else:
         print("\n Starting Channel 1: Random fault simulation...")
