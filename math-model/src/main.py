@@ -13,9 +13,10 @@ from sensors.imu_sensor import IMUSensor
 from sensors.dvl_sensor import DVLSensor
 from sensors.current_sensor import CurrentSensor
 from sensors.battery_sensor import BatterySensor
+from utils.feature_extractor import extract_ai_features, RAW_FEATURE_NAMES, RAW_FEATURE_DIM, MODEL_INPUT_DIM
 
 # =======================================================
-# 加载 AI 大脑 (适配最新的 14维 PINN 架构)
+# 加载 AI 大脑 (Stage 2: 40维多传感器融合架构)
 # =======================================================
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -23,18 +24,22 @@ print("Starting system...")
 
 # 1. 按照新版模型参数进行实例化
 model = AUVFaultDetector(
-    input_dim=14,  # 输入维度为 14
+    input_dim=MODEL_INPUT_DIM,  # Stage 2: 20个原始多传感器特征 + 一阶差分 = 40维
     seq_len=50,
     num_classes=8
 ).to(DEVICE)
 
 try:
-    model_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\best_model.pth"
+    model_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\best_model_stage2_multisensor.pth"
 
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    print("Successfully loaded the highest precision model weights (best_model.pth)!")
+    print("Successfully loaded Stage 2 multi-sensor model weights!")
 except FileNotFoundError:
-    print("Warning: best_model.pth still not found!")
+    print("Warning: Stage 2 model file was not found. Dataset generation mode can still run.")
+except RuntimeError as e:
+    print("Warning: Model structure does not match the saved weights.")
+    print("Please retrain the Stage 2 model before running online FTC inference.")
+    print(e)
 
 model.eval()
 
@@ -224,13 +229,13 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 
     try:
         mean = np.load(
-            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\mean.npy")
+            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\mean_stage2.npy")
         std = np.load(
-            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std.npy")
+            r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage2.npy")
     except FileNotFoundError:
         mean, std = 0, 1
 
-    controller_buffer = [] #给 AI 模型用，保存 7 维特征。
+    controller_buffer = [] # 给 AI 模型用，保存 Stage 2 的 20 维原始多传感器特征。
     diagnosis_history = [] #给规则诊断用，保存 sensor_data + residuals。
 
     # 系统状态标志
@@ -382,21 +387,42 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         diagnosis_source = "none"
         diagnosis_reason = confirmed_reason
         diagnosis_confidence = "Low"
+        is_physical_spike = False
 
-        current_features = [
-            f_depth, f_target, f_error,
-            sensor_data["thruster"]["current"],
-            sensor_data["thruster"]["actual_vz"],
-            sensor_data["relative_pos"]["delta_x"],
-            sensor_data["relative_pos"]["delta_y"]
-        ]
+        # Stage 2:
+        # Use the same multi-sensor feature extractor as dataset generation.
+        # If adaptive filtering is active, feed the smoothed depth into the AI feature vector.
+        ai_sensor_data = sensor_data.copy()
+        ai_sensor_data["depth"] = f_depth
+        ai_sensor_data["target_z"] = f_target
+
+        current_features = extract_ai_features(ai_sensor_data)
         controller_buffer.append(current_features)
-        if len(controller_buffer) > 50: controller_buffer.pop(0)
+        if len(controller_buffer) > 50:
+            controller_buffer.pop(0)
 
         if len(controller_buffer) == 50:
-            raw_seq = np.array(controller_buffer)
-            diff_seq = np.vstack([np.zeros((1, 7)), np.diff(raw_seq, axis=0)])
+            raw_seq = np.array(controller_buffer, dtype=np.float32)
+            feature_dim = raw_seq.shape[1]
+            if raw_seq.shape[0] >= 2:
+                is_physical_spike = abs(raw_seq[-1, 0] - raw_seq[-2, 0]) >= 1.0
+
+            if feature_dim != RAW_FEATURE_DIM:
+                raise ValueError(
+                    f"AI feature dimension mismatch: got {feature_dim}, expected {RAW_FEATURE_DIM}"
+                )
+
+            diff_seq = np.vstack([
+                np.zeros((1, feature_dim), dtype=np.float32),
+                np.diff(raw_seq, axis=0)
+            ])
+
             input_seq_flat = np.stack((raw_seq, diff_seq), axis=-1).reshape(50, -1)
+
+            if input_seq_flat.shape[1] != MODEL_INPUT_DIM:
+                raise ValueError(
+                    f"Model input dimension mismatch: got {input_seq_flat.shape[1]}, expected {MODEL_INPUT_DIM}"
+                )
 
             input_seq_norm = (input_seq_flat - mean) / (std + 1e-8) if isinstance(std, np.ndarray) else input_seq_flat
             input_tensor = torch.tensor(input_seq_norm, dtype=torch.float32).unsqueeze(0).to(DEVICE)
@@ -507,21 +533,19 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
         if (
                 pred == 4
                 and not is_filtering
-                and diagnosis_source == "rule"
-                and rule_pred == 4
+                and is_physical_spike
         ):
             current_time = sensor_data["time"]
 
-            # 防止同一个 spike 在历史窗口中被重复触发很多次
             if current_time - last_spike_time >= spike_cooldown:
-                print(f"[{current_time:.1f}s] SPIKE! Filtered.")
+                print(f"[{current_time:.1f}s] SPIKE detected and filtered.")
 
                 spike_filtered_times.append(current_time)
                 last_spike_time = current_time
 
             final_diagnosis = "SPIKE"
             final_action = get_recovery_action(4)
-            confirmed_reason = diagnosis_reason
+            confirmed_reason = diagnosis_reason if diagnosis_reason else "AI + physical depth jump detected transient spike."
 
             sensor_data["final_pred"] = 4
             sensor_data["diagnosis_reason"] = confirmed_reason
@@ -738,11 +762,11 @@ def execute_mission(fault_type=None, is_demo=False, duration_override=None):
 # 训练数据集生成
 # ======================
 def generate_dataset(num_missions=1000):
-    print("Generating dataset (14-Dimensional PINN System Mode)...")
+    print("Generating dataset (Stage 2 Multi-sensor Fusion Mode: 40-D input)...")
     SEQ_LEN = 50
     all_X = []
     all_y = []
-
+    all_mission_ids = []
     for mission in range(num_missions):
         if (mission + 1) % 10 == 0:
             print(f"Progress: {mission + 1}/{num_missions}")
@@ -795,9 +819,12 @@ def generate_dataset(num_missions=1000):
             all_X.append(X)
             all_y.append(y)
 
+            mission_id_array = np.full(len(y), mission, dtype=np.int64)
+            all_mission_ids.append(mission_id_array)
+
     X_raw = np.concatenate(all_X)
     y_final = np.concatenate(all_y)
-
+    mission_ids_final = np.concatenate(all_mission_ids)
     idx_normal = np.where(y_final == 0)[0]
     idx_faults = np.where(y_final != 0)[0]
     print(f" Data volume before balancing -> Normal: {len(idx_normal)}, Faults: {len(idx_faults)}")
@@ -811,32 +838,51 @@ def generate_dataset(num_missions=1000):
 
     X_raw = X_raw[final_indices]
     y_final = y_final[final_indices]
+    mission_ids_final = mission_ids_final[final_indices]
     print(f" Balanced data volume -> Normal: {np.sum(y_final == 0)}, Faults: {np.sum(y_final != 0)}")
 
     from src.utils.dataset_builder import preprocess_dataset
     X_processed, stats = preprocess_dataset(X_raw)
 
-    save_mean = np.array(stats['mean']).flatten()
-    save_std = np.array(stats['std']).flatten()
+    save_mean = np.array(stats['mean'], dtype=np.float32).flatten()
+    save_std = np.array(stats['std'], dtype=np.float32).flatten()
 
-    if save_mean.size != 14:
-        raise ValueError(f"CRITICAL ERROR: Mean size is {save_mean.size}, expected 14!")
+    if save_mean.size != MODEL_INPUT_DIM:
+        raise ValueError(
+            f"CRITICAL ERROR: Mean size is {save_mean.size}, expected {MODEL_INPUT_DIM}!"
+        )
 
     res_dir = Path(
         r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results")
     res_dir.mkdir(parents=True, exist_ok=True)
 
-    np.save(res_dir / "mean.npy", save_mean)
-    np.save(res_dir / "std.npy", save_std)
+    np.save(res_dir / "mean_stage2.npy", save_mean)
+    np.save(res_dir / "std_stage2.npy", save_std)
 
-    save_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\data\simulation_dataset.pth"
+    data_dir = Path(
+        r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\data")
+    data_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Mission IDs shape: {mission_ids_final.shape}")
+    print(f"Unique missions saved: {len(np.unique(mission_ids_final))}")
+    save_path = data_dir / "simulation_dataset_stage2_multisensor.pth"
+
     torch.save({
         "X": torch.tensor(X_processed, dtype=torch.float32),
-        "y": torch.tensor(y_final, dtype=torch.long)
+        "y": torch.tensor(y_final, dtype=torch.long),
+        "mission_ids": torch.tensor(mission_ids_final, dtype=torch.long),
+
+        "feature_names": RAW_FEATURE_NAMES,
+        "raw_feature_dim": RAW_FEATURE_DIM,
+        "model_input_dim": MODEL_INPUT_DIM,
     }, save_path)
 
     print(f"Success! Dataset shape: {X_processed.shape}")
-    print(f"DEBUG: Saved Means (14 dims): {save_mean}")
+    print(f"Raw feature dimension: {RAW_FEATURE_DIM}")
+    print(f"Model input dimension after flatten: {MODEL_INPUT_DIM}")
+    print(f"Mean shape before flatten: {np.array(stats['mean']).shape}")
+    print(f"Std shape before flatten: {np.array(stats['std']).shape}")
+    print(f"DEBUG: Saved Stage 2 Means ({MODEL_INPUT_DIM} dims): {save_mean}")
+    print(f"Dataset saved to: {save_path}")
 
 
 # ======================

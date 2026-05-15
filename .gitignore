@@ -9,5 +9,5 @@ __pycache__/
 *.log
 *.tmp
 
-# Large generated dataset excluded because GitHub rejects files over 100 MB.
-depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset.pth
+# Large generated datasets excluded because GitHub rejects files over 100 MB.
+depth-sensor-fault-detection/depth_fault_detection/data/*.pth

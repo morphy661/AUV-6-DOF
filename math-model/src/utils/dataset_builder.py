@@ -1,86 +1,191 @@
 import numpy as np
 
-def build_sequences(sensor_logs, seq_len=50):
+from utils.feature_extractor import (
+    extract_ai_features,
+    RAW_FEATURE_DIM,
+    MODEL_INPUT_DIM,
+)
+
+
+def build_sequences(
+        sensor_logs,
+        seq_len=50,
+        steady_stride=15,
+        enable_spike_centered_sampling=True,
+        spike_label=4,
+        spike_center_stride=1,
+        max_spike_windows_per_mission=30,
+):
+    """
+    Build sequence samples from simulator sensor logs.
+
+    Stage 2 feature setting:
+        raw feature dimension = 20
+        after adding first-order temporal differences = 40
+
+    Sampling strategy:
+        A. Transition windows:
+            Capture windows around fault label changes.
+
+        B. Spike-centered windows:
+            Extra sampling for transient SPIKE faults.
+            This is important because SPIKE may only appear in one or a few frames.
+
+        C. Steady-state windows:
+            Regular sliding windows with a fixed stride.
+    """
+
     X = []
     y = []
 
-    # 1. 提取特征和标签
+    # ======================================================
+    # 1. Extract Stage-2 multi-sensor features and labels
+    # ======================================================
     feature_list = []
     labels = []
 
     for log in sensor_logs:
-        # ==========================================
-        #  核心升级：14维 PINN 物理先验特征
-        # ==========================================
-        # 先提取核心深度数据
-        f_depth = log["depth"]
-        # 安全获取目标深度 (假设 Simulator 日志里已经记录了 target_z)
-        f_target = log.get("target_z", 0.0)
-        #  物理残差：目标深度与实际深度的差值
-        f_error = f_target - f_depth
+        features = extract_ai_features(log)
 
-        features = [
-            f_depth,                                   # 1. 实际深度
-            f_target,                                  # 2. 目标深度 (意图)
-            f_error,                                   # 3. 追踪误差 (物理残差，抓 Bias/Drift 神器)
-            log["thruster"]["current"],                # 4. 电机电流
-            log["thruster"]["actual_vz"],              # 5. 实际垂向速度
-            log["relative_pos"]["delta_x"],            # 6. 相对 X 偏移
-            log["relative_pos"]["delta_y"]             # 7. 相对 Y 偏移
-        ]
         feature_list.append(features)
         labels.append(log.get("fault_label", 0))
 
-    features_np = np.array(feature_list)
-    labels_np = np.array(labels)
+    features_np = np.array(feature_list, dtype=np.float32)
+    labels_np = np.array(labels, dtype=np.int64)
 
-    # =======================================================
-    # 2. 核心采样逻辑
-    # =======================================================
+    if len(features_np) < seq_len:
+        return np.empty((0, seq_len, RAW_FEATURE_DIM), dtype=np.float32), np.empty((0,), dtype=np.int64)
 
-    # A. 捕捉故障跳变瞬间 (Transition Window)
+    # Safety check
+    if features_np.shape[1] != RAW_FEATURE_DIM:
+        raise ValueError(
+            f"Feature dimension mismatch: got {features_np.shape[1]}, "
+            f"expected {RAW_FEATURE_DIM}"
+        )
+
+    # Used to avoid adding exactly duplicated windows.
+    # Key format: (start, end, label)
+    sampled_windows = set()
+
+    def add_window(start, label):
+        """Safely add one sequence window."""
+        end = start + seq_len
+
+        if start < 0 or end > len(features_np):
+            return
+
+        label = int(label)
+        key = (int(start), int(end), label)
+
+        if key in sampled_windows:
+            return
+
+        sampled_windows.add(key)
+        X.append(features_np[start:end])
+        y.append(label)
+
+    # ======================================================
+    # 2A. Transition windows
+    # ======================================================
     label_diff = np.diff(labels_np)
     change_indices = np.where(label_diff != 0)[0]
 
     for idx in change_indices:
+        # Put the transition close to the center of the window
         start = idx - (seq_len // 2)
         end = start + seq_len
 
         if start >= 0 and end <= len(features_np):
-            X.append(features_np[start:end])
-            y.append(labels_np[end - 1])
+            add_window(start, labels_np[end - 1])
 
-    # B. 稳态采样 (Steady State Window)
-    stride = 15
-    for i in range(0, len(features_np) - seq_len, stride):
-        X.append(features_np[i: i + seq_len])
-        y.append(labels_np[i + seq_len - 1])
+    # ======================================================
+    # 2B. Spike-centered windows
+    # ======================================================
+    # SPIKE is a transient fault. If we only use steady-state windows,
+    # the spike point may be diluted by many normal frames.
+    #
+    # This section forces windows to be centered around spike frames,
+    # so the Bi-LSTM Attention model can learn the transient pattern.
+    if enable_spike_centered_sampling:
+        spike_indices = np.where(labels_np == spike_label)[0]
 
-    return np.array(X), np.array(y)
+        spike_indices = spike_indices[::spike_center_stride]
+
+        if len(spike_indices) > max_spike_windows_per_mission:
+            spike_indices = np.random.choice(
+                spike_indices,
+                size=max_spike_windows_per_mission,
+                replace=False
+            )
+            spike_indices = np.sort(spike_indices)
+
+        for idx in spike_indices:
+            start = idx - (seq_len // 2)
+            add_window(start, spike_label)
+
+    # ======================================================
+    # 2C. Steady-state windows
+    # ======================================================
+    for start in range(0, len(features_np) - seq_len + 1, steady_stride):
+        end = start + seq_len
+        add_window(start, labels_np[end - 1])
+
+    return np.array(X, dtype=np.float32), np.array(y, dtype=np.int64)
 
 
 def preprocess_dataset(X, epsilon=1e-8):
     """
-    对切片后的 X 序列进行特征增强和归一化
-     [升级版维度说明]
-    X 初始 shape: (N, 50, 7) -> 7个原始基础物理维度
-    返回 shape: (N, 50, 7, 2) -> 增加了沿时间轴的一阶差分维度
-    (注：后续在 train.py 中会被 view 展平为 (N, 50, 14))
-    """
-    # 沿时间轴 (axis=1) 做一阶差分
-    X_diff = np.diff(X, axis=1)
-    # 在时间轴头部补 0，保持序列长度为 50
-    X_diff = np.insert(X_diff, 0, 0, axis=1)
+    Stage-2 multi-sensor preprocessing.
 
-    # 堆叠原始数据和差分数据，此时 shape 变为 (N, 50, 7, 2)
+    X initial shape:
+        (N, 50, 20)
+
+    After adding first-order temporal differences:
+        (N, 50, 20, 2)
+
+    After flattening in train.py:
+        (N, 50, 40)
+    """
+
+    if X.ndim != 3:
+        raise ValueError(
+            f"Expected X with shape (N, seq_len, feature_dim), got {X.shape}"
+        )
+
+    if X.shape[-1] != RAW_FEATURE_DIM:
+        raise ValueError(
+            f"Expected raw feature dimension {RAW_FEATURE_DIM}, got {X.shape[-1]}"
+        )
+
+    # ======================================================
+    # 1. First-order temporal difference
+    # ======================================================
+    X_diff = np.diff(X, axis=1)
+
+    # Add zero difference at the first time step
+    zero_pad = np.zeros((X.shape[0], 1, X.shape[2]), dtype=X.dtype)
+    X_diff = np.concatenate([zero_pad, X_diff], axis=1)
+
+    # Shape: (N, 50, 20, 2)
     X_combined = np.stack((X, X_diff), axis=-1)
 
-    # 计算均值和标准差，在 N 和 seq_len 维度上压缩
-    # 现在的 means 和 stds 形状将是 (7, 2)
+    # ======================================================
+    # 2. Normalization
+    # ======================================================
     means = np.mean(X_combined, axis=(0, 1))
     stds = np.std(X_combined, axis=(0, 1))
 
-    # 利用 Numpy 的广播机制直接归一化
     X_combined = (X_combined - means) / (stds + epsilon)
 
-    return X_combined, {'mean': means, 'std': stds}
+    # Safety check
+    flattened_dim = X_combined.shape[2] * X_combined.shape[3]
+    if flattened_dim != MODEL_INPUT_DIM:
+        raise ValueError(
+            f"Flattened model input dimension mismatch: got {flattened_dim}, "
+            f"expected {MODEL_INPUT_DIM}"
+        )
+
+    return X_combined.astype(np.float32), {
+        "mean": means.astype(np.float32),
+        "std": stds.astype(np.float32),
+    }

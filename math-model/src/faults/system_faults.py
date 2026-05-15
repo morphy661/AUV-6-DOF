@@ -44,7 +44,20 @@ class SystemFaultInjector:
         self.rng = np.random.default_rng(random_seed)
         self._stuck_value = None
 
+        # --------------------------------------------------
+        # SPIKE event state
+        # --------------------------------------------------
+        # SPIKE is a transient event, not a continuous fault.
+        # These variables record whether a spike has actually happened.
+        self.last_spike_triggered = False
+        self.last_spike_time = -999.0
+        self.spike_label_hold_time = 0.5  # seconds, 0.5s = 5 frames when dt=0.1
+
     def apply(self, depth_value, current_time):
+
+        # Reset transient spike flag at every time step.
+        # It will be set to True only when a spike is actually injected.
+        self.last_spike_triggered = False
 
         if current_time < self.start_time:
             return depth_value
@@ -78,8 +91,12 @@ class SystemFaultInjector:
 
         if self.fault_type == FaultType.SPIKE:
             if self.rng.random() < self.spike_prob:
+                self.last_spike_triggered = True
+                self.last_spike_time = current_time
+
                 spike = self.spike_magnitude * self.rng.choice([-1, 1])
                 return depth_value + spike
+
             return depth_value
 
         if self.fault_type == FaultType.NOISE_INCREASE:
@@ -92,6 +109,32 @@ class SystemFaultInjector:
 
     def reset(self):
         self._stuck_value = None
+
+    def get_effective_fault_label(self, current_time):
+        """
+        Return the effective label for dataset generation and online logging.
+
+        Important:
+            SPIKE is a transient event.
+            It should only be labeled as SPIKE when a spike is actually injected,
+            or within a short hold window after the injected spike.
+
+        For other fault types:
+            The fault label remains active after start_time.
+        """
+
+        if current_time < self.start_time:
+            return FaultType.NO_FAULT.value
+
+        if self.fault_type == FaultType.NO_FAULT:
+            return FaultType.NO_FAULT.value
+
+        if self.fault_type == FaultType.SPIKE:
+            if current_time - self.last_spike_time <= self.spike_label_hold_time:
+                return FaultType.SPIKE.value
+            return FaultType.NO_FAULT.value
+
+        return self.fault_type.value
 
     def get_fault_label(self, current_time):
         if current_time < self.start_time:

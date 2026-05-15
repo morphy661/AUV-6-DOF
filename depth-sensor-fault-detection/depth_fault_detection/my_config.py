@@ -4,18 +4,25 @@ import torch
 # ===============================
 # 模型参数
 # ===============================
-INPUT_DIM = 14      # 对应新模型的 input_dim
-NUM_CLASSES = 8     # 8分类
-SEQ_LEN = 50        # 时间窗口长度
+INPUT_DIM = 40      # Stage 2: 20 raw features + 20 first-order difference features
+NUM_CLASSES = 8     # 8-class fault diagnosis
+SEQ_LEN = 50        # Time window length
 
 # ===============================
 # 训练参数
 # ===============================
 BATCH_SIZE = 256
-EPOCHS = 60         #  增加到 30：
-# 修改这两个参数
-LR = 0.001         # 从 0.001 降为 3e-4 (深度学习炼丹黄金学习率)
-WEIGHT_DECAY = 1e-4  # 稍微加大正则化，约束模型不要“走极端”
+
+# Stage 2 dataset is larger and feature dimension is higher.
+# 60 epochs is acceptable, but early stopping can be added later.
+EPOCHS = 35
+
+# Recommended learning rate for Bi-LSTM + Attention on Stage 2 multi-sensor data.
+# 0.001 can train fast, but 3e-4 is usually more stable.
+LR = 3e-4
+
+# Regularization to reduce overfitting / window leakage effect.
+WEIGHT_DECAY = 1e-4
 
 # ===============================
 # 设备

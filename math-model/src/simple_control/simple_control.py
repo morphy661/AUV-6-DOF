@@ -93,6 +93,13 @@ def simple_controller(sensor_data, auv):
 
     final_distance = np.linalg.norm(auv.destination - current_pos)
     if final_distance < 0.1:
-        return np.zeros(3), sensor_data["imu"]["orientation"][2]
+        imu_data = sensor_data.get("imu", {})
+
+        if "orientation" in imu_data:
+            current_yaw = imu_data["orientation"][2]
+        else:
+            current_yaw = imu_data.get("yaw", 0.0)
+
+        return np.zeros(3), current_yaw
 
     return command_velocity, target_yaw

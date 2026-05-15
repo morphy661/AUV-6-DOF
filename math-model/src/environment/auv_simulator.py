@@ -83,7 +83,10 @@ class Simulator:
         # Current active fault label
         current_fault_label = 0
         if self.fault_injector is not None:
-            current_fault_label = self.fault_injector.get_fault_label(self.time)
+            if hasattr(self.fault_injector, "get_effective_fault_label"):
+                current_fault_label = self.fault_injector.get_effective_fault_label(self.time)
+            else:
+                current_fault_label = self.fault_injector.get_fault_label(self.time)
 
         # ---------------------------------------------------------
         # Physical distortion for actuator faults

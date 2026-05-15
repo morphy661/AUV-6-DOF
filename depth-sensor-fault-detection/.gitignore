@@ -6,8 +6,8 @@ __pycache__/
 *.pyd
 .Python
 
-# Local/generated data that exceeds GitHub's normal file size limit.
-depth_fault_detection/data/simulation_dataset.pth
+# Local/generated datasets that exceed GitHub's normal file size limit.
+depth_fault_detection/data/*.pth
 
 # Common local outputs.
 *.log

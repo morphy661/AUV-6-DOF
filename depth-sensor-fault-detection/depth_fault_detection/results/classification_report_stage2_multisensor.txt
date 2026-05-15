@@ -1,0 +1,14 @@
+                    precision    recall  f1-score   support
+
+            Normal     0.9991    0.9876    0.9933     17606
+              Bias     0.9951    1.0000    0.9975      1418
+             Drift     0.9996    0.9322    0.9648      2701
+             Stuck     0.8675    0.9887    0.9241      1152
+             Spike     0.8022    1.0000    0.8902       892
+   Increased Noise     0.9993    0.9973    0.9983      1489
+THRUSTER_ENTANGLED     1.0000    1.0000    1.0000      1823
+   THRUSTER_BROKEN     0.9987    0.9994    0.9990      1558
+
+          accuracy                         0.9853     28639
+         macro avg     0.9577    0.9881    0.9709     28639
+      weighted avg     0.9876    0.9853    0.9858     28639

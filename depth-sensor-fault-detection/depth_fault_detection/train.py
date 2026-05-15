@@ -1,12 +1,19 @@
 import os
+import numpy as np
 import torch.nn as nn
 import torch.optim as optim
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GroupShuffleSplit
+from sklearn.metrics import classification_report
 from torch.utils.data import DataLoader, TensorDataset
 
 from model import AUVFaultDetector
 from my_config import *
+print("Using device:", DEVICE)
+print("CUDA available:", torch.cuda.is_available())
 
+if torch.cuda.is_available():
+    print("GPU name:", torch.cuda.get_device_name(0))
+    print("PyTorch CUDA version:", torch.version.cuda)
 from src.my_utils import (
     plot_sample_sequences,
     plot_training_history,
@@ -16,42 +23,159 @@ from src.my_utils import (
     label_names
 )
 
+# =======================================================
+# Stage 2: Multi-sensor AI Fusion Diagnosis Training
+# =======================================================
+STAGE2_DATASET_PATH = (
+    r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model"
+    r"\depth_fault_detection\data\simulation_dataset_stage2_multisensor.pth"
+)
+
+EXPECTED_RAW_FEATURE_DIM = 20
+EXPECTED_MODEL_INPUT_DIM = 40
+SEQ_LEN = 50
+
+BEST_MODEL_PATH = "results/best_model_stage2_multisensor.pth"
+TRAINING_PLOT_PATH = "results/training_plot_stage2_multisensor.png"
+CONFUSION_MATRIX_PATH = "results/confusion_matrix_stage2_multisensor.png"
+SEQUENCE_PLOT_PATH = "results/stage2_multisensor_sequences.png"
+FAULT_EXAMPLE_DIR = "results/fault_examples_stage2_multisensor"
+
+
 # ===============================
 # 创建结果目录
 # ===============================
 os.makedirs("results", exist_ok=True)
-# 1. 加载数据
-# ===============================
-dataset = torch.load(r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\data\simulation_dataset.pth")
 
-data = dataset["X"]  # 原始形状 [N, 50, 5, 2]
+# ===============================
+# 1. 加载 Stage 2 多传感器数据集
+# ===============================
+dataset = torch.load(STAGE2_DATASET_PATH, map_location="cpu")
+print("Dataset keys:", dataset.keys())
+data = dataset["X"]  # Stage 2 expected shape: [N, 50, 20, 2]
 labels = dataset["y"]
 
-# 【关键点 1】：立即进行维度重塑，适配 LSTM 输入 (N, 50, 10)
+print("=" * 70)
+print("Stage 2 multi-sensor dataset loaded.")
+print(f"Original X shape: {data.shape}")
+print(f"Label shape: {labels.shape}")
+
+if "feature_names" in dataset:
+    print(f"Feature names ({len(dataset['feature_names'])}): {dataset['feature_names']}")
+
+raw_feature_dim = int(dataset.get("raw_feature_dim", EXPECTED_RAW_FEATURE_DIM))
+model_input_dim = int(dataset.get("model_input_dim", EXPECTED_MODEL_INPUT_DIM))
+
+print(f"Raw feature dimension from dataset: {raw_feature_dim}")
+print(f"Model input dimension from dataset: {model_input_dim}")
+
+if data.ndim != 4:
+    raise ValueError(
+        f"Expected Stage 2 dataset X shape [N, 50, 20, 2], but got {data.shape}"
+    )
+
+if data.shape[1] != SEQ_LEN:
+    raise ValueError(
+        f"Expected sequence length {SEQ_LEN}, but got {data.shape[1]}"
+    )
+
+if data.shape[2] != EXPECTED_RAW_FEATURE_DIM:
+    raise ValueError(
+        f"Expected raw feature dimension {EXPECTED_RAW_FEATURE_DIM}, "
+        f"but got {data.shape[2]}"
+    )
+
+if data.shape[3] != 2:
+    raise ValueError(
+        f"Expected last dimension 2 for [raw, diff], but got {data.shape[3]}"
+    )
+
+# 立即进行维度重塑，适配 LSTM 输入: [N, 50, 20, 2] -> [N, 50, 40]
 data = data.view(data.shape[0], data.shape[1], -1)
 print(f"Data reshaping complete, new shape: {data.shape}")
+
+if data.shape[-1] != EXPECTED_MODEL_INPUT_DIM:
+    raise ValueError(
+        f"Stage 2 input dimension error: got {data.shape[-1]}, "
+        f"expected {EXPECTED_MODEL_INPUT_DIM}"
+    )
+
+if model_input_dim != EXPECTED_MODEL_INPUT_DIM:
+    raise ValueError(
+        f"Dataset metadata model_input_dim is {model_input_dim}, "
+        f"expected {EXPECTED_MODEL_INPUT_DIM}"
+    )
+
+print("Stage 2 multi-sensor dataset check passed.")
+print("=" * 70)
 
 # ===============================
 # 2. 数据划分
 # ===============================
-X_train, X_val, y_train, y_val = train_test_split(
-    data, labels, test_size=0.2, random_state=42
+if "mission_ids" in dataset:
+    print("Using GroupShuffleSplit by mission_ids to avoid same-mission leakage.")
+
+    groups = dataset["mission_ids"].numpy()
+
+    splitter = GroupShuffleSplit(
+        n_splits=1,
+        test_size=0.2,
+        random_state=42
+    )
+
+    train_idx, val_idx = next(
+        splitter.split(data, labels, groups=groups)
+    )
+
+    X_train = data[train_idx]
+    X_val = data[val_idx]
+    y_train = labels[train_idx]
+    y_val = labels[val_idx]
+
+    train_missions = set(groups[train_idx])
+    val_missions = set(groups[val_idx])
+    overlap = train_missions & val_missions
+
+    print(f"Train missions: {len(train_missions)}")
+    print(f"Validation missions: {len(val_missions)}")
+    print(f"Mission overlap: {overlap}")
+
+    if len(overlap) != 0:
+        raise ValueError("Mission leakage detected: train and validation missions overlap!")
+
+else:
+    print("WARNING: mission_ids not found. Using random window-level train_test_split.")
+    print("This may cause same-mission leakage. Use this only for quick testing.")
+
+    X_train, X_val, y_train, y_val = train_test_split(
+        data,
+        labels,
+        test_size=0.2,
+        random_state=42,
+        stratify=labels
+    )
+train_loader = DataLoader(
+    TensorDataset(X_train, y_train),
+    batch_size=BATCH_SIZE,
+    shuffle=True
 )
 
-train_loader = DataLoader(TensorDataset(X_train, y_train),
-                          batch_size=BATCH_SIZE, shuffle=True)
+val_loader = DataLoader(
+    TensorDataset(X_val, y_val),
+    batch_size=BATCH_SIZE,
+    shuffle=False
+)
 
-val_loader = DataLoader(TensorDataset(X_val, y_val),
-                        batch_size=BATCH_SIZE)
+print(f"Training samples: {len(X_train)}")
+print(f"Validation samples: {len(X_val)}")
 
 # ===============================
-# 7. 故障示例与可视化
+# 3. 故障示例与可视化
 # ===============================
-
-# 【关键点 2】：安全处理残差绘图
+# 安全处理残差绘图
 if "X_true" in dataset:
     X_true = dataset["X_true"]
-    # 如果 X_true 也是 4 维的，同样需要重塑
+
     if len(X_true.shape) == 4:
         X_true = X_true.view(X_true.shape[0], X_true.shape[1], -1)
 
@@ -63,64 +187,67 @@ if "X_true" in dataset:
         n_samples=3
     )
 else:
-    print(" X_true was not found in the dataset, so residual plotting has been skipped.")
+    print("X_true was not found in the dataset, so residual plotting has been skipped.")
 
 # 绘制常规故障示例
 plot_fault_examples(
-    X_train, y_train,
+    X_train,
+    y_train,
     label_names_dict=label_names,
     n_samples=3,
-    save_dir="results/fault_examples"
+    save_dir=FAULT_EXAMPLE_DIR
 )
 
 # 训练前序列可视化
 plot_sample_sequences(
-    X_train, y_train,
+    X_train,
+    y_train,
     n_samples=1,
-    save_path="results/depth_sensor_sequences.png"
+    save_path=SEQUENCE_PLOT_PATH
 )
+
 # ===============================
-# 3. 模型
+# 4. 模型
 # ===============================
-#  适配全新的 1D-CNN + LSTM 模型参数
 model = AUVFaultDetector(
-    input_dim=14,
-    seq_len=50,
+    input_dim=EXPECTED_MODEL_INPUT_DIM,
+    seq_len=SEQ_LEN,
     num_classes=8
 ).to(DEVICE)
-import numpy as np
 
 # =======================================================
-#  核心修复：自动计算并应用类别权重 (Class Weights)
+# 自动计算并应用类别权重 Class Weights
 # =======================================================
-# 1. 统计 labels 里每个类别的样本数量
-label_counts = np.bincount(labels.numpy())
-
-# 2. 防止除以 0 的情况（如果有某个类别恰好为 0 个）
+label_counts = np.bincount(labels.cpu().numpy(), minlength=8)
 label_counts[label_counts == 0] = 1
 
-# 3. 计算权重：数量越少的类别，权重越大平方根平滑
 weights = 1.0 / np.sqrt(label_counts)
-
-# 4. 归一化权重（保持梯度稳定）
 weights = weights / weights.sum() * len(label_counts)
 
-# 5. 转换为 Tensor 并送到 GPU/CPU
 class_weights = torch.FloatTensor(weights).to(DEVICE)
 
-print("\n The weights for each category in the category imbalance penalty mechanism are as follows:", class_weights.cpu().numpy())
+print(
+    "\nThe weights for each category in the category imbalance penalty mechanism are as follows:",
+    class_weights.cpu().numpy()
+)
 
-# 6. 把计算好的权重传给损失函数
 criterion = nn.CrossEntropyLoss(weight=class_weights)
-# =======================================================
 
-# 优化器与调度器 (保持你原来的代码不变)
-optimizer = optim.Adam(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
+optimizer = optim.Adam(
+    model.parameters(),
+    lr=LR,
+    weight_decay=WEIGHT_DECAY
+)
 
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=5)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer,
+    mode="max",
+    factor=0.5,
+    patience=5
+)
 
 # ===============================
-# 4. 训练
+# 5. 训练
 # ===============================
 train_losses = []
 val_accuracies = []
@@ -129,10 +256,11 @@ best_acc = 0.0
 
 for epoch in range(EPOCHS):
     model.train()
-    total_loss = 0
+    total_loss = 0.0
 
-    for i, (batch_x, batch_y) in enumerate(train_loader):
-        batch_x, batch_y = batch_x.to(DEVICE), batch_y.to(DEVICE)
+    for batch_x, batch_y in train_loader:
+        batch_x = batch_x.to(DEVICE)
+        batch_y = batch_y.to(DEVICE)
 
         outputs = model(batch_x)
         loss = criterion(outputs, batch_y)
@@ -153,7 +281,8 @@ for epoch in range(EPOCHS):
 
     with torch.no_grad():
         for val_x, val_y in val_loader:
-            val_x, val_y = val_x.to(DEVICE), val_y.to(DEVICE)
+            val_x = val_x.to(DEVICE)
+            val_y = val_y.to(DEVICE)
 
             outputs = model(val_x)
             _, predicted = torch.max(outputs, 1)
@@ -161,40 +290,40 @@ for epoch in range(EPOCHS):
             total += val_y.size(0)
             correct += (predicted == val_y).sum().item()
 
-    # 真实的验证集准确率叫 acc
     acc = correct / total
 
-    # =======================================================
-    #  调度器在这里发力：根据这轮跑出的 acc 决定要不要降学习率
-    # =======================================================
     scheduler.step(acc)
-    current_lr = optimizer.param_groups[0]['lr']
+    current_lr = optimizer.param_groups[0]["lr"]
 
-    # 打印本轮成绩单，顺便把当前学习率也打出来看看
-    print(f"Epoch {epoch+1}/{EPOCHS} | Loss: {avg_loss:.4f} | Val Acc: {acc:.4f} | LR: {current_lr:.6f}")
+    print(
+        f"Epoch {epoch + 1}/{EPOCHS} | "
+        f"Loss: {avg_loss:.4f} | "
+        f"Val Acc: {acc:.4f} | "
+        f"LR: {current_lr:.6f}"
+    )
 
     train_losses.append(avg_loss)
     val_accuracies.append(acc)
 
     # ===============================
-    #  保存最佳模型
+    # 保存最佳 Stage 2 模型
     # ===============================
     if acc > best_acc:
         best_acc = acc
-        torch.save(model.state_dict(), "results/best_model.pth")
-        print("Save the current best model!")
+        torch.save(model.state_dict(), BEST_MODEL_PATH)
+        print(f"Save the current best Stage 2 multi-sensor model! Best Acc: {best_acc:.4f}")
 
 # ===============================
-# 5. 训练曲线
+# 6. 训练曲线
 # ===============================
 plot_training_history(
     train_losses,
     val_accuracies,
-    save_path="results/training_plot.png"
+    save_path=TRAINING_PLOT_PATH
 )
 
 # ===============================
-# 6. 混淆矩阵
+# 7. 混淆矩阵
 # ===============================
 all_preds = []
 all_labels = []
@@ -202,7 +331,8 @@ all_labels = []
 model.eval()
 with torch.no_grad():
     for val_x, val_y in val_loader:
-        val_x, val_y = val_x.to(DEVICE), val_y.to(DEVICE)
+        val_x = val_x.to(DEVICE)
+        val_y = val_y.to(DEVICE)
 
         outputs = model(val_x)
         _, predicted = torch.max(outputs, 1)
@@ -214,7 +344,26 @@ plot_confusion_matrix(
     all_labels,
     all_preds,
     label_names_dict=label_names,
-    save_path="results/confusion_matrix.png"
+    save_path=CONFUSION_MATRIX_PATH
+)
+target_names = [label_names[i] for i in range(NUM_CLASSES)]
+
+report = classification_report(
+    all_labels,
+    all_preds,
+    target_names=target_names,
+    digits=4
 )
 
-print("Training complete, all results saved. results/")
+print("\nClassification Report:")
+print(report)
+
+with open("results/classification_report_stage2_multisensor.txt", "w", encoding="utf-8") as f:
+    f.write(report)
+print("=" * 70)
+print("Stage 2 training complete.")
+print(f"Best validation accuracy: {best_acc:.4f}")
+print(f"Best model saved to: {BEST_MODEL_PATH}")
+print(f"Training plot saved to: {TRAINING_PLOT_PATH}")
+print(f"Confusion matrix saved to: {CONFUSION_MATRIX_PATH}")
+print("=" * 70)
