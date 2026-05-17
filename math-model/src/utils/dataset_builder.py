@@ -122,7 +122,45 @@ def build_sequences(
         for idx in spike_indices:
             start = idx - (seq_len // 2)
             add_window(start, spike_label)
+    # ======================================================
+    # 2B-extra. STUCK-centered / post-fault sampling
+    # ======================================================
+    stuck_label = 3
+    stuck_indices = np.where(labels_np == stuck_label)[0]
 
+    if len(stuck_indices) > 0:
+        stuck_start = stuck_indices[0]
+
+        # Sample windows after STUCK has lasted for a while.
+        # This avoids ambiguous windows containing half normal and half STUCK.
+        candidate_centers = [
+            stuck_start + 30,
+            stuck_start + 50,
+            stuck_start + 80,
+            stuck_start + 120,
+            stuck_start + 160,
+        ]
+
+        for center in candidate_centers:
+            start = center - seq_len // 2
+            add_window(start, stuck_label)
+
+        # Add several stable STUCK windows, but limit the number
+        # to avoid overwhelming DRIFT / BIAS samples.
+        max_stuck_windows_per_mission = 20
+        stable_stuck_indices = stuck_indices[seq_len:]
+
+        if len(stable_stuck_indices) > max_stuck_windows_per_mission:
+            stable_stuck_indices = np.random.choice(
+                stable_stuck_indices,
+                size=max_stuck_windows_per_mission,
+                replace=False
+            )
+            stable_stuck_indices = np.sort(stable_stuck_indices)
+
+        for center in stable_stuck_indices:
+            start = center - seq_len // 2
+            add_window(start, stuck_label)
     # ======================================================
     # 2C. Steady-state windows
     # ======================================================

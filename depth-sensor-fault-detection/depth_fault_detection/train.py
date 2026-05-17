@@ -223,7 +223,11 @@ label_counts[label_counts == 0] = 1
 
 weights = 1.0 / np.sqrt(label_counts)
 weights = weights / weights.sum() * len(label_counts)
+# Manually strengthen difficult STUCK class
+weights[3] *= 1.0
 
+# Re-normalize to keep average weight around 1
+weights = weights / weights.sum() * len(weights)
 class_weights = torch.FloatTensor(weights).to(DEVICE)
 
 print(

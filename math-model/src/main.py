@@ -351,6 +351,12 @@ def execute_mission(
         route_profile="standard"
 ):
     auv = create_auv(route_profile=route_profile)
+
+    # Keep a fixed copy of the original planned route for visualization.
+    # Do not use auv.waypoints after the mission, because it may be modified
+    # during waypoint navigation.
+    planned_waypoints = np.array(get_route_waypoints(route_profile), dtype=float)
+
     depth_sensor = DepthSensor()
     fault_injector = create_fault(
         target_fault_type=fault_type,
@@ -1061,7 +1067,7 @@ def execute_mission(
 
         visualize_trajectory(
             trajectory=np.array(simulator.trajectory),
-            visited_waypoints=auv.waypoints if hasattr(auv, 'waypoints') else None,
+            visited_waypoints=planned_waypoints,
             destination=auv.destination,
             sensor_logs=simulator.sensor_logs,
             fault_time=actual_fault_time,
@@ -1076,11 +1082,11 @@ def execute_mission(
 
         animate_trajectory(
             trajectory=np.array(simulator.trajectory),
-            waypoints=auv.waypoints if hasattr(auv, 'waypoints') else None,
+            waypoints=planned_waypoints,
             destination=auv.destination,
             sensor_logs=simulator.sensor_logs,
             dt=0.1,
-            playback_speed=10
+            playback_speed=20
         )
 
 
@@ -1232,7 +1238,7 @@ def run_long_mission_timing_evaluation():
     #   test_times = [300]
     # Full evaluation:
     #   test_times = [80, 300, 600, 900]
-    test_times = [300]
+    test_times = [543, 904]
 
     # Start with NO_FAULT enabled for route robustness checking.
     # Uncomment more faults after NO_FAULT passes.
@@ -1315,6 +1321,29 @@ if __name__ == "__main__":
     elif mode_choice == '5':
         run_long_mission_timing_evaluation()
 
+
     else:
-        print("\n Starting Channel 1: Random fault simulation...")
-        execute_mission(fault_type=None, is_demo=True)
+        print("\n Starting Channel 1: Random fault simulation on comprehensive route...")
+
+        # Mode 1 demo:
+        #   - Keep random fault type for demonstration.
+        #   - Use the same comprehensive route as Mode 5.
+        #   - Randomize the fault injection time within the stable long-mission window.
+        # This makes Mode 1 visually consistent with the final FTC validation,
+        # while still preserving its original random-demo behavior.
+        demo_route_profile = "comprehensive"
+        demo_duration = 1200
+        demo_fault_start_time = random.uniform(300.0, 900.0)
+
+        print(f" Demo route profile: {demo_route_profile}")
+        print(f" Demo duration: {demo_duration}s")
+        print(f" Random fault start time: {demo_fault_start_time:.1f}s")
+        print(" Random fault type will be selected automatically.\n")
+
+        execute_mission(
+            fault_type=None,
+            duration_override=demo_duration,
+            fault_start_time=demo_fault_start_time,
+            is_demo=True,
+            route_profile=demo_route_profile
+        )
