@@ -16,7 +16,7 @@ label_names = {
     4: "Spike",
     5: "Increased Noise",
     6: "THRUSTER_ENTANGLED",  # 故障 6：海草缠绕
-    7: "THRUSTER_BROKEN"  # 故障 7：桨叶断裂
+    7: "THRUSTER_NO_OUTPUT"
 }
 
 
@@ -346,7 +346,7 @@ def build_diagnosis_basis(final_fault_name):
             "Sources: DVL velocity + motor current sensor."
         )
 
-    if "BROKEN" in name:
+    if "NO_OUTPUT" in name:
         return (
             "Criterion: high cmd_vz + low DVL_vz + current lower than expected.\n"
             "Sources: DVL velocity + motor current sensor."
@@ -408,11 +408,11 @@ def get_diagnosis_evidence_recovery_codes(final_fault_name, action_text=None):
     if "NOISE" in name:
         return "D5", "E5", "R2"
 
-    if "BROKEN" in name:
-        return "D6", "E6", "R3"
+    if "NO_OUTPUT" in name:
+        return "D7", "E6", "R3"
 
     if "ENTANGLED" in name:
-        return "D7", "E6", "R3"
+        return "D6", "E6", "R3"
 
     return "D?", "E?", "R?"
 
@@ -600,8 +600,8 @@ def plot_ftc_diagnosis_response(
         "INCREASED NOISE": 5,
         "ENTANGLED": 6,
         "THRUSTER_ENTANGLED": 6,
-        "BROKEN": 7,
-        "THRUSTER_BROKEN": 7,
+        "NO_OUTPUT": 7,
+        "THRUSTER_NO_OUTPUT": 7,
     }
 
     target_fault_id = name_to_id.get(str(ai_diagnosis).upper(), None)
@@ -736,20 +736,58 @@ def plot_ftc_diagnosis_response(
         label="Final Diagnosis",
         linewidth=2.6
     )
+    # Recovery lock is a binary state:
+    #   0 = recovery mode OFF
+    #   1 = recovery mode ON
+    # It is plotted at y=8 only to make it visible together with fault IDs 0-7.
+    FTC_LOCK_VIS_LEVEL = 8
+
     axes[3].step(
         times,
-        ftc_locked * 8,
+        ftc_locked * FTC_LOCK_VIS_LEVEL,
         where="post",
-        label="FTC / Recovery Locked x8",
+        label="FTC Recovery Mode ON",
         linestyle="--",
-        linewidth=1.5
+        linewidth=1.8,
+        color="red"
     )
 
     axes[3].set_ylabel("Fault ID")
     axes[3].set_xlabel("Mission Time (s)")
     axes[3].set_title("4) Diagnosis Result and FTC State")
+
+    # Left y-axis: diagnosis classes
+    axes[3].set_ylim(-0.5, FTC_LOCK_VIS_LEVEL + 0.5)
     axes[3].set_yticks(list(label_names.keys()))
     axes[3].set_yticklabels([label_names[i] for i in label_names.keys()], fontsize=8)
+
+    # Add a small visual explanation inside the plot
+    axes[3].text(
+        0.985,
+        0.86,
+        "Red dashed line:\nFTC recovery mode ON\n(binary state, shown at top)",
+        transform=axes[3].transAxes,
+        fontsize=8.5,
+        verticalalignment="top",
+        horizontalalignment="right",
+        bbox=dict(
+            boxstyle="round,pad=0.35",
+            facecolor="white",
+            edgecolor="red",
+            alpha=0.78
+        )
+    )
+
+    # Right y-axis: FTC lock state explanation
+    lock_axis = axes[3].twinx()
+    lock_axis.set_ylim(axes[3].get_ylim())
+    lock_axis.set_yticks([0, FTC_LOCK_VIS_LEVEL])
+    lock_axis.set_yticklabels(["OFF", "ON"], fontsize=8)
+    lock_axis.set_ylabel("FTC Recovery Mode", fontsize=9)
+    lock_axis.tick_params(axis="y", colors="red")
+    lock_axis.spines["right"].set_color("red")
+    lock_axis.yaxis.label.set_color("red")
+
     axes[3].grid(True, linestyle="--", alpha=0.5)
     axes[3].legend(loc="upper left")
 

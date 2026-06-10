@@ -170,7 +170,7 @@ class Simulator:
             if current_fault_label == 6:
                 fault_mode = "entangled"
             elif current_fault_label == 7:
-                fault_mode = "broken"
+                fault_mode = "NO_OUTPUT"
 
             current_data = self.current_sensor.read(
                 cmd_vz=cmd_vz,

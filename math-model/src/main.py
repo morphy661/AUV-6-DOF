@@ -14,6 +14,7 @@ from sensors.dvl_sensor import DVLSensor
 from sensors.current_sensor import CurrentSensor
 from sensors.battery_sensor import BatterySensor
 from utils.feature_extractor import extract_ai_features, RAW_FEATURE_NAMES, RAW_FEATURE_DIM, MODEL_INPUT_DIM
+from actuators.thruster_motor_model import ThrusterMotorModel, ThrusterFaultMode
 
 # =======================================================
 # 加载 AI 大脑 (Stage 2: 40维多传感器融合架构)
@@ -306,6 +307,9 @@ def get_recovery_action(fault_id):
     if fault_id in [6, 7]:
         return "Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon"
 
+    if fault_id == 8:
+        return "Degraded Thrust Mode + Controlled Emergency Ascent + Acoustic Beacon"
+
     return "Unknown Recovery Action"
 
 
@@ -370,7 +374,7 @@ def execute_mission(
     battery_sensor = BatterySensor()
     residual_observer = ResidualObserver()
     diagnosis_strategy = DiagnosisStrategy()
-
+    thruster_motor_model = ThrusterMotorModel(seed=42)
     simulator = Simulator(
         auv_model=auv,
         depth_sensor=depth_sensor,
@@ -484,6 +488,12 @@ def execute_mission(
 
             return cmd_vel, cmd_yaw
 
+        def get_recovery_depth(sensor_data):
+            """
+            Use true physical depth only for simulation-side recovery boundary.
+            Diagnosis still uses measured sensor data.
+            """
+            return float(sensor_data.get("true_depth", sensor_data["depth"]))
         raw_depth = sensor_data["depth"]
 
         # ========================================================
@@ -524,11 +534,92 @@ def execute_mission(
         safe_cmd_yaw = normal_cmd_yaw
 
         # ========================================================
-        # 新增：Residual Observer
+        # Thruster motor equation simulation
         # 使用当前控制器输出的垂向速度作为 cmd_vz
+        # command -> expected current / omega / thrust
+        # fault mode -> measured current / omega / actual thrust
         # ========================================================
-        sensor_data["thruster"]["cmd_vz"] = float(normal_cmd_vel[2])
+        cmd_vz = float(normal_cmd_vel[2])
+
+        # 保证 thruster 字段存在
+        if "thruster" not in sensor_data or not isinstance(sensor_data["thruster"], dict):
+            sensor_data["thruster"] = {}
+
+        sensor_data["thruster"]["cmd_vz"] = cmd_vz
+
+        # --------------------------------------------------------
+        # Current Stage 3.0-A:
+        # 先只把原来的 THRUSTER_BROKEN / label 7 当作 no_output
+        # label 6 = entangled
+        # label 7 = no_output
+        # 其他故障暂时不作用到 motor model
+        # --------------------------------------------------------
+        fault_label = sensor_data.get("fault_label", 0)
+
+        if fault_label == 6:
+            motor_fault_mode = ThrusterFaultMode.ENTANGLED
+        elif fault_label == 7:
+            motor_fault_mode = ThrusterFaultMode.NO_OUTPUT
+        elif fault_label == 8:
+            motor_fault_mode = ThrusterFaultMode.THRUST_LOSS
+        else:
+            motor_fault_mode = ThrusterFaultMode.NORMAL
+
+        motor_state = thruster_motor_model.simulate(
+            cmd=cmd_vz,
+            fault_mode=motor_fault_mode
+        )
+
+        # ========================================================
+        # Write motor-equation output into unified sensor channels
+        # ========================================================
+
+        # 1) Current sensor channel
+        # 电流传感器读数统一来自 ThrusterMotorModel
+        sensor_data["current_sensor"] = {
+            "measured_current": motor_state.measured_current,
+            "expected_current": motor_state.expected_current,
+            "current_residual": motor_state.current_residual,
+        }
+
+        # 2) Thruster channel
+        # thruster 主要保存 command / omega / thrust / fault mode
+        if "thruster" not in sensor_data or not isinstance(sensor_data["thruster"], dict):
+            sensor_data["thruster"] = {}
+
+        sensor_data["thruster"]["cmd_vz"] = cmd_vz
+
+        sensor_data["thruster"]["omega"] = motor_state.measured_omega
+        sensor_data["thruster"]["expected_omega"] = motor_state.expected_omega
+        sensor_data["thruster"]["omega_residual"] = motor_state.omega_residual
+
+        sensor_data["thruster"]["thrust"] = motor_state.actual_thrust
+        sensor_data["thruster"]["expected_thrust"] = motor_state.expected_thrust
+        sensor_data["thruster"]["thrust_residual"] = motor_state.thrust_residual
+
+        sensor_data["thruster"]["motor_fault_mode"] = motor_state.fault_mode
+
+        # Optional compatibility fields
+        # 先保留，避免旧代码某些地方还在读 thruster["current"]
+        sensor_data["thruster"]["current"] = motor_state.measured_current
+        sensor_data["thruster"]["expected_current"] = motor_state.expected_current
+        sensor_data["thruster"]["current_residual"] = motor_state.current_residual
+
+        # ========================================================
+        # Residual Observer
+        # ========================================================
         residuals = residual_observer.compute(sensor_data)
+
+        # Add motor-equation residuals to residuals as well.
+        # Existing code can ignore these fields safely.
+        residuals["omega_residual"] = motor_state.omega_residual
+        residuals["thrust_residual"] = motor_state.thrust_residual
+        residuals["expected_omega"] = motor_state.expected_omega
+        residuals["measured_omega"] = motor_state.measured_omega
+        residuals["expected_thrust"] = motor_state.expected_thrust
+        residuals["actual_thrust"] = motor_state.actual_thrust
+        residuals["motor_fault_mode"] = motor_state.fault_mode
+
         sensor_data["residuals"] = residuals
 
         diagnosis_history.append(sensor_data.copy())
@@ -539,11 +630,14 @@ def execute_mission(
         # 模块 2：最高优先级拦截 (Absolute Deadlock)
         # ========================================================
         if system_locked:
+            recovery_depth = get_recovery_depth(sensor_data)
+
             recovery_cmd_vel, recovery_cmd_yaw = get_recovery_command(
                 action_text=final_action,
-                current_depth=sensor_data["depth"],
+                current_depth=recovery_depth,
                 safe_cmd_yaw=safe_cmd_yaw
             )
+
             return finalize_return(recovery_cmd_vel, recovery_cmd_yaw)
 
         # ========================================================
@@ -710,12 +804,20 @@ def execute_mission(
                 pred = ai_pred
 
             # 5. Waypoint transition / aggressive maneuver guard.
-            #    Right after a waypoint switch, suppress soft sensor candidates.
+            # Right before and after a waypoint switch, suppress soft sensor candidates.
             waypoint_guard_active = (sensor_data["time"] - last_waypoint_change_time) < 8.0
-            if waypoint_guard_active and pred in [1, 2, 3]:
+
+            dist_to_current_wp = 999.0
+            if len(getattr(auv, "waypoints", [])) > 0:
+                current_wp = np.array(auv.waypoints[0], dtype=float)
+                dist_to_current_wp = float(np.linalg.norm(sensor_data["position"] - current_wp))
+
+            near_waypoint_guard_active = dist_to_current_wp < 11.0
+
+            if (waypoint_guard_active or near_waypoint_guard_active) and pred in [1, 2, 3]:
                 pred = 0
                 diagnosis_reason = (
-                    "Suppressed BIAS/DRIFT/STUCK during waypoint transition guard."
+                    "Suppressed BIAS/DRIFT/STUCK near waypoint transition guard."
                 )
             # ========================================================
             # BIAS / DRIFT / STUCK arbitration
@@ -806,6 +908,12 @@ def execute_mission(
                 print(
                     f"Time: {sensor_data['time']:.1f}s | "
                     f"TrueLabel={sensor_data.get('fault_label', -1)}, "
+                    f"MotorMode={sensor_data['thruster'].get('motor_fault_mode', 'normal')}, "
+                    f"I={sensor_data['thruster'].get('current', 0.0):.2f}, "
+                    f"Iexp={sensor_data['thruster'].get('expected_current', 0.0):.2f}, "
+                    f"rI={sensor_data['thruster'].get('current_residual', 0.0):.2f}, "
+                    f"T={sensor_data['thruster'].get('thrust', 0.0):.2f}, "
+                    f"Texp={sensor_data['thruster'].get('expected_thrust', 0.0):.2f}, "
                     f"AI={ai_pred}, Rule={rule_pred}, Final={pred}, "
                     f"Source={diagnosis_source}, "
                     f"Depth={sensor_data['depth']:.2f}, "
@@ -882,7 +990,8 @@ def execute_mission(
             3: 6,  # STUCK
             5: 20,  # NOISE_INCREASE
             6: 8,  # THRUSTER_ENTANGLED
-            7: 8,  # THRUSTER_BROKEN
+            7: 8,  # THRUSTER_NO_OUTPUT
+            8: 8,  # THRUSTER_THRUST_LOSS
         }
         confirm_threshold = threshold_map.get(ftc_controller.current_pred, 999)
 
@@ -912,17 +1021,24 @@ def execute_mission(
 
                 return finalize_return(normal_cmd_vel, normal_cmd_yaw)
 
+
             elif confirmed_fault == 1 and not is_filtering:
-                # BIAS is a soft sensor fault.
-                # Do not hard-lock immediately, because early DRIFT or waypoint transitions can look like BIAS.
                 waypoint_guard_active = (sensor_data["time"] - last_waypoint_change_time) < 8.0
-                if waypoint_guard_active:
+
+                dist_to_current_wp = 999.0
+                if len(getattr(auv, "waypoints", [])) > 0:
+                    current_wp = np.array(auv.waypoints[0], dtype=float)
+
+                    dist_to_current_wp = float(np.linalg.norm(sensor_data["position"] - current_wp))
+                near_waypoint_guard_active = dist_to_current_wp < 11.0
+
+                if waypoint_guard_active or near_waypoint_guard_active:
                     bias_candidate_start_time = None
                     ftc_controller.fault_counter = 0
                     ftc_controller.current_pred = 0
                     final_diagnosis = "NO_FAULT"
                     final_action = "Normal Cruising"
-                    confirmed_reason = "BIAS confirmation delayed during waypoint transition guard."
+                    confirmed_reason = "BIAS confirmation delayed near waypoint transition guard."
                     return finalize_return(normal_cmd_vel, normal_cmd_yaw)
 
                 if bias_candidate_start_time is None:
@@ -954,7 +1070,7 @@ def execute_mission(
                 system_locked = True
 
                 return finalize_return(
-                    *get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw)
+                    *get_recovery_command(final_action, get_recovery_depth(sensor_data), safe_cmd_yaw)
                 )
 
             elif confirmed_fault == 2 and not is_filtering:
@@ -965,7 +1081,9 @@ def execute_mission(
                 final_action = get_recovery_action(2)
                 locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
+                return finalize_return(
+                    *get_recovery_command(final_action, get_recovery_depth(sensor_data), safe_cmd_yaw)
+                )
 
             elif confirmed_fault == 3 and not is_filtering:
                 print(f"[{sensor_data['time']:.1f}s] STUCK! Emergency Buoyancy Ascent + Acoustic Beacon.")
@@ -975,7 +1093,9 @@ def execute_mission(
                 final_action = get_recovery_action(3)
                 locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
+                return finalize_return(
+                    *get_recovery_command(final_action, get_recovery_depth(sensor_data), safe_cmd_yaw)
+                )
 
             elif confirmed_fault == 6:
                 print(f"[{sensor_data['time']:.1f}s] ENTANGLED! Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon.")
@@ -984,17 +1104,30 @@ def execute_mission(
                 final_diagnosis, final_action = "ENTANGLED", get_recovery_action(6)
                 locked_fault_id = confirmed_fault
                 system_locked = True
-                return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
+                return finalize_return(
+                    *get_recovery_command(final_action, get_recovery_depth(sensor_data), safe_cmd_yaw)
+                )
 
             elif confirmed_fault == 7:
-                print(f"[{sensor_data['time']:.1f}s] BROKEN! Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon.")
+                print(f"[{sensor_data['time']:.1f}s] NO OUTPUT! Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon.")
+
                 if record_time[0] < 0:
                     record_time[0] = sensor_data["time"]
-                final_diagnosis, final_action = "BROKEN", get_recovery_action(7)
+                final_diagnosis, final_action = "NO_OUTPUT", get_recovery_action(7)
+                locked_fault_id = confirmed_fault
+                system_locked = True
+                return finalize_return(
+                    *get_recovery_command(final_action, get_recovery_depth(sensor_data), safe_cmd_yaw)
+                )
+            elif confirmed_fault == 8:
+                print(
+                    f"[{sensor_data['time']:.1f}s] THRUST LOSS! Degraded Thrust Mode + Controlled Emergency Ascent + Acoustic Beacon.")
+                if record_time[0] < 0:
+                    record_time[0] = sensor_data["time"]
+                final_diagnosis, final_action = "THRUST_LOSS", get_recovery_action(8)
                 locked_fault_id = confirmed_fault
                 system_locked = True
                 return finalize_return(*get_recovery_command(final_action, sensor_data["depth"], safe_cmd_yaw))
-
         # 正常指令输出
         safe_cmd_vel = normal_cmd_vel * 0.5 if is_safe_mode else normal_cmd_vel
         return finalize_return(safe_cmd_vel, normal_cmd_yaw)
@@ -1080,15 +1213,20 @@ def execute_mission(
 
         print(" Generating 3D animation for USV collaborative mission...")
 
+        animation_save_name = f"results/Animation_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.mp4"
+
         animate_trajectory(
             trajectory=np.array(simulator.trajectory),
             waypoints=planned_waypoints,
             destination=auv.destination,
             sensor_logs=simulator.sensor_logs,
             dt=0.1,
-            playback_speed=20
+            playback_speed=20,
+            save_path=animation_save_name,
+            show=False
         )
 
+        print(f"3D animation saved to: {animation_save_name}")
 
 # ======================
 # 训练数据集生成
@@ -1250,7 +1388,7 @@ def run_long_mission_timing_evaluation():
         FaultType.SPIKE,
         FaultType.NOISE_INCREASE,
         FaultType.THRUSTER_ENTANGLED,
-        FaultType.THRUSTER_BROKEN,
+        FaultType.THRUSTER_NO_OUTPUT,
     ]
 
     print(f" Route profile: {route_profile}")
@@ -1315,7 +1453,7 @@ if __name__ == "__main__":
 
     elif mode_choice == '4':
         print("\n Starting Channel 4: Generating Baseline Trajectory...")
-        execute_mission(fault_type=FaultType.NO_FAULT, duration_override=1000, is_demo=True, route_profile="standard")
+        execute_mission(fault_type=FaultType.NO_FAULT, duration_override=800, is_demo=True, route_profile="standard")
         print("\n Baseline trajectory saved successfully!")
 
     elif mode_choice == '5':
@@ -1333,6 +1471,7 @@ if __name__ == "__main__":
         # while still preserving its original random-demo behavior.
         demo_route_profile = "comprehensive"
         demo_duration = 1200
+        demo_fault_type = FaultType.THRUSTER_ENTANGLED  # Random fault type will be selected automatically in the controller.
         demo_fault_start_time = random.uniform(300.0, 900.0)
 
         print(f" Demo route profile: {demo_route_profile}")
@@ -1341,7 +1480,7 @@ if __name__ == "__main__":
         print(" Random fault type will be selected automatically.\n")
 
         execute_mission(
-            fault_type=None,
+            fault_type=demo_fault_type,
             duration_override=demo_duration,
             fault_start_time=demo_fault_start_time,
             is_demo=True,

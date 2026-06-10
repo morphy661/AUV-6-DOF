@@ -14,7 +14,8 @@ class FaultType(Enum):
     SPIKE = 4
     NOISE_INCREASE = 5
     THRUSTER_ENTANGLED = 6  #  海草缠绕 (转速降，电流升)
-    THRUSTER_BROKEN = 7  #  桨叶断裂 (转速无力，电流极小)
+    THRUSTER_NO_OUTPUT = 7
+    THRUSTER_THRUST_LOSS = 8 #  桨叶断裂 (转速无力，电流极小)
 
 
 # 2. 系统故障注入器
@@ -66,7 +67,7 @@ class SystemFaultInjector:
             return depth_value
 
         # 关键逻辑：如果是推进器故障，深度计本身是好的！所以直接返回真实深度
-        if self.fault_type in [FaultType.THRUSTER_ENTANGLED, FaultType.THRUSTER_BROKEN]:
+        if self.fault_type in [FaultType.THRUSTER_ENTANGLED, FaultType.THRUSTER_NO_OUTPUT,FaultType.THRUSTER_THRUST_LOSS,]:
             return depth_value
 
         if self.fault_type == FaultType.BIAS:
@@ -106,7 +107,7 @@ class SystemFaultInjector:
             if self.rng.random() < 0.2:
                 burst = self.rng.normal(0.0, self.noise_std * 3)
             return depth_value + noise + high_freq + burst
-
+        return depth_value
     def reset(self):
         self._stuck_value = None
 

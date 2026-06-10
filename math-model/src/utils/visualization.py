@@ -232,7 +232,7 @@ def animate_trajectory(
     # Use one range for logic and another smaller range for visual clarity.
     # This avoids a huge circle covering the whole figure.
     communication_range = 800.0      # Real acoustic-link logic range.
-    display_comm_range = 180.0       # Visual support-zone radius shown in the plot.
+    display_comm_range = 60       # Visual support-zone radius shown in the plot.
 
     # ======================================================
     # 2. Figure / ocean scene
@@ -294,12 +294,14 @@ def animate_trajectory(
             # Dynamic remaining planned route line.
             # It will be updated in update(frame).
             planned_route_line, = ax.plot(
-                [], [], [],
+                waypoints_np[:, 0],
+                waypoints_np[:, 1],
+                waypoints_np[:, 2],
                 linestyle="--",
                 color="#FFD54F",
                 linewidth=2.8,
                 alpha=0.95,
-                label="Remaining Planned Route"
+                label="Waypoint Connection"
             )
 
             # Estimate when each waypoint is reached.
@@ -340,10 +342,10 @@ def animate_trajectory(
                     wp[0], wp[1], wp[2],
                     c="#FFD54F",
                     marker="^",
-                    s=100,
+                    s=95,
                     edgecolors="black",
                     linewidths=0.6,
-                    visible=False
+                    visible=True
                 )
 
                 label = ax.text(
@@ -352,7 +354,7 @@ def animate_trajectory(
                     color="#FFE082",
                     fontsize=8,
                     fontweight="bold",
-                    visible=False
+                    visible=True
                 )
 
                 waypoint_markers.append(marker)
@@ -554,7 +556,7 @@ def animate_trajectory(
         4: "SPIKE",
         5: "NOISE",
         6: "ENTANGLED",
-        7: "BROKEN"
+        7: "NO_OUTPUT"
     }
 
     # ======================================================

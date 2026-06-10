@@ -12,7 +12,8 @@ FAULT_NAMES = {
     4: "SPIKE",
     5: "NOISE_INCREASE",
     6: "THRUSTER_ENTANGLED",
-    7: "THRUSTER_BROKEN",
+    7: "THRUSTER_NO_OUTPUT",
+    8: "THRUSTER_THRUST_LOSS",
 }
 
 
@@ -21,9 +22,14 @@ class DiagnosisConfig:
     # Thruster thresholds
     cmd_vz_threshold: float = 0.6
     actual_vz_low_threshold: float = 0.10
-    current_high_threshold: float = 5.0
+    current_high_threshold: float = 3.0
     current_low_threshold: float = -3.0
     tracking_error_thruster_threshold: float = 3.0
+    expected_thrust_active_threshold: float = 1.0
+    actual_thrust_low_threshold: float = 0.3
+    current_near_zero_threshold: float = 0.3
+    thrust_loss_ratio_threshold: float = 0.6
+    current_normal_residual_threshold: float = 1.0
 
     # Depth sensor thresholds
     spike_delta_threshold: float = 6.0
@@ -38,7 +44,7 @@ class DiagnosisConfig:
 
     # NOTE:
     # residual_slope is calculated over a short rolling history window.
-    # Therefore this threshold should not be too small, otherwise BIAS can be
+    # Therefore, this threshold should not be too small, otherwise BIAS can be
     # confused with DRIFT during the transient response.
     drift_slope_threshold: float = 0.18
     drift_residual_range_threshold: float = 8.0
@@ -134,13 +140,80 @@ class DiagnosisStrategy:
         actual_vz = float(residuals.get("actual_vz", 0.0))
         current_residual = float(residuals.get("current_residual", 0.0))
         tracking_error = abs(float(residuals.get("tracking_error", 0.0)))
+        measured_current = float(residuals.get("measured_current", 0.0))
+        expected_current = float(residuals.get("expected_current", 0.0))
 
+        actual_thrust = float(residuals.get("actual_thrust", 0.0))
+        expected_thrust = float(residuals.get("expected_thrust", 0.0))
+
+        expected_thrust_abs = abs(expected_thrust)
+        actual_thrust_abs = abs(actual_thrust)
         cmd_high = abs(cmd_vz) > cfg.cmd_vz_threshold
         velocity_low = abs(actual_vz) < cfg.actual_vz_low_threshold
         current_high = current_residual > cfg.current_high_threshold
         current_low = current_residual < cfg.current_low_threshold
         tracking_bad = tracking_error > cfg.tracking_error_thruster_threshold
+        # --------------------------------------------------------
+        # Motor-equation-based NO_OUTPUT detection
+        # --------------------------------------------------------
+        expected_thrust_active = expected_thrust_abs > cfg.expected_thrust_active_threshold
+        actual_thrust_low = actual_thrust_abs < cfg.actual_thrust_low_threshold
+        current_near_zero = abs(measured_current) < cfg.current_near_zero_threshold
+        #motor_fault_mode = residuals.get("motor_fault_mode", "normal")
+        #time_now = float(residuals.get("time", 0.0))
 
+        #if motor_fault_mode == "no_output" and abs(time_now % 10.0) < 0.05:
+        #   print(
+        #       "[Thruster Debug] "
+        #       f"mode={motor_fault_mode}, "
+        #       f"I={measured_current:.2f}, "
+        #       f"Iexp={expected_current:.2f}, "
+        #       f"rI={current_residual:.2f}, "
+        #       f"T={actual_thrust:.2f}, "
+        #       f"Texp={expected_thrust:.2f}, "
+        #       f"current_zero={current_near_zero}, "
+        #       f"current_source={residuals.get('current_source', 'unknown')}"
+        #   )
+        if expected_thrust_active and actual_thrust_low and current_near_zero:
+            reason = (
+                "Thruster no-output fault: expected thrust is active, "
+                "but measured current and actual thrust are near zero."
+            )
+
+            return DiagnosisResult(
+                fault_id=7,
+                fault_name=FAULT_NAMES[7],
+                reason=reason,
+                confidence="High",
+                source="rule",
+            )
+        # --------------------------------------------------------
+        # Motor-equation-based THRUST_LOSS detection
+        # --------------------------------------------------------
+        thrust_ratio_low = (
+                expected_thrust_abs > cfg.expected_thrust_active_threshold
+                and actual_thrust_abs < cfg.thrust_loss_ratio_threshold * expected_thrust_abs
+        )
+
+        current_near_normal = abs(current_residual) < cfg.current_normal_residual_threshold
+        current_not_zero = abs(measured_current) >= cfg.current_near_zero_threshold
+
+        if thrust_ratio_low and current_near_normal and current_not_zero:
+            reason = (
+                "Thruster thrust-loss fault: expected thrust is active and motor current is near normal, "
+                "but actual thrust is much lower than expected. "
+                "This signal pattern may represent propeller blade damage, partial propeller loss, "
+                "reduced propeller efficiency, biofouling, duct/guard-induced thrust reduction, "
+                "or mild mechanical degradation."
+            )
+
+            return DiagnosisResult(
+                fault_id=8,
+                fault_name=FAULT_NAMES[8],
+                reason=reason,
+                confidence="High",
+                source="rule",
+            )
         if cmd_high and velocity_low and current_high:
             reason = (
                 "Thruster entanglement: high vertical command, "
@@ -159,7 +232,7 @@ class DiagnosisStrategy:
 
         if cmd_high and velocity_low and current_low:
             reason = (
-                "Thruster broken: high vertical command, "
+                "Thruster no-output fault: high vertical command, "
                 "low actual vertical velocity, and motor current lower than expected."
             )
             if tracking_bad:
@@ -328,17 +401,17 @@ class DiagnosisStrategy:
                 and max_residual_step <= cfg.bias_step_threshold
         )
 
-        if early_drift_like:
-            return DiagnosisResult(
-                fault_id=2,
-                fault_name=FAULT_NAMES[2],
-                reason=(
-                    "Drift: residual is changing continuously, so BIAS confirmation "
-                    "is blocked."
-                ),
-                confidence="Medium",
-                source="rule",
-            )
+       #if early_drift_like:
+       #    return DiagnosisResult(
+       #        fault_id=2,
+       #        fault_name=FAULT_NAMES[2],
+       #        reason=(
+       #            "Drift: residual is changing continuously, so BIAS confirmation "
+       #            "is blocked."
+       #        ),
+       #        confidence="Medium",
+       #        source="rule",
+       #    )
         bias_step_like = (
             latest_abs_residual > cfg.bias_residual_threshold
             and max_residual_step > cfg.bias_step_threshold
@@ -361,7 +434,7 @@ class DiagnosisStrategy:
             and recent_abs_mean > cfg.bias_recent_residual_threshold
         )
 
-        if bias_step_like or bias_stable_like or bias_ai_supported:
+        if (bias_step_like or bias_stable_like or bias_ai_supported) and not early_drift_like:
             return DiagnosisResult(
                 fault_id=1,
                 fault_name=FAULT_NAMES[1],
@@ -391,9 +464,12 @@ class DiagnosisStrategy:
         )
 
         ai_drift_supported = (
-            ai_pred == 2
-            and residual_range > cfg.drift_residual_range_threshold
-            and max_residual_step <= cfg.bias_step_threshold
+                ai_pred == 2
+                and latest_abs_residual > cfg.drift_recent_residual_threshold
+                and recent_abs_mean > cfg.bias_recent_residual_threshold
+                and recent_residual_range > cfg.drift_min_recent_range
+                and residual_range > cfg.drift_residual_range_threshold
+                and max_residual_step <= cfg.bias_step_threshold
         )
 
         if gradual_drift_like or ai_drift_supported:
