@@ -100,8 +100,8 @@ class Simulator:
             motor_current = 45.0 + np.random.normal(0.0, 2.0)
 
         elif current_fault_label == 7:
-            # THRUSTER_BROKEN:
-            # The propeller is broken or detached, so thrust is lost and
+            # THRUSTER_NO_OUTPUT:
+            # The thruster produces no output, so thrust is lost and
             # the motor current becomes abnormally low.
             self.auv.velocity[2] *= 0.05
             actual_vz = float(self.auv.velocity[2])
@@ -170,7 +170,7 @@ class Simulator:
             if current_fault_label == 6:
                 fault_mode = "entangled"
             elif current_fault_label == 7:
-                fault_mode = "NO_OUTPUT"
+                fault_mode = "no_output"
 
             current_data = self.current_sensor.read(
                 cmd_vz=cmd_vz,

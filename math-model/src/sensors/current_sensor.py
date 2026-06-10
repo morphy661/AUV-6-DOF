@@ -24,7 +24,7 @@ class CurrentSensor:
         fault_mode:
             None
             "entangled"
-            "broken"
+            "no_output"
         """
 
         expected = self.expected_current(cmd_vz)
@@ -32,7 +32,7 @@ class CurrentSensor:
         if fault_mode == "entangled":
             measured = expected + 20.0 + np.random.normal(0.0, 2.0)
 
-        elif fault_mode == "broken":
+        elif fault_mode == "no_output":
             measured = max(0.5, expected * 0.08 + np.random.normal(0.0, 0.2))
 
         else:

@@ -7,7 +7,7 @@
              Spike     0.8440    0.9970    0.9142       673
    Increased Noise     1.0000    0.9995    0.9997      1822
 THRUSTER_ENTANGLED     1.0000    1.0000    1.0000      1489
-   THRUSTER_BROKEN     1.0000    0.9989    0.9995      1825
+THRUSTER_NO_OUTPUT     1.0000    0.9989    0.9995      1825
 
           accuracy                         0.9870     27400
          macro avg     0.9679    0.9834    0.9745     27400

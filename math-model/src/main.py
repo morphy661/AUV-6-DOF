@@ -416,7 +416,7 @@ def execute_mission(
     bias_confirm_delay = 12
     last_waypoint_change_time = -999.0
 
-    locked_fault_id = 0          # 用于锁定型故障：BIAS / DRIFT / STUCK / ENTANGLED / BROKEN
+    locked_fault_id = 0          # 用于锁定型故障：BIAS / DRIFT / STUCK / ENTANGLED / NO_OUTPUT
     soft_fault_id = 0            # 用于非锁定型持续故障：NOISE_INCREASE
     confirmed_reason = "No diagnosis has been triggered yet."
     # 安全指令缓存与时间记录
@@ -549,7 +549,7 @@ def execute_mission(
 
         # --------------------------------------------------------
         # Current Stage 3.0-A:
-        # 先只把原来的 THRUSTER_BROKEN / label 7 当作 no_output
+        # label 7 represents THRUSTER_NO_OUTPUT / no_output
         # label 6 = entangled
         # label 7 = no_output
         # 其他故障暂时不作用到 motor model
