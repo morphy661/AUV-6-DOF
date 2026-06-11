@@ -30,6 +30,9 @@ class DiagnosisConfig:
     current_near_zero_threshold: float = 0.3
     thrust_loss_ratio_threshold: float = 0.6
     current_normal_residual_threshold: float = 1.0
+    current_normal_ratio_low: float = 0.7
+    current_normal_ratio_high: float = 1.3
+    current_entangled_ratio_threshold: float = 1.4
 
     # Depth sensor thresholds
     spike_delta_threshold: float = 6.0
@@ -116,11 +119,31 @@ class DiagnosisStrategy:
             return sensor_result
 
         # 3. If no strong rule evidence is found, use AI prediction as fallback.
+        #
+        # Important:
+        # DRIFT is easy to confuse with long-route climb/descent trends, so
+        # AI-only DRIFT fallback is blocked. BIAS and STUCK are allowed as
+        # candidates here and should be debounced/confirmed in main.py.
         if ai_pred != 0:
+            ai_pred = int(ai_pred)
+
+            # Block AI-only DRIFT fallback, but do not block BIAS/STUCK.
+            if ai_pred == 2:
+                return DiagnosisResult(
+                    fault_id=0,
+                    fault_name=FAULT_NAMES[0],
+                    reason=(
+                        "AI predicted DRIFT, but no strong rule-based evidence was found. "
+                        "AI-only DRIFT fallback is blocked to avoid long-route false alarms."
+                    ),
+                    confidence="Low",
+                    source="rule_guard",
+                )
+
             return DiagnosisResult(
-                fault_id=int(ai_pred),
-                fault_name=FAULT_NAMES.get(int(ai_pred), "UNKNOWN"),
-                reason="No strong rule-based evidence; using AI classifier prediction.",
+                fault_id=ai_pred,
+                fault_name=FAULT_NAMES.get(ai_pred, "UNKNOWN"),
+                reason="No strong rule-based evidence; using AI classifier prediction as candidate.",
                 confidence="Medium",
                 source="ai_fallback",
             )
@@ -154,26 +177,38 @@ class DiagnosisStrategy:
         current_low = current_residual < cfg.current_low_threshold
         tracking_bad = tracking_error > cfg.tracking_error_thruster_threshold
         # --------------------------------------------------------
-        # Motor-equation-based NO_OUTPUT detection
+        # Motor-equation-based thruster diagnosis
+        #
+        # Priority is important:
+        #   1) NO_OUTPUT: expected thrust exists, but current and thrust are near zero.
+        #   2) ENTANGLED / overload: expected thrust exists, actual thrust is low,
+        #      and current is clearly higher than expected.
+        #   3) THRUST_LOSS: expected thrust exists, actual thrust is low,
+        #      but current stays near normal.
+        #
+        # This prevents an ENTANGLED case from being incorrectly captured by
+        # the THRUST_LOSS rule only because both cases have low actual thrust.
         # --------------------------------------------------------
         expected_thrust_active = expected_thrust_abs > cfg.expected_thrust_active_threshold
         actual_thrust_low = actual_thrust_abs < cfg.actual_thrust_low_threshold
         current_near_zero = abs(measured_current) < cfg.current_near_zero_threshold
-        #motor_fault_mode = residuals.get("motor_fault_mode", "normal")
-        #time_now = float(residuals.get("time", 0.0))
 
-        #if motor_fault_mode == "no_output" and abs(time_now % 10.0) < 0.05:
-        #   print(
-        #       "[Thruster Debug] "
-        #       f"mode={motor_fault_mode}, "
-        #       f"I={measured_current:.2f}, "
-        #       f"Iexp={expected_current:.2f}, "
-        #       f"rI={current_residual:.2f}, "
-        #       f"T={actual_thrust:.2f}, "
-        #       f"Texp={expected_thrust:.2f}, "
-        #       f"current_zero={current_near_zero}, "
-        #       f"current_source={residuals.get('current_source', 'unknown')}"
-        #   )
+        if abs(expected_current) > 1e-6:
+            current_ratio = measured_current / (expected_current + 1e-6)
+        else:
+            current_ratio = 0.0
+
+        current_high_for_entangled = (
+            current_ratio > cfg.current_entangled_ratio_threshold
+            or current_residual > cfg.current_high_threshold
+        )
+
+        current_near_normal = (
+            cfg.current_normal_ratio_low <= current_ratio <= cfg.current_normal_ratio_high
+            and abs(current_residual) < cfg.current_normal_residual_threshold
+        )
+
+        # 1) NO_OUTPUT: near-zero current + near-zero thrust.
         if expected_thrust_active and actual_thrust_low and current_near_zero:
             reason = (
                 "Thruster no-output fault: expected thrust is active, "
@@ -187,18 +222,38 @@ class DiagnosisStrategy:
                 confidence="High",
                 source="rule",
             )
-        # --------------------------------------------------------
-        # Motor-equation-based THRUST_LOSS detection
-        # --------------------------------------------------------
+
+        # 2) ENTANGLED / overload: high current + low thrust.
+        if expected_thrust_active and actual_thrust_low and current_high_for_entangled:
+            reason = (
+                "Thruster entanglement or overload-like fault: expected thrust is active, "
+                "actual thrust is very low, and motor current is higher than expected."
+            )
+            if tracking_bad:
+                reason += " Depth tracking error is also large."
+
+            return DiagnosisResult(
+                fault_id=6,
+                fault_name=FAULT_NAMES[6],
+                reason=reason,
+                confidence="High",
+                source="rule",
+            )
+
+        # 3) THRUST_LOSS: normal-like current + reduced thrust.
         thrust_ratio_low = (
-                expected_thrust_abs > cfg.expected_thrust_active_threshold
-                and actual_thrust_abs < cfg.thrust_loss_ratio_threshold * expected_thrust_abs
+            expected_thrust_abs > cfg.expected_thrust_active_threshold
+            and actual_thrust_abs < cfg.thrust_loss_ratio_threshold * expected_thrust_abs
         )
 
-        current_near_normal = abs(current_residual) < cfg.current_normal_residual_threshold
         current_not_zero = abs(measured_current) >= cfg.current_near_zero_threshold
 
-        if thrust_ratio_low and current_near_normal and current_not_zero:
+        if (
+            thrust_ratio_low
+            and current_near_normal
+            and current_not_zero
+            and not current_high_for_entangled
+        ):
             reason = (
                 "Thruster thrust-loss fault: expected thrust is active and motor current is near normal, "
                 "but actual thrust is much lower than expected. "
@@ -275,6 +330,7 @@ class DiagnosisStrategy:
         depth_series = self._extract_series(history, "depth")
         vz_series = self._extract_series(history, "actual_vz")
         depth_residual_series = self._extract_series(history, "depth_residual")
+        target_series = self._extract_series(history, "target_z")
 
         if len(depth_series) < cfg.min_history:
             return DiagnosisResult(
@@ -327,7 +383,35 @@ class DiagnosisStrategy:
         residual_diff = np.abs(np.diff(depth_residual_series))
         max_residual_step = float(np.max(residual_diff)) if len(residual_diff) > 0 else 0.0
         large_residual_diff_count = int(np.sum(residual_diff > cfg.noise_large_diff_threshold))
+        # --------------------------------------------------------------
+        # Maneuver / waypoint-transition guard
+        #
+        # In long-route missions, normal waypoint transitions or large
+        # commanded depth changes can create residual trends similar to DRIFT.
+        # This guard uses mission/control information, not fault_start_time.
+        # --------------------------------------------------------------
+        if len(target_series) > 0:
+            target_series = target_series[np.isfinite(target_series)]
+        else:
+            target_series = np.asarray([], dtype=float)
 
+        if len(target_series) >= 2:
+            target_window = target_series[-min(cfg.recent_window, len(target_series)):]
+            recent_target_change = float(abs(target_window[-1] - target_window[0]))
+            recent_target_slope = abs(self._linear_slope(target_window))
+        else:
+            recent_target_change = 0.0
+            recent_target_slope = 0.0
+
+        cmd_vz_for_guard = abs(float(residuals.get("cmd_vz", 0.0)))
+        tracking_error_for_guard = abs(float(residuals.get("tracking_error", 0.0)))
+
+        maneuver_guard_active = (
+            recent_target_change > 2.0
+            or recent_target_slope > 0.15
+            or cmd_vz_for_guard > 0.8
+            or tracking_error_for_guard > 4.0
+        )
         if len(vz_series) > 0:
             vz_series = vz_series[np.isfinite(vz_series)]
             if len(vz_series) > 0:
@@ -381,37 +465,84 @@ class DiagnosisStrategy:
             )
 
         # ------------------------------------------------------------------
-        # 2. BIAS
-        # Stable depth sensor offset.
+        # 2. BIAS / DRIFT
         #
-        # BIAS is usually a step-like offset:
-        #   - residual suddenly becomes large
-        #   - latest residual remains non-zero
-        #   - it should not be treated as gradual drift during the transient
-        #
-        # DRIFT is gradual:
-        #   - residual changes continuously over time
-        #   - no dominant single step explains the residual change
+        # Long-route missions can contain long descending / ascending segments
+        # and waypoint transitions. A DRIFT fault can initially look like BIAS,
+        # because the residual first becomes non-zero and then keeps changing.
+        # Therefore, we first estimate whether the current residual pattern is
+        # trend-like. If a clear trend exists, DRIFT should have priority over
+        # BIAS confirmation.
         # ------------------------------------------------------------------
         early_drift_like = (
-                len(depth_residual_series) >= cfg.drift_min_samples
-                and latest_abs_residual > cfg.bias_residual_threshold
-                and abs(recent_residual_slope) > cfg.bias_max_slope_threshold
-                and recent_residual_range > 1.5
-                and max_residual_step <= cfg.bias_step_threshold
+            len(depth_residual_series) >= cfg.drift_min_samples
+            and latest_abs_residual > cfg.bias_residual_threshold
+            and abs(recent_residual_slope) > cfg.bias_max_slope_threshold
+            and recent_residual_range > 1.5
+            and max_residual_step <= cfg.bias_step_threshold
         )
 
-       #if early_drift_like:
-       #    return DiagnosisResult(
-       #        fault_id=2,
-       #        fault_name=FAULT_NAMES[2],
-       #        reason=(
-       #            "Drift: residual is changing continuously, so BIAS confirmation "
-       #            "is blocked."
-       #        ),
-       #        confidence="Medium",
-       #        source="rule",
-       #    )
+        gradual_drift_like = (
+            len(depth_residual_series) >= cfg.drift_min_samples
+            and latest_abs_residual > cfg.drift_recent_residual_threshold
+            and abs(recent_residual_slope) > cfg.drift_slope_threshold
+            and recent_residual_range > cfg.drift_min_recent_range
+            and residual_range > cfg.drift_residual_range_threshold
+            and max_residual_step <= cfg.bias_step_threshold
+        )
+
+        ai_drift_supported = (
+            ai_pred == 2
+            and latest_abs_residual > cfg.drift_recent_residual_threshold
+            and recent_abs_mean > cfg.bias_recent_residual_threshold
+            and recent_residual_range > cfg.drift_min_recent_range
+            and residual_range > cfg.drift_residual_range_threshold
+            and max_residual_step <= cfg.bias_step_threshold
+        )
+
+        # DRIFT can be confirmed by a clear residual trend.
+        # AI support is helpful but not mandatory, because true DRIFT may cause
+        # the controller state to deviate so much that the AI classifier becomes unreliable.
+        # False alarms should be handled by the debounce/guard logic in main.py.
+        drift_confirmed = (
+            gradual_drift_like
+            or ai_drift_supported
+        )
+
+        if drift_confirmed:
+            return DiagnosisResult(
+                fault_id=2,
+                fault_name=FAULT_NAMES[2],
+                reason=(
+                    "Drift: AI predicts DRIFT and the depth residual shows "
+                    "a continuous increasing or decreasing trend."
+                ),
+                confidence="High",
+                source="rule",
+            )
+
+        # A weaker trend should not be immediately confirmed as DRIFT, but it
+        # must block BIAS locking so that DRIFT has more time to develop.
+        # Only block BIAS locking when AI also suggests DRIFT.
+        # Otherwise normal route tracking or BIAS transient may be incorrectly
+        # treated as drift-like.
+        drift_like_before_bias = (
+                ai_pred == 2
+                and (
+                        early_drift_like
+                        or gradual_drift_like
+                        or (
+                                len(depth_residual_series) >= cfg.drift_min_samples
+                                and latest_abs_residual > cfg.bias_residual_threshold
+                                and (
+                                        abs(recent_residual_slope) > 0.08
+                                        or recent_residual_range > 1.5
+                                )
+                                and max_residual_step <= cfg.bias_step_threshold
+                        )
+                )
+        )
+
         bias_step_like = (
             latest_abs_residual > cfg.bias_residual_threshold
             and max_residual_step > cfg.bias_step_threshold
@@ -427,58 +558,24 @@ class DiagnosisStrategy:
         )
 
         # AI=1 is allowed to support BIAS only when the residual is clearly
-        # non-zero. This prevents AI-only transient noise from forcing BIAS.
+        # non-zero and the residual trend is not drift-like. This prevents
+        # AI-supported BIAS from locking too early in a DRIFT case.
         bias_ai_supported = (
             ai_pred == 1
             and latest_abs_residual > cfg.bias_residual_threshold
             and recent_abs_mean > cfg.bias_recent_residual_threshold
         )
 
-        if (bias_step_like or bias_stable_like or bias_ai_supported) and not early_drift_like:
+        if (
+                (bias_step_like or bias_stable_like or bias_ai_supported)
+                and not drift_like_before_bias
+        ):
             return DiagnosisResult(
                 fault_id=1,
                 fault_name=FAULT_NAMES[1],
                 reason=(
                     "Bias: depth residual has a persistent non-zero offset "
                     "without a gradual drift trend."
-                ),
-                confidence="High",
-                source="rule",
-            )
-
-        # ------------------------------------------------------------------
-        # 3. DRIFT
-        # Continuous depth sensor drift.
-        #
-        # To avoid misclassifying BIAS as DRIFT, DRIFT is only accepted when
-        # the residual trend is gradual and cannot be explained by one large
-        # step-like bias jump.
-        # ------------------------------------------------------------------
-        gradual_drift_like = (
-            len(depth_residual_series) >= cfg.drift_min_samples
-            and latest_abs_residual > cfg.drift_recent_residual_threshold
-            and abs(recent_residual_slope) > cfg.drift_slope_threshold
-            and recent_residual_range > cfg.drift_min_recent_range
-            and residual_range > cfg.drift_residual_range_threshold
-            and max_residual_step <= cfg.bias_step_threshold
-        )
-
-        ai_drift_supported = (
-                ai_pred == 2
-                and latest_abs_residual > cfg.drift_recent_residual_threshold
-                and recent_abs_mean > cfg.bias_recent_residual_threshold
-                and recent_residual_range > cfg.drift_min_recent_range
-                and residual_range > cfg.drift_residual_range_threshold
-                and max_residual_step <= cfg.bias_step_threshold
-        )
-
-        if gradual_drift_like or ai_drift_supported:
-            return DiagnosisResult(
-                fault_id=2,
-                fault_name=FAULT_NAMES[2],
-                reason=(
-                    "Drift: depth residual shows a continuous increasing "
-                    "or decreasing trend."
                 ),
                 confidence="High",
                 source="rule",
@@ -572,7 +669,12 @@ class DiagnosisStrategy:
 
             elif key == "actual_vz":
                 value = item.get("thruster", {}).get("actual_vz")
-
+            elif key == "target_z":
+                value = item.get("target_z")
+                if value is None:
+                    value = item.get("target_depth")
+                if value is None:
+                    value = item.get("target")
             elif key in ["depth_residual", "tracking_error", "velocity_residual", "current_residual"]:
                 value = item.get("residuals", {}).get(key)
 

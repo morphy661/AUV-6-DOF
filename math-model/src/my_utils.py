@@ -15,9 +15,86 @@ label_names = {
     3: "Stuck",
     4: "Spike",
     5: "Increased Noise",
-    6: "THRUSTER_ENTANGLED",  # 故障 6：海草缠绕
-    7: "THRUSTER_NO_OUTPUT"
+    6: "THRUSTER_ENTANGLED",  # Training/raw class 6: entanglement cause
+    7: "THRUSTER_NO_OUTPUT",
+    8: "THRUSTER_THRUST_LOSS",
 }
+
+
+# =========================================================
+# FTC / monitoring-level display mapping
+# =========================================================
+# Training and confusion-matrix analysis still use the raw 9 classes above.
+# For FTC monitoring, plots, and reports, raw class 6 (entanglement cause)
+# and raw class 8 (thrust loss symptom) are merged into the same control-level
+# class: THRUSTER_THRUST_LOSS.
+FTC_LABEL_NAMES = {
+    0: "Normal",
+    1: "Bias",
+    2: "Drift",
+    3: "Stuck",
+    4: "Spike",
+    5: "Increased Noise",
+    6: "THRUSTER_THRUST_LOSS",
+    7: "THRUSTER_NO_OUTPUT",
+}
+
+
+def merge_fault_for_monitoring_and_ftc(fault_id):
+    """Map raw 9-class fault IDs to FTC / monitoring-level IDs."""
+    try:
+        fid = int(fault_id)
+    except (TypeError, ValueError):
+        return fault_id
+
+    if fid in [6, 8]:
+        return 6
+    return fid
+
+
+def merge_fault_array_for_display(values):
+    """Vectorized version of merge_fault_for_monitoring_and_ftc for plots."""
+    arr = np.asarray(values).copy()
+    arr = np.where(np.isin(arr, [6, 8]), 6, arr)
+    return arr
+
+
+def canonical_fault_name_for_display(fault_name):
+    """Return the FTC / monitoring-level name used in figures and reports."""
+    text = "" if fault_name is None else str(fault_name)
+    name = text.upper().replace(" ", "_")
+
+    if "ENTANGLED" in name or "THRUST_LOSS" in name:
+        return "THRUSTER_THRUST_LOSS"
+
+    if "NO_OUTPUT" in name:
+        return "THRUSTER_NO_OUTPUT"
+
+    return text
+
+
+def get_candidate_raw_fault_ids_for_display_name(fault_name):
+    """Return raw 9-class IDs that correspond to a displayed FTC fault name."""
+    name = str(fault_name).upper().replace(" ", "_")
+
+    if "NO_FAULT" in name or "NORMAL" in name:
+        return [0]
+    if "BIAS" in name:
+        return [1]
+    if "DRIFT" in name:
+        return [2]
+    if "STUCK" in name:
+        return [3]
+    if "SPIKE" in name:
+        return [4]
+    if "NOISE" in name:
+        return [5]
+    if "ENTANGLED" in name or "THRUST_LOSS" in name:
+        return [6, 8]
+    if "NO_OUTPUT" in name:
+        return [7]
+
+    return []
 
 
 # ===============================
@@ -146,7 +223,7 @@ def plot_fault_examples(data, labels, label_names_dict=label_names, n_samples=3,
     os.makedirs(save_dir, exist_ok=True)
 
     # 核心修复：换成你本地正确的绝对路径！
-    std_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std.npy"
+    std_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage3_9class.npy"
     std_arr = np.load(std_path)
     s_depth = std_arr[0]  # 第 0 维是深度
 
@@ -196,8 +273,8 @@ def plot_residual_examples(data, true_data, labels, label_names_dict=label_names
 
     # 换成你本地正确的绝对路径！
     base_dir = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results"
-    mean_arr = np.load(os.path.join(base_dir, "mean.npy"))
-    std_arr = np.load(os.path.join(base_dir, "std.npy"))
+    mean_arr = np.load(os.path.join(base_dir, "mean_stage3_9class.npy"))
+    std_arr = np.load(os.path.join(base_dir, "std_stage3_9class.npy"))
     m_depth, s_depth = mean_arr[0], std_arr[0]
 
     if torch.is_tensor(data): data = data.cpu().numpy()
@@ -272,6 +349,15 @@ def format_ftc_action_for_display(action_text, final_fault_name=None):
         action_text = ""
 
     action_text = str(action_text)
+    display_fault_name = canonical_fault_name_for_display(final_fault_name).upper()
+
+    # FTC / monitoring-level merge: raw entanglement and thrust-loss cases
+    # are reported with one unified thrust-loss recovery action.
+    if "THRUSTER_THRUST_LOSS" in display_fault_name:
+        return "Degraded Thrust Mode + Controlled Emergency Ascent + Acoustic Beacon"
+
+    if "THRUSTER_NO_OUTPUT" in display_fault_name:
+        return "Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon"
 
     if "Power Cut" in action_text and "USV Winch Recovery" in action_text:
         return "Power Cut + Emergency Buoyancy Ascent + Acoustic Beacon"
@@ -340,18 +426,19 @@ def build_diagnosis_basis(final_fault_name):
             "FTC: activate adaptive smoothing filter."
         )
 
-    if "ENTANGLED" in name:
+    if "ENTANGLED" in name or "THRUST_LOSS" in name:
         return (
-            "Criterion: high cmd_vz + low DVL_vz + current higher than expected.\n"
-            "Sources: DVL velocity + motor current sensor."
+            "Criterion: commanded thrust is active, but the effective thrust / "
+            "velocity response is lower than expected.\n"
+            "Possible causes: entanglement, propeller damage, efficiency loss, "
+            "biofouling, or duct/guard-induced thrust reduction."
         )
 
     if "NO_OUTPUT" in name:
         return (
-            "Criterion: high cmd_vz + low DVL_vz + current lower than expected.\n"
+            "Criterion: high cmd_vz + near-zero thrust / current response.\n"
             "Sources: DVL velocity + motor current sensor."
         )
-
     return "Criterion: AI-rule fused diagnosis."
 
 
@@ -408,13 +495,22 @@ def get_diagnosis_evidence_recovery_codes(final_fault_name, action_text=None):
     if "NOISE" in name:
         return "D5", "E5", "R2"
 
-    if "NO_OUTPUT" in name:
-        return "D7", "E6", "R3"
+    if "ENTANGLED" in name or "THRUST_LOSS" in name:
+        return "D6", "E6", "R4"
 
-    if "ENTANGLED" in name:
-        return "D6", "E6", "R3"
+    if "NO_OUTPUT" in name:
+        return "D7", "E7", "R3"
 
     return "D?", "E?", "R?"
+# FTC / monitoring-level codes:
+# D6 = THRUSTER_THRUST_LOSS  (merged raw 6 THRUSTER_ENTANGLED + raw 8 THRUSTER_THRUST_LOSS)
+# D7 = THRUSTER_NO_OUTPUT
+#
+# E6 = Commanded thrust is active, but effective thrust / velocity response is reduced
+# E7 = Near-zero thrust/current output despite command demand
+#
+# R3 = Power cut + emergency buoyancy ascent + acoustic beacon
+# R4 = Degraded thrust mode + controlled emergency ascent + acoustic beacon
 
 # =========================================================
 # 6. 论文/汇报专用：容错控制 (FTC) 动态响应曲线
@@ -425,6 +521,9 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
     豪华版 FTC 响应曲线绘制（带 AI 诊断信息面板）
     """
     times = [log["time"] for log in logs]
+    display_true_fault_name = canonical_fault_name_for_display(true_fault_name)
+    display_ai_diagnosis = canonical_fault_name_for_display(ai_diagnosis)
+    display_ai_action = format_ftc_action_for_display(ai_action, display_ai_diagnosis)
 
     # 🌟 终极修复：去掉了负号！直接读取 true_depth 保证 100% 同频
     true_depths = [log["true_depth"] for log in logs]
@@ -452,9 +551,9 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
     info_text = (
         f"[ Mission Report ]\n"
         f"------------------------\n"
-        f" True Fault : {true_fault_name}\n"
-        f" AI Predict : {ai_diagnosis}\n"
-        f" FTC Action : {format_ftc_action_for_display(ai_action, ai_diagnosis)}"
+        f" True Fault : {display_true_fault_name}\n"
+        f" AI Predict : {display_ai_diagnosis}\n"
+        f" FTC Action : {display_ai_action}"
     )
 
     # 使用 bbox 添加一个半透明的文本框
@@ -474,7 +573,7 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
         # 偷偷在图例里加一个标签，这样别人才知道这绿线是什么意思
         plt.plot([], [], color='limegreen', linestyle=':', linewidth=1.5, label='SPIKE Filtered by AI')
 
-    plt.title(f"Fault-Tolerant Control (FTC) Response - {true_fault_name}", fontsize=16, fontweight='bold')
+    plt.title(f"Fault-Tolerant Control (FTC) Response - {display_true_fault_name}", fontsize=16, fontweight='bold')
     plt.xlabel("Mission Time (s)", fontsize=12)
     plt.ylabel("Depth (m)", fontsize=12)
     plt.grid(True, linestyle="--", alpha=0.6)
@@ -507,6 +606,10 @@ def plot_ftc_diagnosis_response(
     if logs is None or len(logs) == 0:
         print("No logs to plot.")
         return
+
+    display_true_fault_name = canonical_fault_name_for_display(true_fault_name)
+    display_ai_diagnosis = canonical_fault_name_for_display(ai_diagnosis)
+    display_ai_action = format_ftc_action_for_display(ai_action, display_ai_diagnosis)
 
     times = np.array([log.get("time", 0.0) for log in logs])
 
@@ -561,20 +664,28 @@ def plot_ftc_diagnosis_response(
     # =========================================================
     # 4. Diagnosis data
     # =========================================================
-    ai_pred = np.array([
+    ai_pred_raw = np.array([
         log.get("ai_pred", 0)
         for log in logs
     ])
 
-    rule_pred = np.array([
+    rule_pred_raw = np.array([
         log.get("rule_pred", 0)
         for log in logs
     ])
 
-    final_pred = np.array([
+    final_pred_raw = np.array([
         log.get("final_pred", 0)
         for log in logs
     ])
+
+    # FTC / monitoring-level display merge:
+    # raw 6 (entanglement) and raw 8 (thrust loss) are shown together as
+    # THRUSTER_THRUST_LOSS. Training/evaluation utilities above still use
+    # raw 9-class labels.
+    ai_pred = merge_fault_array_for_display(ai_pred_raw)
+    rule_pred = merge_fault_array_for_display(rule_pred_raw)
+    final_pred = merge_fault_array_for_display(final_pred_raw)
 
     ftc_locked = np.array([
         1 if log.get("ftc_is_locked", False) else 0
@@ -586,25 +697,11 @@ def plot_ftc_diagnosis_response(
     # =========================================================
     final_reason = "No strong diagnosis reason recorded."
 
-    # Convert final diagnosis name to fault id.
-    # Use upper() so "Spike", "spike", and "SPIKE" can all be recognized.
-    name_to_id = {
-        "NO_FAULT": 0,
-        "NORMAL": 0,
-        "BIAS": 1,
-        "DRIFT": 2,
-        "STUCK": 3,
-        "SPIKE": 4,
-        "NOISE": 5,
-        "NOISE_INCREASE": 5,
-        "INCREASED NOISE": 5,
-        "ENTANGLED": 6,
-        "THRUSTER_ENTANGLED": 6,
-        "NO_OUTPUT": 7,
-        "THRUSTER_NO_OUTPUT": 7,
-    }
-
-    target_fault_id = name_to_id.get(str(ai_diagnosis).upper(), None)
+    # Convert final diagnosis name to one or more raw 9-class fault ids.
+    # THRUSTER_ENTANGLED and THRUSTER_THRUST_LOSS are merged only for FTC /
+    # monitoring display, so the reason lookup accepts both raw IDs [6, 8].
+    target_fault_ids = get_candidate_raw_fault_ids_for_display_name(display_ai_diagnosis)
+    target_fault_id = target_fault_ids[0] if len(target_fault_ids) > 0 else None
 
     invalid_reasons = [
         "",
@@ -618,7 +715,11 @@ def plot_ftc_diagnosis_response(
         matched_reasons = [
             log.get("diagnosis_reason", "")
             for log in logs
-            if log.get("final_pred", 0) == target_fault_id
+            if (
+                log.get("final_pred", 0) in target_fault_ids
+                or merge_fault_for_monitoring_and_ftc(log.get("final_pred", 0))
+                == merge_fault_for_monitoring_and_ftc(target_fault_id)
+            )
             and log.get("diagnosis_reason", "") not in invalid_reasons
         ]
 
@@ -631,7 +732,11 @@ def plot_ftc_diagnosis_response(
         matched_reasons = [
             log.get("diagnosis_reason", "")
             for log in logs
-            if log.get("rule_pred", 0) == target_fault_id
+            if (
+                log.get("rule_pred", 0) in target_fault_ids
+                or merge_fault_for_monitoring_and_ftc(log.get("rule_pred", 0))
+                == merge_fault_for_monitoring_and_ftc(target_fault_id)
+            )
             and log.get("diagnosis_reason", "") not in invalid_reasons
         ]
 
@@ -664,7 +769,7 @@ def plot_ftc_diagnosis_response(
     )
 
     fig.suptitle(
-        f"Enhanced FTC Diagnosis and Recovery Response - {true_fault_name}",
+        f"Enhanced FTC Diagnosis and Recovery Response - {display_true_fault_name}",
         fontsize=16,
         fontweight="bold"
     )
@@ -740,7 +845,7 @@ def plot_ftc_diagnosis_response(
     #   0 = recovery mode OFF
     #   1 = recovery mode ON
     # It is plotted at y=8 only to make it visible together with fault IDs 0-7.
-    FTC_LOCK_VIS_LEVEL = 8
+    FTC_LOCK_VIS_LEVEL = max(FTC_LABEL_NAMES.keys()) + 1
 
     axes[3].step(
         times,
@@ -758,8 +863,8 @@ def plot_ftc_diagnosis_response(
 
     # Left y-axis: diagnosis classes
     axes[3].set_ylim(-0.5, FTC_LOCK_VIS_LEVEL + 0.5)
-    axes[3].set_yticks(list(label_names.keys()))
-    axes[3].set_yticklabels([label_names[i] for i in label_names.keys()], fontsize=8)
+    axes[3].set_yticks(list(FTC_LABEL_NAMES.keys()))
+    axes[3].set_yticklabels([FTC_LABEL_NAMES[i] for i in FTC_LABEL_NAMES.keys()], fontsize=8)
 
     # Add a small visual explanation inside the plot
     axes[3].text(
@@ -840,18 +945,18 @@ def plot_ftc_diagnosis_response(
     # Text box: compact mission report using diagnosis codes
     # =========================================================
     diagnosis_code, evidence_code, recovery_code = get_diagnosis_evidence_recovery_codes(
-        ai_diagnosis,
-        ai_action
+        display_ai_diagnosis,
+        display_ai_action
     )
 
     # If final diagnosis is normal, avoid showing an old transient reason.
-    if str(ai_diagnosis).upper() in ["NO_FAULT", "NORMAL"]:
+    if str(display_ai_diagnosis).upper() in ["NO_FAULT", "NORMAL"]:
         final_reason = "All residuals are within normal thresholds."
 
     info_text = (
         f"[Mission Report]\n"
-        f"True Fault: {true_fault_name}\n"
-        f"Final Diagnosis: {ai_diagnosis}\n"
+        f"True Fault: {display_true_fault_name}\n"
+        f"Final Diagnosis: {display_ai_diagnosis}\n"
         f"Diagnosis Code: {diagnosis_code}\n"
         f"Evidence Code: {evidence_code}\n"
         f"Recovery Code: {recovery_code}"

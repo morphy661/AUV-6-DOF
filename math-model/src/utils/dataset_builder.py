@@ -19,7 +19,7 @@ def build_sequences(
     """
     Build sequence samples from simulator sensor logs.
 
-    Stage 2 feature setting:
+    Stage 3 9-class feature setting:
         raw feature dimension = 20
         after adding first-order temporal differences = 40
 
@@ -39,7 +39,7 @@ def build_sequences(
     y = []
 
     # ======================================================
-    # 1. Extract Stage-2 multi-sensor features and labels
+    # 1. Extract Stage-3 multi-sensor features and labels
     # ======================================================
     feature_list = []
     labels = []
@@ -173,7 +173,7 @@ def build_sequences(
 
 def preprocess_dataset(X, epsilon=1e-8):
     """
-    Stage-2 multi-sensor preprocessing.
+    Stage-3 9-class multi-sensor preprocessing.
 
     X initial shape:
         (N, 50, 20)

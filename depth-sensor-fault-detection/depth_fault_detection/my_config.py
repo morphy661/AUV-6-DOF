@@ -4,8 +4,8 @@ import torch
 # ===============================
 # 模型参数
 # ===============================
-INPUT_DIM = 40      # Stage 2: 20 raw features + 20 first-order difference features
-NUM_CLASSES = 8     # 8-class fault diagnosis
+INPUT_DIM = 40      # 20 raw features + 20 first-order difference features
+NUM_CLASSES = 9     # Stage 3: 9-class fault diagnosis
 SEQ_LEN = 50        # Time window length
 
 # ===============================
@@ -13,11 +13,11 @@ SEQ_LEN = 50        # Time window length
 # ===============================
 BATCH_SIZE = 256
 
-# Stage 2 dataset is larger and feature dimension is higher.
+# Stage 3 dataset is larger and feature dimension is higher.
 # 60 epochs is acceptable, but early stopping can be added later.
 EPOCHS = 35
 
-# Recommended learning rate for Bi-LSTM + Attention on Stage 2 multi-sensor data.
+# Recommended learning rate for Bi-LSTM + Attention on Stage 3 multi-sensor data.
 # 0.001 can train fast, but 3e-4 is usually more stable.
 LR = 3e-4
 

@@ -107,6 +107,14 @@ class Simulator:
             actual_vz = float(self.auv.velocity[2])
             motor_current = base_current + current_noise + 0.5
 
+        elif current_fault_label == 8:
+            # THRUSTER_THRUST_LOSS:
+            # Electrical behavior stays near normal, but useful thrust and
+            # resulting vertical velocity are substantially reduced.
+            self.auv.velocity[2] *= 0.45
+            actual_vz = float(self.auv.velocity[2])
+            motor_current = expected_current + current_noise
+
         # ===============================
         # 5. Build basic sensor packet
         # ===============================
@@ -171,6 +179,8 @@ class Simulator:
                 fault_mode = "entangled"
             elif current_fault_label == 7:
                 fault_mode = "no_output"
+            elif current_fault_label == 8:
+                fault_mode = "thrust_loss"
 
             current_data = self.current_sensor.read(
                 cmd_vz=cmd_vz,

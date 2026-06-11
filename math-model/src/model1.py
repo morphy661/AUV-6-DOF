@@ -26,7 +26,7 @@ class AUVFaultDetector(nn.Module):
             self,
             input_dim=40,
             seq_len=50,
-            num_classes=8,
+            num_classes=9,
             hidden_size=128,
             num_layers=2,
             lstm_dropout=0.3,
@@ -93,7 +93,7 @@ class AUVFaultDetector(nn.Module):
             [B, 50, 40]
 
         Output shape:
-            [B, 8]
+            [B, 9]
         """
 
         if x.dim() != 3:

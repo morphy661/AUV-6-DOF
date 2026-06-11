@@ -3,6 +3,34 @@ from matplotlib.animation import FuncAnimation
 import os
 import matplotlib.pyplot as plt
 
+
+# FTC / monitoring display mapping.
+# Raw training labels still distinguish 6=ENTANGLED and 8=THRUST_LOSS,
+# but figures and videos merge both as THRUSTER_THRUST_LOSS.
+def get_monitoring_fault_display_name(fault_value):
+    try:
+        fault_id = int(fault_value)
+    except (TypeError, ValueError):
+        name = str(fault_value)
+        if name in ["THRUSTER_ENTANGLED", "ENTANGLED", "THRUSTER_THRUST_LOSS", "THRUST_LOSS"]:
+            return "THRUSTER_THRUST_LOSS"
+        if name in ["THRUSTER_NO_OUTPUT", "NO_OUTPUT", "BROKEN"]:
+            return "THRUSTER_NO_OUTPUT"
+        return name
+
+    fault_map = {
+        0: "NO_FAULT",
+        1: "BIAS",
+        2: "DRIFT",
+        3: "STUCK",
+        4: "SPIKE",
+        5: "NOISE_INCREASE",
+        6: "THRUSTER_THRUST_LOSS",
+        7: "THRUSTER_NO_OUTPUT",
+        8: "THRUSTER_THRUST_LOSS",
+    }
+    return fault_map.get(fault_id, "NO_FAULT")
+
 # 核心：手动指定 ffmpeg 的绝对路径
 plt.rcParams[
     'animation.ffmpeg_path'] = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\ffmpeg.exe"
@@ -54,25 +82,25 @@ def visualize_trajectory(trajectory: np.ndarray, visited_waypoints: np.ndarray =
     if fault_idx is not None and fault_idx < len(trajectory) and true_fault_name != "NO_FAULT":
         fx, fy, fz = trajectory[fault_idx]
         ax.scatter(fx, fy, fz, c='darkorange', marker='X', s=200, label='Fault Injected')
-        ax.text(fx, fy, fz + 20, f' {true_fault_name}\n@{fault_time:.1f}s', color='darkorange', fontweight='bold')
+        ax.text(fx, fy, fz + 20, f' {get_monitoring_fault_display_name(true_fault_name)}\n@{fault_time:.1f}s', color='darkorange', fontweight='bold')
 
     if ai_idx is not None and ai_idx < len(trajectory) and ai_diagnosis not in [None, "NO_FAULT"]:
         ai_x, ai_y, ai_z = trajectory[ai_idx]
         ax.scatter(ai_x, ai_y, ai_z, c='red', marker='P', s=200, label='AI Intervention')
-        ax.text(ai_x, ai_y, ai_z - 30, f' AI: {ai_diagnosis}\n@{ai_time:.1f}s', color='red', fontweight='bold')
+        ax.text(ai_x, ai_y, ai_z - 30, f' AI: {get_monitoring_fault_display_name(ai_diagnosis)}\n@{ai_time:.1f}s', color='red', fontweight='bold')
 
     # ==========================================
     # 🌟 4. 信息牌
     # ==========================================
     info_str = "=== FTC Mission Summary ===\n"
     if true_fault_name and true_fault_name != "NO_FAULT":
-        info_str += f"Target Fault : [{true_fault_name}]\n"
+        info_str += f"Target Fault : [{get_monitoring_fault_display_name(true_fault_name)}]\n"
         info_str += f"Occurred At  : {fault_time:.1f} s\n"
     else:
         info_str += "Mission Status : Normal Cruising\n"
 
     if ai_diagnosis and ai_diagnosis != "NO_FAULT":
-        info_str += f"AI Diagnosis : [{ai_diagnosis}]\n"
+        info_str += f"AI Diagnosis : [{get_monitoring_fault_display_name(ai_diagnosis)}]\n"
         if ai_time is not None:
             info_str += f"Intervention : {ai_time:.1f} s\n"
             delay = ai_time - fault_time if fault_time is not None else 0
@@ -232,7 +260,7 @@ def animate_trajectory(
     # Use one range for logic and another smaller range for visual clarity.
     # This avoids a huge circle covering the whole figure.
     communication_range = 800.0      # Real acoustic-link logic range.
-    display_comm_range = 60       # Visual support-zone radius shown in the plot.
+    display_comm_range = 180.0       # Visual support-zone radius shown in the plot.
 
     # ======================================================
     # 2. Figure / ocean scene
@@ -274,91 +302,37 @@ def animate_trajectory(
     # ======================================================
     # 3. Waypoints and planned route
     # ======================================================
-    # ======================================================
-    # Dynamic waypoint display:
-    # Only show the current target waypoint and a few future waypoints.
-    # Reached waypoints are automatically hidden during animation.
-    # ======================================================
-    waypoints_np = None
-    waypoint_markers = []
-    waypoint_labels = []
-    waypoint_reach_frames = []
-    preview_waypoint_count = 3  # current target + next 3 waypoints
-
-    planned_route_line = None
-
     if waypoints is not None:
-        waypoints_np = np.array(waypoints, dtype=float)
+        waypoints_np = np.array(waypoints)
 
         if waypoints_np.ndim == 2 and waypoints_np.shape[0] > 1:
-            # Dynamic remaining planned route line.
-            # It will be updated in update(frame).
-            planned_route_line, = ax.plot(
+            ax.plot(
                 waypoints_np[:, 0],
                 waypoints_np[:, 1],
                 waypoints_np[:, 2],
                 linestyle="--",
                 color="#FFD54F",
-                linewidth=2.8,
-                alpha=0.95,
-                label="Waypoint Connection"
+                linewidth=3.0,
+                alpha=0.98,
+                label="Planned Route"
             )
 
-            # Estimate when each waypoint is reached.
-            # Use sequential search to avoid the final return-to-origin waypoint
-            # being incorrectly detected at frame 0.
-            search_start = 0
-            wp_reach_radius = 12.0
-            wp_fallback_radius = 35.0
-
-            for wp in waypoints_np:
-                if search_start >= len(trajectory):
-                    waypoint_reach_frames.append(None)
-                    continue
-
-                segment = trajectory[search_start:]
-                distances = np.linalg.norm(segment[:, :3] - wp[:3], axis=1)
-
-                candidates = np.where(distances <= wp_reach_radius)[0]
-
-                if len(candidates) > 0:
-                    reach_frame = search_start + int(candidates[0])
-                    waypoint_reach_frames.append(reach_frame)
-                    search_start = reach_frame + 1
-                else:
-                    closest_local = int(np.argmin(distances))
-                    closest_dist = float(distances[closest_local])
-
-                    if closest_dist <= wp_fallback_radius:
-                        reach_frame = search_start + closest_local
-                        waypoint_reach_frames.append(reach_frame)
-                        search_start = reach_frame + 1
-                    else:
-                        waypoint_reach_frames.append(None)
-
-            # Create waypoint artists, initially hidden.
             for i, wp in enumerate(waypoints_np, start=1):
-                marker = ax.scatter(
+                ax.scatter(
                     wp[0], wp[1], wp[2],
-                    c="#FFD54F",
+                    c="#FFEB3B",
                     marker="^",
-                    s=95,
+                    s=125,
                     edgecolors="black",
-                    linewidths=0.6,
-                    visible=True
+                    linewidths=0.6
                 )
-
-                label = ax.text(
+                ax.text(
                     wp[0], wp[1], wp[2],
                     f" WP{i}",
-                    color="#FFE082",
+                    color="#FFF59D",
                     fontsize=8,
-                    fontweight="bold",
-                    visible=True
+                    fontweight="bold"
                 )
-
-                waypoint_markers.append(marker)
-                waypoint_labels.append(label)
 
     if destination is not None:
         ax.scatter(
@@ -550,13 +524,15 @@ def animate_trajectory(
         text.set_color("white")
 
     fault_map = {
+        0: "NO_FAULT",
         1: "BIAS",
         2: "DRIFT",
         3: "STUCK",
         4: "SPIKE",
-        5: "NOISE",
-        6: "ENTANGLED",
-        7: "NO_OUTPUT"
+        5: "NOISE_INCREASE",
+        6: "THRUSTER_THRUST_LOSS",
+        7: "THRUSTER_NO_OUTPUT",
+        8: "THRUSTER_THRUST_LOSS",
     }
 
     # ======================================================
@@ -585,7 +561,8 @@ def animate_trajectory(
         if sensor_logs is not None and frame < len(sensor_logs):
             log = sensor_logs[frame]
             fault_label = log.get("fault_label", 0)
-            display_pred = log.get("ftc_diagnosis", "NO_FAULT")
+            display_pred = log.get("ftc_fault_name", log.get("ftc_diagnosis", "NO_FAULT"))
+            display_pred = get_monitoring_fault_display_name(display_pred)
             action_name = log.get("ftc_action", "NORMAL OPERATION")
             is_locked = log.get("ftc_is_locked", False)
             target_z = log.get("target_z", None)
@@ -604,57 +581,7 @@ def animate_trajectory(
 
         line_done.set_data(x[:frame], y[:frame])
         line_done.set_3d_properties(z[:frame])
-        # ======================================================
-        # Update dynamic waypoint display
-        # ======================================================
-        current_wp_text = "N/A"
 
-        if waypoints_np is not None and planned_route_line is not None:
-            reached_indices = [
-                idx for idx, reach_frame in enumerate(waypoint_reach_frames)
-                if reach_frame is not None and frame >= reach_frame
-            ]
-
-            if len(reached_indices) > 0:
-                current_wp_idx = max(reached_indices) + 1
-            else:
-                current_wp_idx = 0
-
-            current_wp_idx = min(current_wp_idx, len(waypoints_np) - 1)
-
-            # Show only current target waypoint and several future waypoints.
-            visible_start = current_wp_idx
-            visible_end = min(len(waypoints_np), current_wp_idx + preview_waypoint_count)
-
-            # Update remaining planned route.
-            remaining_route = waypoints_np[visible_start:]
-
-            if len(remaining_route) > 0:
-                planned_route_line.set_data(
-                    remaining_route[:, 0],
-                    remaining_route[:, 1]
-                )
-                planned_route_line.set_3d_properties(remaining_route[:, 2])
-            else:
-                planned_route_line.set_data([], [])
-                planned_route_line.set_3d_properties([])
-
-            # Hide reached waypoints and distant future waypoints.
-            for idx, (marker, label) in enumerate(zip(waypoint_markers, waypoint_labels)):
-                is_visible = visible_start <= idx < visible_end
-
-                marker.set_visible(is_visible)
-                label.set_visible(is_visible)
-
-                # Highlight the current target waypoint.
-                if is_visible and idx == current_wp_idx:
-                    marker.set_sizes([180])
-                    label.set_fontsize(10)
-                elif is_visible:
-                    marker.set_sizes([95])
-                    label.set_fontsize(8)
-
-            current_wp_text = f"WP{current_wp_idx + 1}/{len(waypoints_np)}"
         if is_locked:
             line_done.set_color("#FF1744")
         elif display_pred == "NOISE":
@@ -712,14 +639,13 @@ def animate_trajectory(
                 ai_marker._offsets3d = ([x[ai_idx]], [y[ai_idx]], [z[ai_idx]])
                 ai_text.set_visible(True)
 
-        fault_name = fault_map.get(fault_label, "NO_FAULT")
+        fault_name = fault_map.get(fault_label, get_monitoring_fault_display_name(fault_label))
         target_text = f"{target_z:.2f} m" if target_z is not None else "N/A"
         error_text = f"{tracking_error:.2f} m" if tracking_error is not None else "N/A"
         locked_text = "YES" if is_locked else "NO"
 
         info_text.set_text(
             f"Mission Time: {time:.1f} s\n"
-            f"Current Target: {current_wp_text}\n"
             f"Depth: {z[frame]:.2f} m\n"
             f"Target Depth: {target_text}\n"
             f"Tracking Error: {error_text}\n"

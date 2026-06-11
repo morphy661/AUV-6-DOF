@@ -5,12 +5,12 @@ import torch.nn.functional as F
 
 class AUVFaultDetector(nn.Module):
     """
-    Stage-2 multi-sensor AUV fault diagnosis model.
+    Stage-3 9-class multi-sensor AUV fault diagnosis model.
 
     Input:
         x shape = [batch_size, seq_len, input_dim]
 
-    For the current Stage-2 dataset:
+    For the current Stage-3 dataset:
         raw features: 20
         raw + first-order temporal difference: 40
         therefore input_dim = 40
@@ -26,7 +26,7 @@ class AUVFaultDetector(nn.Module):
             self,
             input_dim=40,
             seq_len=50,
-            num_classes=8,
+            num_classes=9,
             hidden_size=128,
             num_layers=2,
             lstm_dropout=0.3,
@@ -93,7 +93,7 @@ class AUVFaultDetector(nn.Module):
             [B, 50, 40]
 
         Output shape:
-            [B, 8]
+            [B, 9]
         """
 
         if x.dim() != 3:

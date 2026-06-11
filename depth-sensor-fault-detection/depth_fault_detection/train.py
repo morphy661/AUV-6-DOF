@@ -24,22 +24,23 @@ from src.my_utils import (
 )
 
 # =======================================================
-# Stage 2: Multi-sensor AI Fusion Diagnosis Training
+# Stage 3: 9-class Multi-sensor AI Fusion Diagnosis Training
 # =======================================================
-STAGE2_DATASET_PATH = (
+STAGE3_DATASET_PATH = (
     r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model"
-    r"\depth_fault_detection\data\simulation_dataset_stage2_multisensor.pth"
+    r"\depth_fault_detection\data\simulation_dataset_stage3_9class.pth"
 )
 
 EXPECTED_RAW_FEATURE_DIM = 20
 EXPECTED_MODEL_INPUT_DIM = 40
 SEQ_LEN = 50
 
-BEST_MODEL_PATH = "results/best_model_stage2_multisensor.pth"
-TRAINING_PLOT_PATH = "results/training_plot_stage2_multisensor.png"
-CONFUSION_MATRIX_PATH = "results/confusion_matrix_stage2_multisensor.png"
-SEQUENCE_PLOT_PATH = "results/stage2_multisensor_sequences.png"
-FAULT_EXAMPLE_DIR = "results/fault_examples_stage2_multisensor"
+BEST_MODEL_PATH = "results/best_model_stage3_9class.pth"
+TRAINING_PLOT_PATH = "results/training_plot_stage3_9class.png"
+CONFUSION_MATRIX_PATH = "results/confusion_matrix_stage3_9class.png"
+SEQUENCE_PLOT_PATH = "results/stage3_9class_sequences.png"
+FAULT_EXAMPLE_DIR = "results/fault_examples_stage3_9class"
+CLASSIFICATION_REPORT_PATH = "results/classification_report_stage3_9class.txt"
 
 
 # ===============================
@@ -48,15 +49,15 @@ FAULT_EXAMPLE_DIR = "results/fault_examples_stage2_multisensor"
 os.makedirs("results", exist_ok=True)
 
 # ===============================
-# 1. 加载 Stage 2 多传感器数据集
+# 1. Load the Stage 3 9-class multi-sensor dataset.
 # ===============================
-dataset = torch.load(STAGE2_DATASET_PATH, map_location="cpu")
+dataset = torch.load(STAGE3_DATASET_PATH, map_location="cpu")
 print("Dataset keys:", dataset.keys())
-data = dataset["X"]  # Stage 2 expected shape: [N, 50, 20, 2]
+data = dataset["X"]  # Expected shape: [N, 50, 20, 2]
 labels = dataset["y"]
 
 print("=" * 70)
-print("Stage 2 multi-sensor dataset loaded.")
+print("Stage 3 9-class multi-sensor dataset loaded.")
 print(f"Original X shape: {data.shape}")
 print(f"Label shape: {labels.shape}")
 
@@ -71,7 +72,7 @@ print(f"Model input dimension from dataset: {model_input_dim}")
 
 if data.ndim != 4:
     raise ValueError(
-        f"Expected Stage 2 dataset X shape [N, 50, 20, 2], but got {data.shape}"
+        f"Expected Stage 3 dataset X shape [N, 50, 20, 2], but got {data.shape}"
     )
 
 if data.shape[1] != SEQ_LEN:
@@ -96,7 +97,7 @@ print(f"Data reshaping complete, new shape: {data.shape}")
 
 if data.shape[-1] != EXPECTED_MODEL_INPUT_DIM:
     raise ValueError(
-        f"Stage 2 input dimension error: got {data.shape[-1]}, "
+        f"Stage 3 input dimension error: got {data.shape[-1]}, "
         f"expected {EXPECTED_MODEL_INPUT_DIM}"
     )
 
@@ -106,7 +107,20 @@ if model_input_dim != EXPECTED_MODEL_INPUT_DIM:
         f"expected {EXPECTED_MODEL_INPUT_DIM}"
     )
 
-print("Stage 2 multi-sensor dataset check passed.")
+dataset_labels = labels.cpu().numpy()
+present_labels = set(np.unique(dataset_labels).tolist())
+expected_labels = set(range(NUM_CLASSES))
+missing_labels = sorted(expected_labels - present_labels)
+unexpected_labels = sorted(present_labels - expected_labels)
+
+if missing_labels or unexpected_labels:
+    raise ValueError(
+        "Stage 3 dataset label validation failed. "
+        f"Missing labels: {missing_labels}; unexpected labels: {unexpected_labels}"
+    )
+
+print(f"Verified dataset labels: {sorted(present_labels)}")
+print("Stage 3 9-class multi-sensor dataset check passed.")
 print("=" * 70)
 
 # ===============================
@@ -212,28 +226,25 @@ plot_sample_sequences(
 model = AUVFaultDetector(
     input_dim=EXPECTED_MODEL_INPUT_DIM,
     seq_len=SEQ_LEN,
-    num_classes=8
+    num_classes=NUM_CLASSES
 ).to(DEVICE)
 
 # =======================================================
 # 自动计算并应用类别权重 Class Weights
 # =======================================================
-label_counts = np.bincount(labels.cpu().numpy(), minlength=8)
-label_counts[label_counts == 0] = 1
+label_counts = np.bincount(y_train.cpu().numpy(), minlength=NUM_CLASSES)
+if len(label_counts) != NUM_CLASSES or np.any(label_counts == 0):
+    raise ValueError(
+        "Every Stage 3 class must appear in the training split before class "
+        f"weights are calculated. Counts: {label_counts.tolist()}"
+    )
 
 weights = 1.0 / np.sqrt(label_counts)
 weights = weights / weights.sum() * len(label_counts)
-# Manually strengthen difficult STUCK class
-weights[3] *= 1.0
-
-# Re-normalize to keep average weight around 1
-weights = weights / weights.sum() * len(weights)
 class_weights = torch.FloatTensor(weights).to(DEVICE)
 
-print(
-    "\nThe weights for each category in the category imbalance penalty mechanism are as follows:",
-    class_weights.cpu().numpy()
-)
+print("\nStage 3 training class counts:", label_counts)
+print("Stage 3 class weights:", class_weights.cpu().numpy())
 
 criterion = nn.CrossEntropyLoss(weight=class_weights)
 
@@ -310,12 +321,12 @@ for epoch in range(EPOCHS):
     val_accuracies.append(acc)
 
     # ===============================
-    # 保存最佳 Stage 2 模型
+    # Save the best Stage 3 9-class model.
     # ===============================
     if acc > best_acc:
         best_acc = acc
         torch.save(model.state_dict(), BEST_MODEL_PATH)
-        print(f"Save the current best Stage 2 multi-sensor model! Best Acc: {best_acc:.4f}")
+        print(f"Saved the current best Stage 3 9-class model! Best Acc: {best_acc:.4f}")
 
 # ===============================
 # 6. 训练曲线
@@ -355,17 +366,19 @@ target_names = [label_names[i] for i in range(NUM_CLASSES)]
 report = classification_report(
     all_labels,
     all_preds,
+    labels=list(range(NUM_CLASSES)),
     target_names=target_names,
+    zero_division=0,
     digits=4
 )
 
 print("\nClassification Report:")
 print(report)
 
-with open("results/classification_report_stage2_multisensor.txt", "w", encoding="utf-8") as f:
+with open(CLASSIFICATION_REPORT_PATH, "w", encoding="utf-8") as f:
     f.write(report)
 print("=" * 70)
-print("Stage 2 training complete.")
+print("Stage 3 9-class training complete.")
 print(f"Best validation accuracy: {best_acc:.4f}")
 print(f"Best model saved to: {BEST_MODEL_PATH}")
 print(f"Training plot saved to: {TRAINING_PLOT_PATH}")

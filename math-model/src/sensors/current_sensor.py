@@ -25,6 +25,7 @@ class CurrentSensor:
             None
             "entangled"
             "no_output"
+            "thrust_loss"
         """
 
         expected = self.expected_current(cmd_vz)
@@ -34,6 +35,10 @@ class CurrentSensor:
 
         elif fault_mode == "no_output":
             measured = max(0.5, expected * 0.08 + np.random.normal(0.0, 0.2))
+
+        elif fault_mode == "thrust_loss":
+            # Propeller efficiency loss: electrical load stays near normal.
+            measured = expected + np.random.normal(0.0, self.noise_std)
 
         else:
             measured = expected + np.random.normal(0.0, self.noise_std)
