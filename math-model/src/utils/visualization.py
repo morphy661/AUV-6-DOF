@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib.animation import FuncAnimation
 import os
+import shutil
 import matplotlib.pyplot as plt
 
 
@@ -31,9 +32,9 @@ def get_monitoring_fault_display_name(fault_value):
     }
     return fault_map.get(fault_id, "NO_FAULT")
 
-# 核心：手动指定 ffmpeg 的绝对路径
-plt.rcParams[
-    'animation.ffmpeg_path'] = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\ffmpeg.exe"
+ffmpeg_path = os.environ.get("FFMPEG_PATH") or shutil.which("ffmpeg")
+if ffmpeg_path:
+    plt.rcParams["animation.ffmpeg_path"] = ffmpeg_path
 
 
 def visualize_trajectory(trajectory: np.ndarray, visited_waypoints: np.ndarray = None,

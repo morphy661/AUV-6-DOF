@@ -10,8 +10,8 @@ from my_config import DEVICE, INPUT_DIM, NUM_CLASSES, SEQ_LEN
 
 
 THIS_DIR = Path(__file__).resolve().parent
-WORKSPACE_ROOT = THIS_DIR.parents[1]
-AUV_SRC = WORKSPACE_ROOT / "AUV-MathModel-main" / "src"
+REPO_ROOT = THIS_DIR.parents[1]
+AUV_SRC = REPO_ROOT / "math-model" / "src"
 
 if str(AUV_SRC) not in sys.path:
     sys.path.insert(0, str(AUV_SRC))

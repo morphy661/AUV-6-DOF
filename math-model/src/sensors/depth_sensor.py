@@ -1,3 +1,5 @@
+from typing import Optional
+
 import numpy as np
 
 
@@ -13,7 +15,7 @@ class DepthSensor:
         noise_std: float = 0.05,
         bias: float = 0.0,
         drift_std: float = 0.001,
-        seed: int | None = None
+        seed: Optional[int] = None
     ):
         """
         Args:

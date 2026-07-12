@@ -1,0 +1,10 @@
+class_id,class_name,train_missions,train_windows,validation_missions,validation_windows,test_missions,test_windows
+0,Normal,700,60372,150,12972,150,13494
+1,Bias,77,5207,15,1014,19,1284
+2,Drift,86,5821,8,539,17,1152
+3,Stuck,80,7233,11,993,20,1798
+4,Spike,74,1852,15,407,22,570
+5,Increased Noise,75,5072,16,1082,20,1352
+6,THRUSTER_ENTANGLED,76,5143,22,1488,13,879
+7,THRUSTER_NO_OUTPUT,83,5606,18,1220,10,678
+8,THRUSTER_THRUST_LOSS,77,5204,19,1282,15,1016

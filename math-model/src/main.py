@@ -17,6 +17,26 @@ from utils.feature_extractor import extract_ai_features, RAW_FEATURE_NAMES, RAW_
 from actuators.thruster_motor_model import ThrusterMotorModel, ThrusterFaultMode
 from diagnosis.diagnosis_strategy import FAULT_NAMES
 
+PROJECT_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = PROJECT_ROOT.parents[1]
+DETECTOR_ROOT = (
+    REPO_ROOT / "depth-sensor-fault-detection" / "depth_fault_detection"
+)
+DATA_DIR = DETECTOR_ROOT / "data"
+RESULTS_DIR = DETECTOR_ROOT / "results"
+DEFAULT_RANDOM_SEED = 42
+
+sys.path.append(str(PROJECT_ROOT))
+
+
+def set_global_seed(seed=DEFAULT_RANDOM_SEED):
+    """Seed every random source used by simulation and dataset generation."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
 # =======================================================
 # FTC / monitoring level label merge
 # =======================================================
@@ -80,7 +100,7 @@ model = AUVFaultDetector(
     num_classes=9
 ).to(DEVICE)
 
-model_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\best_model_stage3_9class.pth"
+model_path = RESULTS_DIR / "best_model_stage3_9class.pth"
 AI_MODEL_AVAILABLE = os.path.exists(model_path)
 
 try:
@@ -107,10 +127,8 @@ model.eval()
 # =======================================================
 # 项目路径配置
 # =======================================================
-PROJECT_ROOT = Path(__file__).resolve().parent
-sys.path.append(str(PROJECT_ROOT))
 
-from src.utils.dataset_builder import build_sequences
+from utils.dataset_builder import build_sequences
 from sensors.depth_sensor import DepthSensor
 from faults.system_faults import SystemFaultInjector, FaultType
 
@@ -270,7 +288,13 @@ def create_rich_training_auv(route_profile="standard"):
 # ======================
 # 创建随机故障注入器
 # ======================
-def create_fault(target_fault_type=None, is_training=False, start_time_override=None):
+def create_fault(
+        target_fault_type=None,
+        is_training=False,
+        start_time_override=None,
+        random_seed=None,
+        force_spike_at_start=False
+):
     if start_time_override is not None:
         start_time = float(start_time_override)
 
@@ -319,7 +343,9 @@ def create_fault(target_fault_type=None, is_training=False, start_time_override=
         noise_std=random.uniform(0.5, 1.0),
 
         # 4. Drift fault
-        drift_rate=random.choice([-1, 1]) * random.uniform(0.5, 1.0)
+        drift_rate=random.choice([-1, 1]) * random.uniform(0.5, 1.0),
+        random_seed=random_seed,
+        force_spike_at_start=force_spike_at_start
     )
 # ======================
 # FTC / Recovery Strategy Mapping
@@ -406,8 +432,18 @@ def execute_mission(
         is_demo=False,
         duration_override=None,
         fault_start_time=None,
-        route_profile="standard"
+        route_profile="standard",
+        random_seed=None,
+        output_dir=None,
+        output_stem=None,
+        save_response_plots=True,
+        save_trajectory_plot=False,
+        return_details=False,
+        force_spike_at_start=False
 ):
+    if random_seed is not None:
+        set_global_seed(int(random_seed))
+
     auv = create_auv(route_profile=route_profile)
 
     # Keep a fixed copy of the original planned route for visualization.
@@ -419,7 +455,9 @@ def execute_mission(
     fault_injector = create_fault(
         target_fault_type=fault_type,
         is_training=False,
-        start_time_override=fault_start_time
+        start_time_override=fault_start_time,
+        random_seed=random_seed,
+        force_spike_at_start=force_spike_at_start
     )
 
     imu_sensor = IMUSensor()
@@ -428,7 +466,9 @@ def execute_mission(
     battery_sensor = BatterySensor()
     residual_observer = ResidualObserver()
     diagnosis_strategy = DiagnosisStrategy()
-    thruster_motor_model = ThrusterMotorModel(seed=42)
+    thruster_motor_model = ThrusterMotorModel(
+        seed=42 if random_seed is None else int(random_seed)
+    )
     simulator = Simulator(
         auv_model=auv,
         depth_sensor=depth_sensor,
@@ -439,8 +479,8 @@ def execute_mission(
         battery_sensor=battery_sensor
     )
 
-    mean_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\mean_stage3_9class.npy"
-    std_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage3_9class.npy"
+    mean_path = RESULTS_DIR / "mean_stage3_9class.npy"
+    std_path = RESULTS_DIR / "std_stage3_9class.npy"
 
     mean = np.load(mean_path).reshape(-1)
     std = np.load(std_path).reshape(-1)
@@ -1419,49 +1459,78 @@ def execute_mission(
 
     import time  # 导入 time 模块
 
-    # 生成保存文件名
-    # Long-mission timing tests include the forced fault start time to avoid overwriting files.
+    # Generate deterministic, non-overwriting paths for Chapter 6 batch runs.
+    # Existing callers still default to the original relative results directory.
+    base_output_dir = Path(output_dir) if output_dir is not None else Path("results")
+    base_output_dir.mkdir(parents=True, exist_ok=True)
+
     if fault_start_time is not None:
         time_tag = f"_T{int(fault_start_time)}s"
     else:
         time_tag = ""
-
     route_tag = f"_{route_profile}"
 
-    if is_demo:
+    if output_stem:
+        response_stem = str(output_stem)
+        time_str = ""
+    elif is_demo:
         time_str = time.strftime("%H%M%S")
-        save_name = f"results/FTC_Response_Demo_{true_fault_str}{time_tag}{route_tag}_{time_str}.png"
+        response_stem = (
+            f"FTC_Response_Demo_{true_fault_str}{time_tag}{route_tag}_{time_str}"
+        )
     else:
         time_str = ""
-        save_name = f"results/FTC_Response_{true_fault_str}{time_tag}{route_tag}.png"
+        response_stem = f"FTC_Response_{true_fault_str}{time_tag}{route_tag}"
 
-    # 绘制 2D 容错响应图
-    plot_ftc_response(
-        logs=simulator.sensor_logs,
-        fault_time=actual_fault_time,
-        ai_intervention_time=actual_ai_time,
-        save_path=save_name,
-        true_fault_name=display_true_fault_str,
-        ai_diagnosis=final_diagnosis,
-        ai_action=final_action,
-        spike_times=spike_filtered_times
-    )
-    # 绘制增强版诊断 FTC 响应图
-    enhanced_save_name = save_name.replace(".png", "_Enhanced_Diagnosis.png")
+    save_path = base_output_dir / f"{response_stem}.png"
+    enhanced_save_path = base_output_dir / f"{response_stem}_Enhanced_Diagnosis.png"
+    trajectory_save_path = base_output_dir / f"{response_stem}_Trajectory_3D.png"
+    generated_files = []
 
-    plot_ftc_diagnosis_response(
-        logs=simulator.sensor_logs,
-        fault_time=actual_fault_time,
-        ai_intervention_time=actual_ai_time,
-        save_path=enhanced_save_name,
-        true_fault_name=display_true_fault_str,
-        ai_diagnosis=final_diagnosis,
-        ai_action=final_action,
-        spike_times=spike_filtered_times
-    )
+    if save_response_plots:
+        plot_ftc_response(
+            logs=simulator.sensor_logs,
+            fault_time=actual_fault_time,
+            ai_intervention_time=actual_ai_time,
+            save_path=str(save_path),
+            true_fault_name=display_true_fault_str,
+            ai_diagnosis=final_diagnosis,
+            ai_action=final_action,
+            spike_times=spike_filtered_times
+        )
+        generated_files.append(str(save_path))
+
+        plot_ftc_diagnosis_response(
+            logs=simulator.sensor_logs,
+            fault_time=actual_fault_time,
+            ai_intervention_time=actual_ai_time,
+            save_path=str(enhanced_save_path),
+            true_fault_name=display_true_fault_str,
+            ai_diagnosis=final_diagnosis,
+            ai_action=final_action,
+            spike_times=spike_filtered_times
+        )
+        generated_files.append(str(enhanced_save_path))
+
+    if save_trajectory_plot:
+        visualize_trajectory(
+            trajectory=np.array(simulator.trajectory),
+            visited_waypoints=planned_waypoints,
+            destination=auv.destination,
+            sensor_logs=simulator.sensor_logs,
+            fault_time=actual_fault_time,
+            true_fault_name=display_true_fault_str,
+            ai_time=actual_ai_time,
+            ai_diagnosis=final_diagnosis,
+            save_path=str(trajectory_save_path),
+            show=False
+        )
+        generated_files.append(str(trajectory_save_path))
     # Mode 1 演示模式专属输出
     if is_demo:
-        static_traj_name = f"results/Trajectory_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.png"
+        static_traj_name = base_output_dir / (
+            f"Trajectory_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.png"
+        )
         print(f" Generating static 3D trajectory map...")
 
         visualize_trajectory(
@@ -1473,13 +1542,16 @@ def execute_mission(
             true_fault_name=display_true_fault_str,
             ai_time=actual_ai_time,
             ai_diagnosis=final_diagnosis,
-            save_path=static_traj_name,
+            save_path=str(static_traj_name),
             show=False
         )
+        generated_files.append(str(static_traj_name))
 
         print(" Generating 3D animation for USV collaborative mission...")
 
-        animation_save_name = f"results/Animation_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.mp4"
+        animation_save_name = base_output_dir / (
+            f"Animation_3D_Demo_{true_fault_str}_{route_profile}_{time_str}.mp4"
+        )
 
         animate_trajectory(
             trajectory=np.array(simulator.trajectory),
@@ -1488,21 +1560,49 @@ def execute_mission(
             sensor_logs=simulator.sensor_logs,
             dt=0.1,
             playback_speed=20,
-            save_path=animation_save_name,
+            save_path=str(animation_save_name),
             show=False
         )
 
         print(f"3D animation saved to: {animation_save_name}")
+        generated_files.append(str(animation_save_name))
+
+    details = {
+        "raw_fault_name": true_fault_str,
+        "display_fault_name": display_true_fault_str,
+        "fault_start_time": actual_fault_time,
+        "requested_fault_start_time": fault_start_time,
+        "intervention_time": actual_ai_time,
+        "final_diagnosis": final_diagnosis,
+        "final_action": final_action,
+        "route_profile": route_profile,
+        "duration": float(duration),
+        "random_seed": random_seed,
+        "spike_times": list(spike_filtered_times),
+        "sensor_logs": simulator.sensor_logs,
+        "trajectory": np.array(simulator.trajectory),
+        "planned_waypoints": planned_waypoints,
+        "destination": np.array(auv.destination),
+        "generated_files": generated_files,
+    }
+
+    if return_details:
+        return details
+
+    return None
 
 # ======================
 # 训练数据集生成
 # ======================
-def generate_dataset(num_missions=1000):
-    print("Generating dataset (Stage 3, 9-class multi-sensor mode: 40-D input)...")
+def generate_dataset(num_missions=1000, seed=DEFAULT_RANDOM_SEED):
+    set_global_seed(seed)
+    print("Generating raw dataset (Stage 3, 9-class multi-sensor mode)...")
+    print(f"Random seed: {seed}")
     SEQ_LEN = 50
     all_X = []
     all_y = []
     all_mission_ids = []
+    mission_metadata = []
     training_fault_types = list(FaultType)
 
     if num_missions < len(training_fault_types):
@@ -1525,6 +1625,13 @@ def generate_dataset(num_missions=1000):
             target_fault_type=target_fault_type,
             is_training=True
         )
+        mission_metadata.append({
+            "mission_id": mission,
+            "route_profile": route_profile,
+            "fault_type": target_fault_type.name,
+            "fault_label": int(target_fault_type.value),
+            "fault_start_time": float(fault_injector.start_time),
+        })
         imu_sensor = IMUSensor()
         dvl_sensor = DVLSensor()
         current_sensor = CurrentSensor()
@@ -1560,6 +1667,16 @@ def generate_dataset(num_missions=1000):
 
         sim_duration = fault_injector.start_time + 100.0
         simulator.run_mission(duration=sim_duration, control_function=controller, dt=0.1)
+
+        # The controller normally writes the dynamic depth setpoint into the
+        # preceding log on the next simulation step. Finalize the last packet
+        # explicitly so it does not retain the distant route destination depth.
+        if simulator.sensor_logs:
+            final_log = simulator.sensor_logs[-1]
+            final_goal_z = float(final_log.get("target_z", controller.dynamic_setpoint))
+            final_delta = final_goal_z - controller.dynamic_setpoint
+            controller.dynamic_setpoint += np.clip(final_delta, -0.12, 0.12)
+            final_log["target_z"] = float(controller.dynamic_setpoint)
 
         X, y = build_sequences(
             sensor_logs=simulator.sensor_logs,
@@ -1601,33 +1718,13 @@ def generate_dataset(num_missions=1000):
     mission_ids_final = mission_ids_final[final_indices]
     print(f" Balanced data volume -> Normal: {np.sum(y_final == 0)}, Faults: {np.sum(y_final != 0)}")
 
-    from src.utils.dataset_builder import preprocess_dataset
-    X_processed, stats = preprocess_dataset(X_raw)
-
-    save_mean = np.array(stats['mean'], dtype=np.float32).flatten()
-    save_std = np.array(stats['std'], dtype=np.float32).flatten()
-
-    if save_mean.size != MODEL_INPUT_DIM:
-        raise ValueError(
-            f"CRITICAL ERROR: Mean size is {save_mean.size}, expected {MODEL_INPUT_DIM}!"
-        )
-
-    res_dir = Path(
-        r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results")
-    res_dir.mkdir(parents=True, exist_ok=True)
-
-    np.save(res_dir / "mean_stage3_9class.npy", save_mean)
-    np.save(res_dir / "std_stage3_9class.npy", save_std)
-
-    data_dir = Path(
-        r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\data")
-    data_dir.mkdir(parents=True, exist_ok=True)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
     print(f"Mission IDs shape: {mission_ids_final.shape}")
     print(f"Unique missions saved: {len(np.unique(mission_ids_final))}")
-    save_path = data_dir / "simulation_dataset_stage3_9class.pth"
+    save_path = DATA_DIR / "simulation_dataset_stage3_9class.pth"
 
     torch.save({
-        "X": torch.tensor(X_processed, dtype=torch.float32),
+        "X": torch.tensor(X_raw, dtype=torch.float32),
         "y": torch.tensor(y_final, dtype=torch.long),
         "mission_ids": torch.tensor(mission_ids_final, dtype=torch.long),
 
@@ -1636,14 +1733,17 @@ def generate_dataset(num_missions=1000):
         "model_input_dim": MODEL_INPUT_DIM,
         "num_classes": 9,
         "label_names": {i: name for i, name in FAULT_NAMES.items()},
+        "mission_metadata": mission_metadata,
+        "random_seed": int(seed),
+        "sampling_interval_seconds": 0.1,
+        "sequence_length": SEQ_LEN,
+        "storage_format": "raw_features_without_normalization",
     }, save_path)
 
-    print(f"Success! Dataset shape: {X_processed.shape}")
+    print(f"Success! Raw dataset shape: {X_raw.shape}")
     print(f"Raw feature dimension: {RAW_FEATURE_DIM}")
-    print(f"Model input dimension after flatten: {MODEL_INPUT_DIM}")
-    print(f"Mean shape before flatten: {np.array(stats['mean']).shape}")
-    print(f"Std shape before flatten: {np.array(stats['std']).shape}")
-    print(f"DEBUG: Saved Stage 3 Means ({MODEL_INPUT_DIM} dims): {save_mean}")
+    print(f"Model input dimension after training-time augmentation: {MODEL_INPUT_DIM}")
+    print("Normalization is intentionally deferred until after mission-level splitting.")
     print(f"Dataset saved to: {save_path}")
 
 
@@ -1740,7 +1840,12 @@ if __name__ == "__main__":
             n_missions = int(num) if num else 1000
         except ValueError:
             n_missions = 1000
-        generate_dataset(num_missions=n_missions)
+        try:
+            seed_text = input(f"Enter random seed (default {DEFAULT_RANDOM_SEED}): ").strip()
+            dataset_seed = int(seed_text) if seed_text else DEFAULT_RANDOM_SEED
+        except ValueError:
+            dataset_seed = DEFAULT_RANDOM_SEED
+        generate_dataset(num_missions=n_missions, seed=dataset_seed)
         print("\n Dataset generation complete!")
 
     elif mode_choice == '4':

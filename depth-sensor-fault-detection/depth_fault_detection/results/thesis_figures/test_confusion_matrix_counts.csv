@@ -1,0 +1,10 @@
+,Normal,Bias,Drift,Stuck,Spike,Increased Noise,Entangled,No Output,Thrust Loss
+Normal,13271,0,0,26,133,0,0,0,64
+Bias,22,1244,0,17,1,0,0,0,0
+Drift,4,0,1007,140,0,0,1,0,0
+Stuck,57,9,121,1611,0,0,0,0,0
+Spike,5,0,0,0,564,1,0,0,0
+Increased Noise,1,0,2,0,9,1340,0,0,0
+Entangled,0,0,0,0,0,0,879,0,0
+No Output,1,0,0,0,0,0,0,677,0
+Thrust Loss,195,0,1,3,0,0,0,0,817

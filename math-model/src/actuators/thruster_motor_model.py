@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 from dataclasses import dataclass
 from enum import Enum
 import numpy as np
@@ -59,7 +61,7 @@ class ThrusterMotorState:
 
 
 class ThrusterMotorModel:
-    def __init__(self, config: ThrusterMotorConfig | None = None, seed: int = 42):
+    def __init__(self, config: Optional[ThrusterMotorConfig] = None, seed: int = 42):
         self.config = config or ThrusterMotorConfig()
         self.rng = np.random.default_rng(seed)
 
@@ -84,7 +86,7 @@ class ThrusterMotorModel:
         omega = self.expected_omega(cmd)
         return cfg.thrust_coeff * omega * abs(omega)
 
-    def simulate(self, cmd: float, fault_mode: str | ThrusterFaultMode = ThrusterFaultMode.NORMAL) -> ThrusterMotorState:
+    def simulate(self, cmd: float, fault_mode: Union[str, ThrusterFaultMode] = ThrusterFaultMode.NORMAL) -> ThrusterMotorState:
         """
         Generate expected and actual thruster behavior.
 

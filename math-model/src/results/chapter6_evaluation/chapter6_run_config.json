@@ -1,0 +1,32 @@
+{
+  "faults": [
+    "NO_FAULT",
+    "BIAS",
+    "DRIFT",
+    "STUCK",
+    "SPIKE",
+    "NOISE_INCREASE",
+    "THRUSTER_ENTANGLED",
+    "THRUSTER_NO_OUTPUT",
+    "THRUSTER_THRUST_LOSS"
+  ],
+  "fault_times_s": [
+    80.0,
+    300.0,
+    600.0,
+    900.0
+  ],
+  "repeats": 3,
+  "duration_s": 1200.0,
+  "route_profile": "comprehensive",
+  "base_seed": 42,
+  "representative_fault": "DRIFT",
+  "representative_time_s": 600.0,
+  "force_spike_at_configured_time": true,
+  "output_dir": "C:\\Users\\Administrator\\PycharmProjects\\AUV-Project\\math-model\\src\\results\\chapter6_evaluation",
+  "definitions": {
+    "diagnosis_delay": "final confirmation time minus effective fault onset",
+    "false_alarm_count": "number of non-zero final-diagnosis episodes before fault onset, or during the complete no-fault mission",
+    "safe_state": "near-surface state for ascent actions, sustained low vertical speed for hover, and correct activation for filtering actions"
+  }
+}

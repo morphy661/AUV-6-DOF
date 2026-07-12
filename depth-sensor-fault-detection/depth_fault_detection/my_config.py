@@ -12,6 +12,9 @@ SEQ_LEN = 50        # Time window length
 # 训练参数
 # ===============================
 BATCH_SIZE = 256
+RANDOM_SEED = 42
+VALIDATION_MISSION_FRACTION = 0.15
+TEST_MISSION_FRACTION = 0.15
 
 # Stage 3 dataset is larger and feature dimension is higher.
 # 60 epochs is acceptable, but early stopping can be added later.

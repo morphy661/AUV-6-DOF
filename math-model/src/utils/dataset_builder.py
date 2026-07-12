@@ -1,10 +1,17 @@
 import numpy as np
 
-from utils.feature_extractor import (
-    extract_ai_features,
-    RAW_FEATURE_DIM,
-    MODEL_INPUT_DIM,
-)
+try:
+    from .feature_extractor import (
+        extract_ai_features,
+        RAW_FEATURE_DIM,
+        MODEL_INPUT_DIM,
+    )
+except ImportError:
+    from utils.feature_extractor import (
+        extract_ai_features,
+        RAW_FEATURE_DIM,
+        MODEL_INPUT_DIM,
+    )
 
 
 def build_sequences(
@@ -171,7 +178,53 @@ def build_sequences(
     return np.array(X, dtype=np.float32), np.array(y, dtype=np.int64)
 
 
-def preprocess_dataset(X, epsilon=1e-8):
+def add_temporal_differences(X):
+    """Return raw features stacked with first-order temporal differences."""
+    if X.ndim != 3:
+        raise ValueError(
+            f"Expected X with shape (N, seq_len, feature_dim), got {X.shape}"
+        )
+
+    if X.shape[-1] != RAW_FEATURE_DIM:
+        raise ValueError(
+            f"Expected raw feature dimension {RAW_FEATURE_DIM}, got {X.shape[-1]}"
+        )
+
+    X_diff = np.diff(X, axis=1)
+    zero_pad = np.zeros((X.shape[0], 1, X.shape[2]), dtype=X.dtype)
+    X_diff = np.concatenate([zero_pad, X_diff], axis=1)
+    return np.stack((X, X_diff), axis=-1)
+
+
+def fit_standardizer(X_combined):
+    """Fit feature statistics on the training partition only."""
+    if X_combined.ndim != 4 or X_combined.shape[-1] != 2:
+        raise ValueError(
+            "Expected augmented data with shape (N, seq_len, feature_dim, 2), "
+            f"got {X_combined.shape}"
+        )
+
+    return {
+        "mean": np.mean(X_combined, axis=(0, 1)).astype(np.float32),
+        "std": np.std(X_combined, axis=(0, 1)).astype(np.float32),
+    }
+
+
+def apply_standardizer(X_combined, stats, epsilon=1e-8):
+    """Apply training-partition statistics to any dataset partition."""
+    means = np.asarray(stats["mean"], dtype=np.float32)
+    stds = np.asarray(stats["std"], dtype=np.float32)
+
+    if means.shape != (RAW_FEATURE_DIM, 2) or stds.shape != (RAW_FEATURE_DIM, 2):
+        raise ValueError(
+            "Normalization statistics must have shape "
+            f"({RAW_FEATURE_DIM}, 2), got mean={means.shape}, std={stds.shape}"
+        )
+
+    return ((X_combined - means) / (stds + epsilon)).astype(np.float32)
+
+
+def preprocess_dataset(X, stats=None, epsilon=1e-8):
     """
     Stage-3 9-class multi-sensor preprocessing.
 
@@ -195,25 +248,14 @@ def preprocess_dataset(X, epsilon=1e-8):
             f"Expected raw feature dimension {RAW_FEATURE_DIM}, got {X.shape[-1]}"
         )
 
-    # ======================================================
-    # 1. First-order temporal difference
-    # ======================================================
-    X_diff = np.diff(X, axis=1)
-
-    # Add zero difference at the first time step
-    zero_pad = np.zeros((X.shape[0], 1, X.shape[2]), dtype=X.dtype)
-    X_diff = np.concatenate([zero_pad, X_diff], axis=1)
-
-    # Shape: (N, 50, 20, 2)
-    X_combined = np.stack((X, X_diff), axis=-1)
-
-    # ======================================================
-    # 2. Normalization
-    # ======================================================
-    means = np.mean(X_combined, axis=(0, 1))
-    stds = np.std(X_combined, axis=(0, 1))
-
-    X_combined = (X_combined - means) / (stds + epsilon)
+    if stats is None:
+        raise ValueError(
+            "preprocess_dataset requires statistics fitted on the training "
+            "partition. Use add_temporal_differences and fit_standardizer on "
+            "training missions first."
+        )
+    X_combined = add_temporal_differences(X)
+    X_combined = apply_standardizer(X_combined, stats, epsilon=epsilon)
 
     # Safety check
     flattened_dim = X_combined.shape[2] * X_combined.shape[3]
@@ -224,6 +266,6 @@ def preprocess_dataset(X, epsilon=1e-8):
         )
 
     return X_combined.astype(np.float32), {
-        "mean": means.astype(np.float32),
-        "std": stds.astype(np.float32),
+        "mean": np.asarray(stats["mean"], dtype=np.float32),
+        "std": np.asarray(stats["std"], dtype=np.float32),
     }

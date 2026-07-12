@@ -30,7 +30,8 @@ class SystemFaultInjector:
             noise_std: float = 0.0,
             spike_prob: float = 0.0,
             spike_magnitude: float = 0.0,
-            random_seed: Optional[int] = None
+            random_seed: Optional[int] = None,
+            force_spike_at_start: bool = False
     ):
         self.fault_type = fault_type
         self.start_time = start_time
@@ -41,6 +42,7 @@ class SystemFaultInjector:
 
         self.spike_prob = spike_prob
         self.spike_magnitude = spike_magnitude
+        self.force_spike_at_start = bool(force_spike_at_start)
 
         self.rng = np.random.default_rng(random_seed)
         self._stuck_value = None
@@ -53,6 +55,7 @@ class SystemFaultInjector:
         self.last_spike_triggered = False
         self.last_spike_time = -999.0
         self.spike_label_hold_time = 0.5  # seconds, 0.5s = 5 frames when dt=0.1
+        self._forced_spike_emitted = False
 
     def apply(self, depth_value, current_time):
 
@@ -91,9 +94,12 @@ class SystemFaultInjector:
             return self._stuck_value
 
         if self.fault_type == FaultType.SPIKE:
-            if self.rng.random() < self.spike_prob:
+            force_now = self.force_spike_at_start and not self._forced_spike_emitted
+            if force_now or self.rng.random() < self.spike_prob:
                 self.last_spike_triggered = True
                 self.last_spike_time = current_time
+                if force_now:
+                    self._forced_spike_emitted = True
 
                 spike = self.spike_magnitude * self.rng.choice([-1, 1])
                 return depth_value + spike
@@ -110,6 +116,7 @@ class SystemFaultInjector:
         return depth_value
     def reset(self):
         self._stuck_value = None
+        self._forced_spike_emitted = False
 
     def get_effective_fault_label(self, current_time):
         """

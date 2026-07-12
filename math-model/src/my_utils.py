@@ -1,9 +1,18 @@
 import os
+from pathlib import Path
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DETECTOR_RESULTS_DIR = (
+    REPO_ROOT
+    / "depth-sensor-fault-detection"
+    / "depth_fault_detection"
+    / "results"
+)
 
 # ===============================
 # Label mapping
@@ -158,28 +167,53 @@ def plot_sample_sequences(data, labels, n_samples=1, save_path=None):
 # ===============================
 # 2. 训练过程可视化
 # ===============================
-def plot_training_history(train_losses, val_accuracies, save_path=None):
+def plot_training_history(
+        train_losses,
+        val_accuracies,
+        save_path=None,
+        val_losses=None,
+        val_macro_f1_scores=None,
+        best_epoch=None):
     epochs = range(1, len(train_losses) + 1)
 
-    fig, ax1 = plt.subplots(figsize=(10, 6))
+    fig, axes = plt.subplots(2, 1, figsize=(9.2, 7.4), sharex=True)
+    axes[0].plot(epochs, train_losses, color="#C73E1D", linewidth=2.0,
+                 label="Training loss")
+    if val_losses is not None:
+        axes[0].plot(epochs, val_losses, color="#246A73", linewidth=2.0,
+                     label="Validation loss")
+    axes[0].set_ylabel("Cross-entropy loss")
+    axes[0].legend(frameon=False)
+    axes[0].grid(True, linestyle="--", alpha=0.35)
 
-    ax1.set_xlabel('Epoch')
-    ax1.set_ylabel('Train Loss(red)')
-    ax1.plot(epochs, train_losses, marker='o', label='Train Loss(red)', color='red')
-    ax1.tick_params(axis='y')
-    ax1.grid(True)
+    axes[1].plot(epochs, val_accuracies, color="#2A6FBB", linewidth=2.0,
+                 label="Validation accuracy")
+    if val_macro_f1_scores is not None:
+        axes[1].plot(epochs, val_macro_f1_scores, color="#B04A7A", linewidth=2.0,
+                     label="Validation macro-F1")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Score")
+    axes[1].set_ylim(0.75, 1.01)
+    axes[1].legend(frameon=False, loc="lower right")
+    axes[1].grid(True, linestyle="--", alpha=0.35)
 
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Val Accuracy')
-    ax2.plot(epochs, val_accuracies, marker='s', label='Val Acc')
-    ax2.tick_params(axis='y')
+    if best_epoch is not None:
+        for axis in axes:
+            axis.axvline(best_epoch, color="#333333", linestyle=":", linewidth=1.5)
+        axes[1].annotate(
+            f"Best epoch: {best_epoch}",
+            xy=(best_epoch, val_accuracies[best_epoch - 1]),
+            xytext=(8, -24),
+            textcoords="offset points",
+            fontsize=9,
+        )
 
-    plt.title('Training Loss and Validation Accuracy')
+    fig.suptitle("Model Training and Validation Performance")
     fig.tight_layout()
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
         print(f"Image saved to: {save_path}")
 
     plt.show()
@@ -188,7 +222,12 @@ def plot_training_history(train_losses, val_accuracies, save_path=None):
 # ===============================
 # 3. 混淆矩阵
 # ===============================
-def plot_confusion_matrix(y_true, y_pred, label_names_dict=label_names, save_path=None):
+def plot_confusion_matrix(
+        y_true,
+        y_pred,
+        label_names_dict=label_names,
+        save_path=None,
+        normalize=False):
     if isinstance(y_true, torch.Tensor):
         y_true = y_true.detach().cpu().numpy()
     if isinstance(y_pred, torch.Tensor):
@@ -196,21 +235,30 @@ def plot_confusion_matrix(y_true, y_pred, label_names_dict=label_names, save_pat
 
     labels_order = sorted(label_names_dict.keys())
     cm = confusion_matrix(y_true, y_pred, labels=labels_order)
+    if normalize:
+        row_totals = cm.sum(axis=1, keepdims=True)
+        cm = np.divide(
+            cm,
+            row_totals,
+            out=np.zeros_like(cm, dtype=float),
+            where=row_totals != 0,
+        ) * 100.0
     tick_labels = [label_names_dict[i] for i in labels_order]
 
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
+    plt.figure(figsize=(10.5, 8.5))
+    sns.heatmap(cm, annot=True, fmt=".1f" if normalize else "d", cmap="Blues",
                 xticklabels=tick_labels, yticklabels=tick_labels)
 
-    plt.xlabel("Predicted Fault")
-    plt.ylabel("Actual Fault")
-    plt.title("Fault Classification Confusion Matrix")
+    plt.xlabel("Predicted class")
+    plt.ylabel("True class")
+    title = "Row-normalized Test Confusion Matrix (%)" if normalize else "Test Confusion Matrix (Counts)"
+    plt.title(title)
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
     if save_path:
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=300, bbox_inches="tight")
         print(f"Confusion matrix saved to: {save_path}")
 
     plt.show()
@@ -222,8 +270,7 @@ def plot_confusion_matrix(y_true, y_pred, label_names_dict=label_names, save_pat
 def plot_fault_examples(data, labels, label_names_dict=label_names, n_samples=3, save_dir="results/fault_examples"):
     os.makedirs(save_dir, exist_ok=True)
 
-    # 核心修复：换成你本地正确的绝对路径！
-    std_path = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results\std_stage3_9class.npy"
+    std_path = DETECTOR_RESULTS_DIR / "std_stage3_9class.npy"
     std_arr = np.load(std_path)
     s_depth = std_arr[0]  # 第 0 维是深度
 
@@ -250,7 +297,7 @@ def plot_fault_examples(data, labels, label_names_dict=label_names, n_samples=3,
             plt.plot(range(seq_len), relative_seq, alpha=0.8, linewidth=1.5, label=f"Sample {i + 1}")
 
         plt.title(f"Fault Feature Analysis - {name} (Relative Change)")
-        plt.xlabel("Time Step (within 25s window)")
+        plt.xlabel("Time Step (within 5 s window)")
         plt.ylabel("Depth Variation (m)")
         plt.ylim(-5, 10)
         plt.axhline(0, color='black', linestyle='--', alpha=0.3)
@@ -271,10 +318,8 @@ def plot_residual_examples(data, true_data, labels, label_names_dict=label_names
                            save_dir="results/residuals"):
     os.makedirs(save_dir, exist_ok=True)
 
-    # 换成你本地正确的绝对路径！
-    base_dir = r"C:\Users\Administrator\PycharmProjects\AUV Depth Sensor Fault Detection Model\depth_fault_detection\results"
-    mean_arr = np.load(os.path.join(base_dir, "mean_stage3_9class.npy"))
-    std_arr = np.load(os.path.join(base_dir, "std_stage3_9class.npy"))
+    mean_arr = np.load(DETECTOR_RESULTS_DIR / "mean_stage3_9class.npy")
+    std_arr = np.load(DETECTOR_RESULTS_DIR / "std_stage3_9class.npy")
     m_depth, s_depth = mean_arr[0], std_arr[0]
 
     if torch.is_tensor(data): data = data.cpu().numpy()
@@ -320,7 +365,7 @@ def plot_residual_examples(data, true_data, labels, label_names_dict=label_names
             plt.plot(range(seq_len), display_seq, alpha=0.8, linewidth=1.5, label=f"Sample {i + 1}")
 
         plt.title(f"Fault Residual Analysis - {name} (Sensor minus True Depth)")
-        plt.xlabel("Time Step (within 25s window)")
+        plt.xlabel("Time Step (within 5 s window)")
         plt.ylabel(label_y)
         plt.ylim(-5, 12)
         plt.axhline(0, color='red', linestyle='--', alpha=0.6, label="Zero Error (Ideal)")
@@ -540,10 +585,10 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
         plt.axvline(x=fault_time, color="orange", linestyle="-.", linewidth=2,
                     label=f"Fault Injected ({fault_time:.1f}s)")
 
-    # 画 AI 介入线
+    # Draw the final FTC intervention time, not the first raw AI candidate.
     if ai_intervention_time is not None and ai_intervention_time > 0:
         plt.axvline(x=ai_intervention_time, color="green", linestyle="-.", linewidth=2,
-                    label=f"AI Activated ({ai_intervention_time:.1f}s)")
+                    label=f"FTC Intervention ({ai_intervention_time:.1f}s)")
 
     # ==========================================
     # 在图表右上角绘制 AI 诊断信息面板
@@ -552,7 +597,7 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
         f"[ Mission Report ]\n"
         f"------------------------\n"
         f" True Fault : {display_true_fault_name}\n"
-        f" AI Predict : {display_ai_diagnosis}\n"
+        f" Final Diagnosis : {display_ai_diagnosis}\n"
         f" FTC Action : {display_ai_action}"
     )
 
@@ -571,7 +616,7 @@ def plot_ftc_response(logs, fault_time, ai_intervention_time, save_path,
             plt.axvline(x=st, color='limegreen', linestyle=':', alpha=0.6, linewidth=1.5)
 
         # 偷偷在图例里加一个标签，这样别人才知道这绿线是什么意思
-        plt.plot([], [], color='limegreen', linestyle=':', linewidth=1.5, label='SPIKE Filtered by AI')
+        plt.plot([], [], color='limegreen', linestyle=':', linewidth=1.5, label='SPIKE filtering event')
 
     plt.title(f"Fault-Tolerant Control (FTC) Response - {display_true_fault_name}", fontsize=16, fontweight='bold')
     plt.xlabel("Mission Time (s)", fontsize=12)
@@ -903,6 +948,7 @@ def plot_ftc_diagnosis_response(
         if fault_time is not None and fault_time > 0:
             ax.axvline(
                 x=fault_time,
+                color="darkorange",
                 linestyle="-.",
                 linewidth=1.8,
                 alpha=0.9,
@@ -912,10 +958,11 @@ def plot_ftc_diagnosis_response(
         if ai_intervention_time is not None and ai_intervention_time > 0:
             ax.axvline(
                 x=ai_intervention_time,
+                color="green",
                 linestyle="-.",
                 linewidth=1.8,
                 alpha=0.9,
-                label="AI / FTC Activated"
+                label="FTC Intervention"
             )
 
     # Spike markers
