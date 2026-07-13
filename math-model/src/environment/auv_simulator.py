@@ -156,7 +156,7 @@ class Simulator:
         # Prefer the independent IMU sensor if available.
         # Otherwise keep the old built-in IMU-like packet for compatibility.
         if self.imu_sensor is not None:
-            sensor_packet["imu"] = self.imu_sensor.read(self.auv)
+            sensor_packet["imu"] = self.imu_sensor.read(self.auv, dt=dt)
         else:
             sensor_packet["imu"] = {
                 "orientation": self.auv.orientation.copy(),

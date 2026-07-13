@@ -1,4 +1,4 @@
-"""Standalone nominal 6-DOF simulation chain used before fault injection."""
+"""Six-DOF simulation chain with optional oracle fault-tolerant allocation."""
 
 from typing import Callable, Optional
 
@@ -14,6 +14,7 @@ from simple_control.six_dof_controller import (
     CascadedSixDOFController,
     PoseTarget,
 )
+from sensors.six_dof_sensor_suite import SixDOFSensorSuite
 
 
 class SixDOFSimulator:
@@ -26,6 +27,8 @@ class SixDOFSimulator:
         controller: Optional[CascadedSixDOFController] = None,
         fault: Optional[SingleThrusterFault] = None,
         actuator_bank: Optional[ThrusterActuatorBank] = None,
+        ideal_fault_tolerant_allocation: bool = False,
+        sensor_suite: Optional[SixDOFSensorSuite] = None,
     ):
         self.dynamics = dynamics or SixDOFDynamics()
         self.thruster_array = thruster_array or default_six_thruster_array()
@@ -38,6 +41,10 @@ class SixDOFSimulator:
         )
         if self.actuator_bank.thruster_array.names != self.thruster_array.names:
             raise ValueError("actuator bank and thruster array must use the same layout")
+        self.ideal_fault_tolerant_allocation = bool(
+            ideal_fault_tolerant_allocation
+        )
+        self.sensor_suite = sensor_suite
         self.logs = []
 
     @property
@@ -47,12 +54,23 @@ class SixDOFSimulator:
     def reset(self, state=None):
         self.dynamics.reset(state)
         self.controller.reset()
+        if self.sensor_suite is not None:
+            self.sensor_suite.reset()
         self.logs = []
         return self.state.copy()
 
     def step(self, target: PoseTarget, dt, disturbance_body=None):
+        previous_velocity = self.state.body_velocity.copy()
         control = self.controller.compute(self.state, target, dt)
-        allocation = self.thruster_array.allocate(control.desired_wrench_body)
+        allocation_effectiveness = (
+            self.actuator_bank.force_efficiencies_at(self.state.time)
+            if self.ideal_fault_tolerant_allocation
+            else np.ones(len(self.thruster_array.thrusters))
+        )
+        allocation = self.thruster_array.allocate(
+            control.desired_wrench_body,
+            thruster_effectiveness=allocation_effectiveness,
+        )
         actuation = self.actuator_bank.apply(
             allocation.thruster_forces,
             time_s=self.state.time,
@@ -65,6 +83,15 @@ class SixDOFSimulator:
             dt=dt,
             disturbance_body=disturbance_body,
         )
+        sensor_packet = None
+        if self.sensor_suite is not None:
+            sensor_packet = self.sensor_suite.read(
+                state,
+                dt=dt,
+                linear_acceleration_body=(
+                    state.body_velocity[:3] - previous_velocity[:3]
+                ) / float(dt),
+            )
 
         log = {
             "time": float(state.time),
@@ -96,7 +123,17 @@ class SixDOFSimulator:
             "thruster_fault_active": actuation.fault_active,
             "faulted_thruster_index": actuation.faulted_thruster_index,
             "thruster_saturated": allocation.saturated.copy(),
+            "allocation_thruster_effectiveness": (
+                allocation.thruster_effectiveness.copy()
+            ),
+            "ideal_ftc_enabled": self.ideal_fault_tolerant_allocation,
+            "ftc_active": bool(
+                self.ideal_fault_tolerant_allocation
+                and np.any(allocation_effectiveness < 1.0)
+            ),
         }
+        if sensor_packet is not None:
+            log.update(sensor_packet)
         self.logs.append(log)
         return log
 

@@ -65,6 +65,24 @@ class ThrusterAllocationTests(unittest.TestCase):
         np.testing.assert_allclose(result.achieved_wrench, 0.0, atol=1e-12)
         np.testing.assert_allclose(result.residual_wrench, desired, atol=1e-12)
 
+    def test_effectiveness_aware_allocation_avoids_failed_thruster(self):
+        array = default_six_thruster_array()
+        effectiveness = np.ones(6)
+        effectiveness[0] = 0.0
+        desired = np.array([5.0, -3.0, 4.0, 0.0, 0.0, 1.0])
+
+        result = array.allocate(desired, thruster_effectiveness=effectiveness)
+
+        self.assertAlmostEqual(result.thruster_forces[0], 0.0)
+        np.testing.assert_allclose(result.achieved_wrench, desired, atol=1e-9)
+        np.testing.assert_allclose(result.thruster_effectiveness, effectiveness)
+
+    def test_invalid_thruster_effectiveness_is_rejected(self):
+        array = default_six_thruster_array()
+
+        with self.assertRaisesRegex(ValueError, "within"):
+            array.allocate(np.zeros(6), np.array([1, 1, 1, 1, 1, 1.1]))
+
 
 class ThrusterFaultActuationTests(unittest.TestCase):
     def test_no_output_removes_force_and_current_after_start(self):
@@ -134,6 +152,21 @@ class ThrusterFaultActuationTests(unittest.TestCase):
             np.array([False, False, True, False, True, False]),
         )
 
+    def test_oracle_effectiveness_matches_active_fault(self):
+        array = default_six_thruster_array()
+        fault = SingleThrusterFault(
+            "V2",
+            SixDOFThrusterFaultMode.THRUST_LOSS,
+            start_time=5.0,
+            thrust_efficiency=0.35,
+        )
+        bank = ThrusterActuatorBank(array, fault=fault)
+
+        np.testing.assert_allclose(bank.force_efficiencies_at(4.9), 1.0)
+        expected = np.ones(6)
+        expected[5] = 0.35
+        np.testing.assert_allclose(bank.force_efficiencies_at(5.0), expected)
+
 
 class SixDOFControllerTests(unittest.TestCase):
     def test_controller_is_zero_at_level_target(self):
@@ -193,6 +226,27 @@ class SixDOFControllerTests(unittest.TestCase):
         self.assertTrue(log["thruster_fault_active"])
         self.assertEqual(log["actual_thruster_forces"][4], 0.0)
         self.assertGreater(np.linalg.norm(log["actuation_residual_body"]), 0.0)
+
+    def test_ideal_ftc_reallocates_around_known_failure(self):
+        fault = SingleThrusterFault(
+            "V1", SixDOFThrusterFaultMode.NO_OUTPUT, start_time=0.0
+        )
+        simulator = SixDOFNominalSimulator(
+            fault=fault,
+            ideal_fault_tolerant_allocation=True,
+        )
+        target = PoseTarget(np.array([0.0, 0.0, 1.0]), np.zeros(3))
+
+        log = simulator.step(target, dt=0.05)
+
+        self.assertTrue(log["ftc_active"])
+        self.assertEqual(log["allocation_thruster_effectiveness"][4], 0.0)
+        self.assertAlmostEqual(log["commanded_thruster_forces"][4], 0.0)
+        np.testing.assert_allclose(
+            log["actuation_residual_body"],
+            0.0,
+            atol=1e-12,
+        )
 
 
 if __name__ == "__main__":

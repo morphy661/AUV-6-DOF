@@ -63,6 +63,7 @@ class AllocationResult:
     residual_wrench: np.ndarray
     thruster_forces: np.ndarray
     saturated: np.ndarray
+    thruster_effectiveness: np.ndarray
 
 
 class ThrusterArray:
@@ -119,10 +120,28 @@ class ThrusterArray:
         forces = _vector(thruster_forces, len(self.thrusters), "thruster_forces")
         return self.allocation_matrix @ forces
 
-    def allocate(self, desired_wrench):
-        """Allocate wrench with an active-set bounded least-squares method."""
+    def allocate(self, desired_wrench, thruster_effectiveness=None):
+        """Allocate wrench with bounded least squares and optional degradation.
+
+        ``thruster_effectiveness`` maps commanded force to expected actual force.
+        A value of one means healthy, zero means unavailable, and intermediate
+        values represent known partial thrust loss. This input is intended for
+        fault-tolerant reallocation after a fault has been isolated.
+        """
         desired = _vector(desired_wrench, 6, "desired_wrench")
         count = len(self.thrusters)
+        effectiveness = (
+            np.ones(count)
+            if thruster_effectiveness is None
+            else _vector(
+                thruster_effectiveness,
+                count,
+                "thruster_effectiveness",
+            )
+        )
+        if np.any(effectiveness < 0.0) or np.any(effectiveness > 1.0):
+            raise ValueError("thruster_effectiveness must be within [0, 1]")
+        effective_matrix = self.allocation_matrix * effectiveness[np.newaxis, :]
         forces = np.zeros(count)
         free = list(range(count))
         fixed = []
@@ -133,12 +152,12 @@ class ThrusterArray:
                 break
 
             fixed_wrench = (
-                self.allocation_matrix[:, fixed] @ forces[fixed]
+                effective_matrix[:, fixed] @ forces[fixed]
                 if fixed
                 else np.zeros(6)
             )
             remaining = desired - fixed_wrench
-            free_matrix = self.allocation_matrix[:, free]
+            free_matrix = effective_matrix[:, free]
             solution, *_ = np.linalg.lstsq(
                 weight_matrix @ free_matrix,
                 weight_matrix @ remaining,
@@ -167,7 +186,7 @@ class ThrusterArray:
             fixed.append(worst_index)
 
         forces = np.clip(forces, self.min_forces, self.max_forces)
-        achieved = self.wrench_from_forces(forces)
+        achieved = effective_matrix @ forces
         saturated = np.logical_or(
             np.isclose(forces, self.min_forces, atol=1e-9),
             np.isclose(forces, self.max_forces, atol=1e-9),
@@ -178,6 +197,7 @@ class ThrusterArray:
             residual_wrench=desired - achieved,
             thruster_forces=forces,
             saturated=saturated,
+            thruster_effectiveness=effectiveness,
         )
 
 

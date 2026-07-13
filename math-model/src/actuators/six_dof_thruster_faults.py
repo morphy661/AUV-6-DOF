@@ -105,6 +105,17 @@ class ThrusterActuatorBank:
             0.0,
         )
 
+    def force_efficiencies_at(self, time_s):
+        """Return the true per-thruster effectiveness for oracle FTC studies."""
+        efficiencies = np.ones(len(self.thruster_array.thrusters))
+        if self.fault is None or not self.fault.is_active(time_s):
+            return efficiencies
+        if self.fault.mode is SixDOFThrusterFaultMode.NO_OUTPUT:
+            efficiencies[self._fault_index] = 0.0
+        elif self.fault.mode is SixDOFThrusterFaultMode.THRUST_LOSS:
+            efficiencies[self._fault_index] = self.fault.thrust_efficiency
+        return efficiencies
+
     def apply(self, commanded_forces, time_s):
         commanded = np.asarray(commanded_forces, dtype=float)
         expected_shape = (len(self.thruster_array.thrusters),)

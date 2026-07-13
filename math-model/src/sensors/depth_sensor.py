@@ -1,68 +1,46 @@
+"""Pressure-depth sensor with bias, random walk, and measurement noise."""
+
 from typing import Optional
 
 import numpy as np
 
 
 class DepthSensor:
-    """
-    深度传感器模型（Pressure Sensor）
-
-    depth = -z + bias + drift + noise
-    """
+    """Measure positive-down depth in metres for the NED convention."""
 
     def __init__(
         self,
         noise_std: float = 0.05,
         bias: float = 0.0,
         drift_std: float = 0.001,
-        seed: Optional[int] = None
+        seed: Optional[int] = None,
     ):
-        """
-        Args:
-            noise_std: 测量噪声标准差 (m)
-            bias: 固定偏置 (m)
-            drift_std: 随机游走强度 (m / sqrt(s))
-            seed: 随机种子（可复现实验）
-        """
-        self.noise_std = noise_std
-        self.bias = bias
-        self.drift_std = drift_std
-
+        self.noise_std = float(noise_std)
+        self.bias = float(bias)
+        self.drift_std = float(drift_std)
+        if self.noise_std < 0.0 or self.drift_std < 0.0:
+            raise ValueError("depth noise values must be non-negative")
+        if not np.isfinite(self.bias):
+            raise ValueError("bias must be finite")
+        self.seed = seed
+        self.rng = np.random.default_rng(seed)
         self.current_drift = 0.0
 
-        if seed is not None:
-            np.random.seed(seed)
-
     def reset(self):
-        """重置随机游走（用于新一轮仿真）"""
+        self.rng = np.random.default_rng(self.seed)
         self.current_drift = 0.0
 
     def measure(self, true_depth: float, dt: float = 1.0) -> float:
-        """
-        测量深度
+        true_depth = float(true_depth)
+        dt = float(dt)
+        if not np.isfinite(true_depth):
+            raise ValueError("true_depth must be finite")
+        if not np.isfinite(dt) or dt <= 0.0:
+            raise ValueError("dt must be finite and positive")
 
-        Args:
-            true_depth: 真实深度 (m, >=0)
-            dt: 时间步长 (秒)
-
-        Returns:
-            depth: 测量深度 (m)
-        """
-
-        # 随机游走（漂移）
-        drift_increment = np.random.normal(
+        self.current_drift += self.rng.normal(
             0.0,
-            self.drift_std * np.sqrt(dt)
+            self.drift_std * np.sqrt(dt),
         )
-        self.current_drift += drift_increment
-
-        # 测量噪声
-        noise = np.random.normal(0.0, self.noise_std)
-
-        measured_depth = (
-                true_depth +
-                self.bias +
-                self.current_drift +
-                noise
-        )
-        return measured_depth
+        noise = self.rng.normal(0.0, self.noise_std)
+        return float(true_depth + self.bias + self.current_drift + noise)
