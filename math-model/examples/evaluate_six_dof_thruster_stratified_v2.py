@@ -16,6 +16,7 @@ for path in (PROJECT_ROOT / "examples", SRC_ROOT):
         sys.path.insert(0, str(path))
 
 import evaluate_six_dof_thruster_stratified as v1
+from evaluation.protocol import prepare_locked_protocol
 from ftc.safety_supervisor import FTCSupervisorConfig
 
 
@@ -25,25 +26,18 @@ DEFAULT_PROTOCOL = (
 
 
 def validate_protocol(protocol, protocol_path):
-    if protocol.get("protocol_id") != "six_dof_thruster_stratified_v2":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not locked")
-    for relative, expected in protocol.get("code_sha256", {}).items():
-        if v1.sha256_file(REPOSITORY_ROOT / relative) != expected:
-            raise RuntimeError(f"code hash mismatch: {relative}")
-    for relative, expected in protocol.get("artifact_sha256", {}).items():
-        if v1.sha256_file(REPOSITORY_ROOT / relative) != expected:
-            raise RuntimeError(f"artifact hash mismatch: {relative}")
-    configuration = protocol["configuration"]
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_thruster_stratified_v2",
+        output_message="locked benchmark output already exists",
+    )
     if tuple(configuration["thrusters"]) != v1.THRUSTER_NAMES:
         raise ValueError("all six thrusters must be declared in layout order")
     if int(configuration["replicate_count"]) < 3:
         raise ValueError("at least three paired replicates are required")
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError("locked benchmark output already exists")
-    return configuration, output_dir, v1.sha256_file(protocol_path)
+    return configuration, output_dir, protocol_hash
 
 
 def main():

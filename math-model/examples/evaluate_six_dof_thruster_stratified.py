@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -34,6 +33,7 @@ from demo_six_dof_unified_diagnostics import (
     target_provider,
 )
 from environment.six_dof_simulator import SixDOFSimulator
+from evaluation.protocol import prepare_locked_protocol
 from ftc.safety_supervisor import (
     FTCSafetySupervisor,
     FTCSupervisorConfig,
@@ -49,31 +49,19 @@ DEFAULT_PROTOCOL = (
 THRUSTER_NAMES = ("H1", "H2", "H3", "H4", "V1", "V2")
 
 
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest().lower()
-
-
 def validate_protocol(protocol, protocol_path):
-    if protocol.get("protocol_id") != "six_dof_thruster_stratified_v1":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not locked")
-    for relative, expected in protocol.get("code_sha256", {}).items():
-        if sha256_file(REPOSITORY_ROOT / relative) != expected:
-            raise RuntimeError(f"code hash mismatch: {relative}")
-    configuration = protocol["configuration"]
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_thruster_stratified_v1",
+        output_message="locked benchmark output already exists",
+    )
     if tuple(configuration["thrusters"]) != THRUSTER_NAMES:
         raise ValueError("all six thrusters must be declared in layout order")
     if int(configuration["replicate_count"]) < 3:
         raise ValueError("at least three paired replicates are required")
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError("locked benchmark output already exists")
-    return configuration, output_dir, sha256_file(protocol_path)
+    return configuration, output_dir, protocol_hash
 
 
 def _strategy_config(strategy):

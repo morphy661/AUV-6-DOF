@@ -2,7 +2,6 @@
 
 import argparse
 import csv
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -17,6 +16,10 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from environment.six_dof_simulator import SixDOFSimulator
+from evaluation.protocol import (
+    canonical_sha256,
+    prepare_locked_protocol,
+)
 from evaluation.sensor_fault_stress_benchmark import (
     default_sensor_fault_stress_scenarios,
     evaluate_sensor_fault_stress_mission,
@@ -34,24 +37,6 @@ from simple_control.six_dof_controller import PoseTarget
 DEFAULT_PROTOCOL = (
     REPOSITORY_ROOT / "docs" / "six_dof_sensor_fault_stress_protocol_v1.json"
 )
-
-
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as file:
-        for block in iter(lambda: file.read(65536), b""):
-            digest.update(block)
-    return digest.hexdigest()
-
-
-def canonical_sha256(value):
-    payload = json.dumps(
-        value,
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=True,
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
 
 
 def target_provider(time_s, _state):
@@ -154,34 +139,29 @@ def run_mission(scenario, *, duration, dt, seed):
 
 
 def validate_protocol(protocol, protocol_path, scenarios):
-    if protocol.get("protocol_id") != "six_dof_sensor_fault_stress_v1":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not marked as locked")
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_sensor_fault_stress_v1",
+        code_message="code changed after freeze: {relative}",
+        output_message=(
+            "frozen V1 output already exists; it cannot be overwritten"
+        ),
+    )
     expected_matrix_hash = protocol.get("scenario_matrix_sha256")
     actual_matrix_hash = canonical_sha256([
         scenario.as_dict() for scenario in scenarios
     ])
     if actual_matrix_hash != expected_matrix_hash:
         raise RuntimeError("scenario matrix differs from the frozen protocol")
-    for relative, expected_hash in protocol.get("code_sha256", {}).items():
-        path = REPOSITORY_ROOT / relative
-        actual_hash = sha256_file(path)
-        if actual_hash != expected_hash:
-            raise RuntimeError(f"code changed after freeze: {relative}")
-    configuration = protocol["configuration"]
     if int(configuration["missions_per_scenario"]) <= 0:
         raise ValueError("missions_per_scenario must be positive")
     if float(configuration["duration_s"]) <= 12.0:
         raise ValueError("duration_s must exceed the final fault interval")
     if float(configuration["dt_s"]) <= 0.0:
         raise ValueError("dt_s must be positive")
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError(
-            "frozen V1 output already exists; it cannot be overwritten"
-        )
-    return configuration, output_dir, sha256_file(protocol_path)
+    return configuration, output_dir, protocol_hash
 
 
 def save_csv(rows, path):

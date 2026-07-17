@@ -60,9 +60,22 @@ The following versioned runners contain repeated protocol loading, hashing, iter
 
 They should eventually become parameterized runners with small protocol-specific summary functions. They are not changed in V1 because locked JSON protocols contain exact file hashes. Removing or rewriting them before creating a repository release tag would damage historical reproducibility.
 
-### Next: common evaluation utilities
+### Completed: common locked-protocol utilities
 
-Protocol validation, SHA-256 calculation, CSV serialization, percentile helpers, and output-directory checks are repeated across evaluation scripts. A small `evaluation/protocol.py` module can replace these copies after the current code is committed as a reproducible baseline.
+The pre-refactor baseline was committed as `da60db4`. Nine evaluation runners now delegate their shared immutable-protocol preflight to:
+
+- `math-model/src/evaluation/protocol.py`
+
+The shared module owns stable JSON/file hashing, protocol identity and lock checks, code/artifact manifest verification, and output overwrite prevention. Mission-count, scenario-matrix, thruster-layout, timing, and acceptance rules remain in their experiment-specific runners.
+
+Reduction in the active production code:
+
+- Four local SHA-256 implementations reduced to one.
+- Nine repeated hash/output preflight paths reduced to one.
+- Nine runners reduced from 2,602 to 2,515 physical lines (-87).
+- The common module is 70 physical lines, giving a net production reduction of 17 lines.
+
+The existing locked JSON protocols and recorded outputs were not rewritten. A future execution after this refactor must use a new protocol version with fresh hashes and a new output directory; the pre-refactor runner sources remain available from commit `da60db4`.
 
 ## Archive candidates, not immediate deletions
 

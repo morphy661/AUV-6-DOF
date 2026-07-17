@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -34,6 +33,7 @@ from demo_six_dof_unified_diagnostics import (
     run_demo,
 )
 from model_six_dof_multitask import AUVSixDOFMultiTaskDetector
+from evaluation.protocol import prepare_locked_protocol
 from presentation.six_dof_model_bridge import SixDOFModelBridge
 
 
@@ -45,39 +45,21 @@ DEFAULT_PROTOCOL = (
 TIER_RANK = {"normal": 0, "log_only": 1, "possible": 2, "confirmed": 3}
 
 
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest().lower()
-
-
 def validate_protocol(protocol, protocol_path):
-    if protocol.get("protocol_id") != "six_dof_unified_random_batch_v1":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not locked")
-    if protocol.get("evaluation_type") != "development_random_batch":
-        raise ValueError("this script is only for the declared development batch")
-    for relative, expected in protocol.get("code_sha256", {}).items():
-        actual = sha256_file(REPOSITORY_ROOT / relative)
-        if actual != expected:
-            raise RuntimeError(f"code hash mismatch: {relative}")
-    for relative, expected in protocol.get("artifact_sha256", {}).items():
-        actual = sha256_file(REPOSITORY_ROOT / relative)
-        if actual != expected:
-            raise RuntimeError(f"artifact hash mismatch: {relative}")
-    configuration = protocol["configuration"]
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_unified_random_batch_v1",
+        evaluation_type="development_random_batch",
+        output_message="locked batch output already exists",
+    )
     count = int(configuration["mission_count"])
     base_seed = int(configuration["base_seed"])
     if count < 20:
         raise ValueError("development batch must contain at least 20 missions")
     seeds = list(range(base_seed, base_seed + count))
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError("locked batch output already exists")
-    return configuration, seeds, output_dir, sha256_file(protocol_path)
+    return configuration, seeds, output_dir, protocol_hash
 
 
 def _frames_in_interval(frames, start, end, grace=0.0):

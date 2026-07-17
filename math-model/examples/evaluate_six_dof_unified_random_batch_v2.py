@@ -28,6 +28,7 @@ for path in (PROJECT_ROOT / "examples", SRC_ROOT, MODEL_ROOT):
 
 import evaluate_six_dof_unified_random_batch as v1
 from demo_six_dof_unified_diagnostics import run_demo
+from evaluation.protocol import prepare_locked_protocol
 from model_six_dof_multitask import AUVSixDOFMultiTaskDetector
 from presentation.six_dof_model_bridge import SixDOFModelBridge
 
@@ -40,30 +41,20 @@ DEFAULT_PROTOCOL = (
 
 
 def validate_protocol(protocol, protocol_path):
-    if protocol.get("protocol_id") != "six_dof_unified_random_batch_v2":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not locked")
-    if protocol.get("evaluation_type") != "development_random_batch":
-        raise ValueError("this script is only for the declared development batch")
-    for relative, expected in protocol.get("code_sha256", {}).items():
-        actual = v1.sha256_file(REPOSITORY_ROOT / relative)
-        if actual != expected:
-            raise RuntimeError(f"code hash mismatch: {relative}")
-    for relative, expected in protocol.get("artifact_sha256", {}).items():
-        actual = v1.sha256_file(REPOSITORY_ROOT / relative)
-        if actual != expected:
-            raise RuntimeError(f"artifact hash mismatch: {relative}")
-    configuration = protocol["configuration"]
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_unified_random_batch_v2",
+        evaluation_type="development_random_batch",
+        output_message="locked batch output already exists",
+    )
     count = int(configuration["mission_count"])
     base_seed = int(configuration["base_seed"])
     if count < 20:
         raise ValueError("development batch must contain at least 20 missions")
     seeds = list(range(base_seed, base_seed + count))
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError("locked batch output already exists")
-    return configuration, seeds, output_dir, v1.sha256_file(protocol_path)
+    return configuration, seeds, output_dir, protocol_hash
 
 
 def _rate(rows, key):

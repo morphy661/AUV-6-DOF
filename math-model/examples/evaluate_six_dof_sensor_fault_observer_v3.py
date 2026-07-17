@@ -16,9 +16,9 @@ from evaluate_six_dof_sensor_fault_observer_development import (
     run_mission,
     save_csv,
 )
-from evaluate_six_dof_sensor_fault_stress import (
+from evaluation.protocol import (
     canonical_sha256,
-    sha256_file,
+    prepare_locked_protocol,
 )
 from evaluation.sensor_fault_observer_benchmark_v3 import (
     summarize_sensor_fault_observer_benchmark_v3,
@@ -36,20 +36,21 @@ DEFAULT_PROTOCOL = (
 
 
 def validate_protocol(protocol, protocol_path, scenarios):
-    if protocol.get("protocol_id") != "six_dof_sensor_fault_observer_v3":
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not marked as locked")
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        "six_dof_sensor_fault_observer_v3",
+        code_message="code changed after V3 freeze: {relative}",
+        output_message=(
+            "frozen V3 output already exists; it cannot be overwritten"
+        ),
+    )
     actual_matrix_hash = canonical_sha256([
         scenario.as_dict() for scenario in scenarios
     ])
     if actual_matrix_hash != protocol.get("scenario_matrix_sha256"):
         raise RuntimeError("scenario matrix differs from the V3 protocol")
-    for relative, expected_hash in protocol.get("code_sha256", {}).items():
-        path = REPOSITORY_ROOT / relative
-        if sha256_file(path) != expected_hash:
-            raise RuntimeError(f"code changed after V3 freeze: {relative}")
-    configuration = protocol["configuration"]
     if int(configuration["missions_per_scenario"]) <= 0:
         raise ValueError("missions_per_scenario must be positive")
     if float(configuration["duration_s"]) <= 12.0:
@@ -60,12 +61,7 @@ def validate_protocol(protocol, protocol_path, scenarios):
         len(scenarios) * int(configuration["missions_per_scenario"])
     ):
         raise ValueError("mission_count does not match the scenario matrix")
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError(
-            "frozen V3 output already exists; it cannot be overwritten"
-        )
-    return configuration, output_dir, sha256_file(protocol_path)
+    return configuration, output_dir, protocol_hash
 
 
 def main():

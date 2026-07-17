@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import csv
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -27,6 +26,7 @@ for path in (SRC_ROOT, EXAMPLES_ROOT):
 
 import evaluate_six_dof_thruster_stratified as stratified
 from actuators.esc_telemetry_faults import ESCTelemetryFaultInjector
+from evaluation.protocol import prepare_locked_protocol
 from ftc.safety_supervisor import (
     FTCAction,
     FTCSafetySupervisor,
@@ -50,39 +50,24 @@ BENIGN_TELEMETRY_EVENTS = (
 ALL_STRESS_EVENTS = COMMUNICATION_EVENTS + BENIGN_TELEMETRY_EVENTS
 
 
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest().lower()
-
-
 def validate_protocol(protocol, protocol_path):
-    if protocol.get("protocol_id") not in (
-        "six_dof_esc_telemetry_stress_v1",
-        "six_dof_esc_telemetry_stress_v2",
-    ):
-        raise ValueError("unexpected protocol_id")
-    if not protocol.get("locked_before_execution", False):
-        raise ValueError("protocol is not locked")
-    for relative, expected in protocol.get("code_sha256", {}).items():
-        if sha256_file(REPOSITORY_ROOT / relative) != expected:
-            raise RuntimeError(f"code hash mismatch: {relative}")
-    for relative, expected in protocol.get("artifact_sha256", {}).items():
-        if sha256_file(REPOSITORY_ROOT / relative) != expected:
-            raise RuntimeError(f"artifact hash mismatch: {relative}")
-    configuration = protocol["configuration"]
+    configuration, output_dir, protocol_hash = prepare_locked_protocol(
+        protocol,
+        protocol_path,
+        REPOSITORY_ROOT,
+        (
+            "six_dof_esc_telemetry_stress_v1",
+            "six_dof_esc_telemetry_stress_v2",
+        ),
+        output_message="locked benchmark output already exists",
+    )
     if tuple(configuration["thrusters"]) != THRUSTER_NAMES:
         raise ValueError("all six thrusters must be declared in layout order")
     if tuple(configuration["stress_events"]) != ALL_STRESS_EVENTS:
         raise ValueError("unexpected ESC telemetry stress event declaration")
     if int(configuration["replicate_count"]) < 3:
         raise ValueError("at least three paired replicates are required")
-    output_dir = REPOSITORY_ROOT / protocol["output_directory"]
-    if output_dir.exists():
-        raise FileExistsError("locked benchmark output already exists")
-    return configuration, output_dir, sha256_file(protocol_path)
+    return configuration, output_dir, protocol_hash
 
 
 def strategy_config(strategy):
