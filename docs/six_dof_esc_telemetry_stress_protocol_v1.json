@@ -1,0 +1,80 @@
+{
+  "protocol_id": "six_dof_esc_telemetry_stress_v1",
+  "evaluation_type": "paired_locked_esc_telemetry_stress",
+  "locked_before_execution": true,
+  "independent_blind_test_claim": false,
+  "real_sea_trial_claim": false,
+  "configuration": {
+    "thrusters": ["H1", "H2", "H3", "H4", "V1", "V2"],
+    "contexts": ["clean", "sensor_stress"],
+    "replicate_count": 5,
+    "base_seed": 20261700,
+    "event_start_times_s": [16.55, 16.75, 16.95, 17.15, 17.35],
+    "duration_s": 22.0,
+    "dt_s": 0.05,
+    "stress_events": [
+      "continuous_packet_loss",
+      "communication_freeze",
+      "bus_voltage_dip",
+      "quantization"
+    ],
+    "event_durations_s": {
+      "continuous_packet_loss": 1.20,
+      "communication_freeze": 1.20,
+      "bus_voltage_dip": 1.00,
+      "quantization": 3.00
+    },
+    "bus_voltage_dip_voltage_scale": 0.55,
+    "bus_voltage_dip_signal_scale": 0.65,
+    "current_quantization_a": 0.25,
+    "rpm_quantization": 150.0,
+    "esc_noise": {
+      "current_noise_std_a": 0.08,
+      "rpm_noise_std": 40.0,
+      "voltage_noise_std_v": 0.20,
+      "temperature_noise_std_c": 0.35
+    },
+    "legacy_strategy": "legacy_zero_fill",
+    "deployed_strategy": "freshness_guarded_default",
+    "strategies": [
+      {
+        "name": "legacy_zero_fill",
+        "minimum_excitation_ratio": 0.20,
+        "vertical_minimum_excitation_ratio": 0.08,
+        "require_fresh_esc_telemetry": false,
+        "maximum_esc_telemetry_age_s": 0.20
+      },
+      {
+        "name": "freshness_guarded_default",
+        "minimum_excitation_ratio": 0.20,
+        "vertical_minimum_excitation_ratio": 0.08,
+        "require_fresh_esc_telemetry": true,
+        "maximum_esc_telemetry_age_s": 0.20
+      }
+    ]
+  },
+  "acceptance_thresholds": {
+    "legacy_continuous_loss_false_target_rate_min": 0.90,
+    "deployed_overall_false_target_rate_max": 0.0,
+    "deployed_communication_record_rate_min": 1.0,
+    "deployed_real_fault_target_recall_min": 1.0,
+    "deployed_real_fault_wrong_target_rate_max": 0.0,
+    "deployed_real_fault_median_delay_s_max": 1.0
+  },
+  "output_directory": "math-model/results/six_dof_esc_telemetry_stress_v1_20260717",
+  "code_sha256": {
+    "math-model/examples/evaluate_six_dof_esc_telemetry_stress.py": "bd74df0bc6b700d551551079f6657d00a7afbd0e2343974837375379853f4718",
+    "math-model/examples/evaluate_six_dof_thruster_stratified.py": "3b4cb5a58430b242c96b6c100530b9a61013c81c4f4572c67778d264dec576b8",
+    "math-model/examples/demo_six_dof_unified_diagnostics.py": "d311570207f3128108050d4542c5ede3c860fee746cbc583bdc62015a61d7c04",
+    "math-model/src/ftc/safety_supervisor.py": "b4ea31724f57d1fd41b50979a50313bbed5006ec49bed7360c3c7aff9bb37193",
+    "math-model/src/environment/six_dof_simulator.py": "8d9307f1315c70a6bd6bd1144d2e4ffaad9be6709019c45283b70823e1e03bd3",
+    "math-model/src/actuators/six_dof_thruster_faults.py": "947be5a6d36108197341c6cfca42f5dd317e05d34578e025a70609196165a861",
+    "math-model/src/actuators/thruster_array.py": "c15de92a33163200a41fdff4179e0384aadf135d786c7f94011ee507706af631",
+    "math-model/src/simple_control/six_dof_controller.py": "b9cbec5dda71078767e4fd639bc49aa741eebaa474f3ca1f992da7a8e780b49c",
+    "math-model/src/sensors/sensor_faults.py": "e0ee1a2041e82b68194566e363477e6de8a2b20aff190244b0fe143a4c1cca1a",
+    "math-model/src/sensors/six_dof_sensor_suite.py": "c793dca2ec9f1877dd1d0f335333d654a06984a4713fd2e2c46d97ff396fe24c",
+    "math-model/src/diagnosis/sensor_health_monitor.py": "2a2be483fca60e6a1942234bb1296372647ec0fbf6633bd841f2c1566daa1097",
+    "math-model/src/diagnosis/sensor_fault_observer.py": "60162311e3373c354c7634bfedff85a57c56fb046cf3d6ba5a21f634c4e6bca8",
+    "math-model/src/estimation/six_dof_state_estimator.py": "acf83ec94507b47cfa8678ecfe17fac22120a15d38ea6898ddddb2d62a5fe5b2"
+  }
+}

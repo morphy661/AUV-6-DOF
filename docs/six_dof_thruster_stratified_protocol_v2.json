@@ -1,0 +1,70 @@
+{
+  "protocol_id": "six_dof_thruster_stratified_v2",
+  "evaluation_type": "paired_stratified_deployed_config_validation",
+  "locked_before_execution": true,
+  "independent_blind_test_claim": false,
+  "real_sea_trial_claim": false,
+  "configuration": {
+    "thrusters": ["H1", "H2", "H3", "H4", "V1", "V2"],
+    "contexts": ["clean", "sensor_stress"],
+    "replicate_count": 5,
+    "base_seed": 20261200,
+    "fault_start_times_s": [16.60, 16.80, 17.00, 17.20, 17.40],
+    "duration_s": 22.0,
+    "dt_s": 0.05,
+    "fault_mode": "no_output",
+    "esc_noise": {
+      "current_noise_std_a": 0.06,
+      "rpm_noise_std": 30.0,
+      "voltage_noise_std_v": 0.15,
+      "temperature_noise_std_c": 0.30
+    },
+    "baseline_strategy": "baseline_020",
+    "candidate_strategy": "deployed_default",
+    "strategies": [
+      {
+        "name": "baseline_020",
+        "minimum_excitation_ratio": 0.20,
+        "vertical_minimum_excitation_ratio": null
+      },
+      {
+        "name": "deployed_default",
+        "minimum_excitation_ratio": 0.20,
+        "vertical_minimum_excitation_ratio": 0.08
+      }
+    ]
+  },
+  "acceptance_thresholds": {
+    "target_recall_min": 1.0,
+    "sensor_stress_target_recall_min": 1.0,
+    "wrong_target_mission_rate_max": 0.0,
+    "healthy_false_target_rate_max": 0.0,
+    "candidate_vertical_median_target_delay_s_max": 1.0,
+    "paired_vertical_median_improvement_s_min": 2.0,
+    "horizontal_target_delay_change_s_max": 0.000001
+  },
+  "baseline_v1_summary_path": "math-model/results/six_dof_thruster_stratified_v1_20260717/thruster_stratified_summary.json",
+  "output_directory": "math-model/results/six_dof_thruster_stratified_v2_20260717",
+  "code_sha256": {
+    "math-model/examples/evaluate_six_dof_thruster_stratified_v2.py": "ca85160c3092716964356c9bb7c7bc755287d9c9a00e8fe0fbe5bca58599c467",
+    "math-model/examples/evaluate_six_dof_thruster_stratified.py": "3b4cb5a58430b242c96b6c100530b9a61013c81c4f4572c67778d264dec576b8",
+    "math-model/examples/demo_six_dof_unified_diagnostics.py": "d311570207f3128108050d4542c5ede3c860fee746cbc583bdc62015a61d7c04",
+    "math-model/src/ftc/safety_supervisor.py": "c19304bfc780f82583456015fb3a577897d1d52434f54cfd1fdaf40b8a7789a8",
+    "math-model/src/environment/six_dof_simulator.py": "72672ade12569baffa08a802d4c6686e67e2c9dbb89ae3d621b562d541f95f07",
+    "math-model/src/environment/six_dof_dynamics.py": "e5af2be0a4a654ad5284699cab97f19c0d4a8b4b564bebaf3008329dc6e147e0",
+    "math-model/src/actuators/six_dof_thruster_faults.py": "3be7160a93fa41b290a743eb57cf9d6690117274c01a78607839be2b56cfae56",
+    "math-model/src/actuators/thruster_array.py": "c15de92a33163200a41fdff4179e0384aadf135d786c7f94011ee507706af631",
+    "math-model/src/simple_control/six_dof_controller.py": "b9cbec5dda71078767e4fd639bc49aa741eebaa474f3ca1f992da7a8e780b49c",
+    "math-model/src/sensors/sensor_faults.py": "e0ee1a2041e82b68194566e363477e6de8a2b20aff190244b0fe143a4c1cca1a",
+    "math-model/src/sensors/six_dof_sensor_suite.py": "c793dca2ec9f1877dd1d0f335333d654a06984a4713fd2e2c46d97ff396fe24c",
+    "math-model/src/sensors/depth_sensor.py": "a206fb842fc3a63ea506402273e6f3f5a5965b7da5d053265d41e191469ff3d3",
+    "math-model/src/sensors/imu_sensor.py": "442cafa14aa374e507a566829524105c99c83ed85d687db68b381c3ede9c82e2",
+    "math-model/src/sensors/dvl_sensor.py": "49423a8ce4539712dbc7fb4f67a4a9cff8fa5303f473097eb4a1fcc634eaa32c",
+    "math-model/src/diagnosis/sensor_health_monitor.py": "2a2be483fca60e6a1942234bb1296372647ec0fbf6633bd841f2c1566daa1097",
+    "math-model/src/diagnosis/sensor_fault_observer.py": "60162311e3373c354c7634bfedff85a57c56fb046cf3d6ba5a21f634c4e6bca8",
+    "math-model/src/estimation/six_dof_state_estimator.py": "acf83ec94507b47cfa8678ecfe17fac22120a15d38ea6898ddddb2d62a5fe5b2"
+  },
+  "artifact_sha256": {
+    "math-model/results/six_dof_thruster_stratified_v1_20260717/thruster_stratified_summary.json": "a7d291df03582ff581ae6ce4d8511d89afc9863dd10ae7dda87a761ab300600e"
+  }
+}

@@ -1,0 +1,458 @@
+{
+  "benchmark": "six_dof_transient_recovery_v1",
+  "device": "cuda",
+  "acceptance_policy": "a short observable pose excursion must recover; raw health logs are allowed, but no formal maintenance ticket, FTC intervention, thruster isolation, abort, or ascent request is allowed",
+  "scenario_count": 4,
+  "mission_count": 12,
+  "window_count": 396,
+  "raw_health_event_count": 4,
+  "formal_maintenance_ticket_count": 0,
+  "recovered_missions": 12,
+  "missions_with_ftc_intervention": 0,
+  "passed_missions": 12,
+  "all_passed": true,
+  "temporal_config": {
+    "enter_fault_probability": 0.55,
+    "no_output_confirmation_s": 0.0,
+    "thrust_loss_confirmation_s": 2.5,
+    "exit_normal_probability": 0.75,
+    "recovery_confirmation_s": 3.75,
+    "probability_time_constant_s": 0.0,
+    "location_probability_threshold": 0.0,
+    "location_confirmation_s": 0.0
+  },
+  "maintenance_ticket_config": {
+    "minimum_excitation_ratio": 0.05,
+    "minimum_thrust_loss_motion_evidence": 0.3,
+    "minimum_no_output_local_anomaly": 0.5,
+    "ticket_confirmation_s": 0.0,
+    "thrust_loss_pending_confirmation_s": 8.0,
+    "thrust_loss_recovery_cancel_s": 3.75,
+    "thrust_loss_recurrence_window_s": 30.0,
+    "thrust_loss_recurrence_count": 2,
+    "ticket_recovery_s": 1.25,
+    "merge_gap_s": 30.0,
+    "evidence_tail_steps": 20
+  },
+  "mission_results": [
+    {
+      "mission_id": 0,
+      "scenario": "surge_current_pulse",
+      "seed": 8421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.02293023393232639,
+      "peak_normalized_pose_error": 0.8876387748548407,
+      "final_normalized_pose_error": 0.0674171957073734,
+      "remaining_excursion_fraction": 0.05144734863794232,
+      "peak_position_error_m": 0.22179320120512708,
+      "final_position_error_m": 0.016851832768435594,
+      "peak_attitude_error_rad": 0.014042934720184433,
+      "final_attitude_error_rad": 0.0002203347492692744,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 1,
+      "scenario": "surge_current_pulse",
+      "seed": 8422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.047794169157889574,
+      "peak_normalized_pose_error": 0.8971231647433671,
+      "final_normalized_pose_error": 0.05014082389404362,
+      "remaining_excursion_fraction": 0.00276295139851713,
+      "peak_position_error_m": 0.22415559644545335,
+      "final_position_error_m": 0.012497344250965384,
+      "peak_attitude_error_rad": 0.013641002240153683,
+      "final_attitude_error_rad": 0.0004583476630549373,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 2,
+      "scenario": "surge_current_pulse",
+      "seed": 8423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03592322057439808,
+      "peak_normalized_pose_error": 0.9371608407321347,
+      "final_normalized_pose_error": 0.10281564392069321,
+      "remaining_excursion_fraction": 0.07422284850313669,
+      "peak_position_error_m": 0.23412512837894703,
+      "final_position_error_m": 0.0256861092677013,
+      "peak_attitude_error_rad": 0.01299501175023067,
+      "final_attitude_error_rad": 0.0007159631860202759,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 3,
+      "scenario": "sway_yaw_current_pulse",
+      "seed": 9421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.05331059749255426,
+      "peak_normalized_pose_error": 1.4514333886238773,
+      "final_normalized_pose_error": 0.09041138292847492,
+      "remaining_excursion_fraction": 0.02653614236979837,
+      "peak_position_error_m": 0.21213961758907143,
+      "final_position_error_m": 0.021992122595185386,
+      "peak_attitude_error_rad": 0.18430125500733802,
+      "final_attitude_error_rad": 0.0031198604899189274,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 4,
+      "scenario": "sway_yaw_current_pulse",
+      "seed": 9422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03081617926636615,
+      "peak_normalized_pose_error": 1.4227143186364166,
+      "final_normalized_pose_error": 0.04307977245880122,
+      "remaining_excursion_fraction": 0.008810697310067075,
+      "peak_position_error_m": 0.20244054053883484,
+      "final_position_error_m": 0.010411892696693008,
+      "peak_attitude_error_rad": 0.18308138668912774,
+      "final_attitude_error_rad": 0.001656090950450543,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 5,
+      "scenario": "sway_yaw_current_pulse",
+      "seed": 9423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04280628858251788,
+      "peak_normalized_pose_error": 1.43128956298276,
+      "final_normalized_pose_error": 0.04050302314367338,
+      "remaining_excursion_fraction": 0.0,
+      "peak_position_error_m": 0.2019360353236136,
+      "final_position_error_m": 0.009733581936243144,
+      "peak_attitude_error_rad": 0.18476731972660287,
+      "final_attitude_error_rad": 0.001675632997845175,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 6,
+      "scenario": "vertical_current_pulse",
+      "seed": 10421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03597130502731116,
+      "peak_normalized_pose_error": 0.8352939981035941,
+      "final_normalized_pose_error": 0.0856739459912203,
+      "remaining_excursion_fraction": 0.062180945686182085,
+      "peak_position_error_m": 0.20882231545754382,
+      "final_position_error_m": 0.021319359252245366,
+      "peak_attitude_error_rad": 0.0005419243569706145,
+      "final_attitude_error_rad": 0.001234963390116879,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 7,
+      "scenario": "vertical_current_pulse",
+      "seed": 10422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04593239643623138,
+      "peak_normalized_pose_error": 0.8398271481272639,
+      "final_normalized_pose_error": 0.1010962159745937,
+      "remaining_excursion_fraction": 0.06948505380702018,
+      "peak_position_error_m": 0.20995381052047396,
+      "final_position_error_m": 0.025237862744477126,
+      "peak_attitude_error_rad": 0.0008530639010892778,
+      "final_attitude_error_rad": 0.00081124113019753,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 8,
+      "scenario": "vertical_current_pulse",
+      "seed": 10423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03811702161008797,
+      "peak_normalized_pose_error": 0.8373087809787444,
+      "final_normalized_pose_error": 0.08552825873667701,
+      "remaining_excursion_fraction": 0.059323981473536284,
+      "peak_position_error_m": 0.20932589871999044,
+      "final_position_error_m": 0.021227760380994276,
+      "peak_attitude_error_rad": 0.0005524093422415214,
+      "final_attitude_error_rad": 0.0015384916546512572,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 9,
+      "scenario": "multi_axis_turbulence_pulse",
+      "seed": 11421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.016335210219644312,
+      "peak_normalized_pose_error": 1.942386287522761,
+      "final_normalized_pose_error": 0.07172876849820731,
+      "remaining_excursion_fraction": 0.028760170969155095,
+      "peak_position_error_m": 0.37755871552884185,
+      "final_position_error_m": 0.017656634351518274,
+      "peak_attitude_error_rad": 0.19969285785276802,
+      "final_attitude_error_rad": 0.0018804659840835484,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 10,
+      "scenario": "multi_axis_turbulence_pulse",
+      "seed": 11422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.006237476240706434,
+      "peak_normalized_pose_error": 1.948977795226284,
+      "final_normalized_pose_error": 0.0925305138818465,
+      "remaining_excursion_fraction": 0.04441820494372552,
+      "peak_position_error_m": 0.37801270917161056,
+      "final_position_error_m": 0.02263002739758939,
+      "peak_attitude_error_rad": 0.20074561957825354,
+      "final_attitude_error_rad": 0.002877521429500655,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    },
+    {
+      "mission_id": 11,
+      "scenario": "multi_axis_turbulence_pulse",
+      "seed": 11423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.06146554212348285,
+      "peak_normalized_pose_error": 1.9528514854214396,
+      "final_normalized_pose_error": 0.16130916821029875,
+      "remaining_excursion_fraction": 0.0527886053296565,
+      "peak_position_error_m": 0.3818993988020654,
+      "final_position_error_m": 0.04001138446946394,
+      "peak_attitude_error_rad": 0.19856876093941622,
+      "final_attitude_error_rad": 0.0030226900216432716,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 900
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_abort_requested": false,
+      "ftc_controlled_ascent_requested": false,
+      "ftc_targeted_thrusters": [],
+      "passed": true
+    }
+  ],
+  "raw_health_events": [
+    {
+      "mission_id": 1,
+      "start_time_s": 20.0,
+      "end_time_s": 20.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5966628582031386,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6247140655396098,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.4096471789374107
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.16696237525231764
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 9,
+      "start_time_s": 16.25,
+      "end_time_s": 23.75,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8796813629174322,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.553982594507734,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.32884926723215135
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20088782837927094
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 10,
+      "start_time_s": 17.5,
+      "end_time_s": 25.0,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8598355699398917,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5612039221645653,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.3196190539365244
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.23784092764185158
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 11,
+      "start_time_s": 17.5,
+      "end_time_s": 25.0,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8606816148068004,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5889895841324354,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.3102132854105062
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.24844988221064074
+        }
+      ],
+      "requires_ftc": false
+    }
+  ],
+  "formal_maintenance_tickets": []
+}

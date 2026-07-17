@@ -1,0 +1,1277 @@
+{
+  "benchmark": "six_dof_sensor_fault_development",
+  "configuration": {
+    "missions_per_scenario": 2,
+    "duration_s": 18.0,
+    "dt_s": 0.05,
+    "base_seed": 20260717,
+    "scenario_matrix": [
+      {
+        "name": "normal",
+        "sensor": null,
+        "mode": "normal",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "depth_unavailable",
+        "sensor": "depth",
+        "mode": "unavailable",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "depth_stuck",
+        "sensor": "depth",
+        "mode": "stuck",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "depth_spike",
+        "sensor": "depth",
+        "mode": "spike",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 2.0
+      },
+      {
+        "name": "imu_unavailable",
+        "sensor": "imu",
+        "mode": "unavailable",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "imu_stuck",
+        "sensor": "imu",
+        "mode": "stuck",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "imu_spike",
+        "sensor": "imu",
+        "mode": "spike",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [
+          2
+        ],
+        "magnitude": 0.8
+      },
+      {
+        "name": "dvl_unavailable",
+        "sensor": "dvl",
+        "mode": "unavailable",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "dvl_stuck",
+        "sensor": "dvl",
+        "mode": "stuck",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "name": "dvl_spike",
+        "sensor": "dvl",
+        "mode": "spike",
+        "start_time_s": 5.0,
+        "duration_s": 4.0,
+        "channels": [
+          0
+        ],
+        "magnitude": 2.0
+      }
+    ]
+  },
+  "summary": {
+    "evaluation_type": "development_benchmark_not_blind",
+    "mission_count": 20,
+    "fault_mission_count": 18,
+    "normal_mission_count": 2,
+    "event_recall": 1.0,
+    "event_precision": 1.0,
+    "confirmed_event_count": 18,
+    "true_positive_event_count": 18,
+    "spurious_event_count": 0,
+    "mean_detection_delay_s": 0.3333333333333224,
+    "median_detection_delay_s": 0.04999999999999005,
+    "ftc_action_match_rate": 1,
+    "recovery_rate": 1,
+    "normal_false_event_missions": 0,
+    "normal_false_protective_missions": 0,
+    "wrong_thruster_target_count": 0,
+    "maximum_estimation_position_error_m": 1.559787532428519,
+    "per_scenario": {
+      "depth_spike": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "depth_stuck": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.899999999999987,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "depth_unavailable": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "dvl_spike": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "dvl_stuck": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.899999999999987,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "dvl_unavailable": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "imu_spike": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "imu_stuck": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.899999999999987,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "imu_unavailable": {
+        "missions": 2,
+        "event_recall": 1,
+        "mean_detection_delay_s": 0.04999999999999005,
+        "ftc_action_match_rate": 1,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      },
+      "normal": {
+        "missions": 2,
+        "event_recall": null,
+        "mean_detection_delay_s": null,
+        "ftc_action_match_rate": null,
+        "recovery_rate": 1,
+        "spurious_event_count": 0
+      }
+    },
+    "acceptance_checks": {
+      "event_recall_at_least_95pct": true,
+      "event_precision_at_least_95pct": true,
+      "ftc_action_match_at_least_95pct": true,
+      "recovery_rate_100pct": true,
+      "normal_false_protective_missions_zero": true,
+      "wrong_thruster_targets_zero": true
+    },
+    "all_acceptance_checks_passed": true
+  },
+  "missions": [
+    {
+      "scenario": "normal",
+      "sensor": null,
+      "mode": "normal",
+      "is_fault": false,
+      "exact_event_detected": false,
+      "detection_delay_s": null,
+      "confirmed_event_count": 0,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "normal_control",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.3578856330054185,
+      "maximum_estimation_position_error_m": 0.12909704281331796,
+      "seed": 20260717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04068352452165843,
+        "depth_drift_std_m_per_sqrt_s": 0.0005880063666750979,
+        "imu_attitude_noise_std_rad": 0.0024683357161976696,
+        "imu_gyro_noise_std_radps": 0.0005049582825314703,
+        "imu_accel_noise_std_mps2": 0.008724537689841279,
+        "dvl_velocity_noise_std_mps": 0.030090822923302056
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.15141086069709353,
+          0.9856732127349306,
+          0.5895799028659783,
+          0.009557528789089035,
+          0.007973879768062448,
+          0.027476379099169217
+        ],
+        "frequencies_radps": [
+          0.1170448362086071,
+          0.08907449399008964,
+          0.14774739712901774,
+          0.12612332256434755,
+          0.09978834250729146,
+          0.08787876068890603
+        ],
+        "phases_rad": [
+          0.7984798127922201,
+          0.4824692597533007,
+          -3.135967130211448,
+          -0.0876508205546207,
+          1.041860961847565,
+          2.129737315560609
+        ]
+      }
+    },
+    {
+      "scenario": "normal",
+      "sensor": null,
+      "mode": "normal",
+      "is_fault": false,
+      "exact_event_detected": false,
+      "detection_delay_s": null,
+      "confirmed_event_count": 0,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "normal_control",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.35007940755843825,
+      "maximum_estimation_position_error_m": 0.23684217281522832,
+      "seed": 20260718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06830453251421345,
+        "depth_drift_std_m_per_sqrt_s": 0.0018748422189791383,
+        "imu_attitude_noise_std_rad": 0.002803322954836265,
+        "imu_gyro_noise_std_radps": 0.0017289213693002829,
+        "imu_accel_noise_std_mps2": 0.016194163588123943,
+        "dvl_velocity_noise_std_mps": 0.01054845213686939
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6077601925091687,
+          0.004754541196185569,
+          0.10259506829572651,
+          0.018871680440417527,
+          0.0066577325178597754,
+          0.013162929668623065
+        ],
+        "frequencies_radps": [
+          0.1208950723679567,
+          0.08183272249535081,
+          0.0693080884073209,
+          0.05136999580533809,
+          0.14936742829617033,
+          0.14129053232159092
+        ],
+        "phases_rad": [
+          2.99803122268734,
+          2.574348880359114,
+          -2.2099585116209908,
+          0.39153023949192756,
+          1.2736350740117581,
+          -0.5697339505551233
+        ]
+      }
+    },
+    {
+      "scenario": "depth_unavailable",
+      "sensor": "depth",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.31707016616317957,
+      "maximum_estimation_position_error_m": 0.1526518005133855,
+      "seed": 20261717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04664677516271106,
+        "depth_drift_std_m_per_sqrt_s": 0.0012823296248034564,
+        "imu_attitude_noise_std_rad": 0.0022192154406920437,
+        "imu_gyro_noise_std_radps": 0.001262500100004001,
+        "imu_accel_noise_std_mps2": 0.023894647960446498,
+        "dvl_velocity_noise_std_mps": 0.04624188633086726
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.0648530498533777,
+          0.04153291393753167,
+          0.6018694753620877,
+          0.010763250862051956,
+          0.015406606065647276,
+          0.03304871722687155
+        ],
+        "frequencies_radps": [
+          0.11697057372689636,
+          0.1416119226672521,
+          0.0767302787144187,
+          0.09419764766681374,
+          0.09722595632803671,
+          0.13543578832621167
+        ],
+        "phases_rad": [
+          2.829513954072679,
+          -1.494798003614441,
+          2.216663904733651,
+          0.30308914921346686,
+          2.8182490874382635,
+          0.7196074743947651
+        ]
+      }
+    },
+    {
+      "scenario": "depth_unavailable",
+      "sensor": "depth",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.3555648569789138,
+      "maximum_estimation_position_error_m": 0.09695845983757821,
+      "seed": 20261718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.026051066285984255,
+        "depth_drift_std_m_per_sqrt_s": 0.000917128197084787,
+        "imu_attitude_noise_std_rad": 0.004993930384347244,
+        "imu_gyro_noise_std_radps": 0.0006376266356975392,
+        "imu_accel_noise_std_mps2": 0.02187107185948605,
+        "dvl_velocity_noise_std_mps": 0.012181493122952136
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.5068762774981392,
+          0.3907418555685802,
+          0.32968300617627344,
+          0.015454483355736372,
+          0.016099991805093077,
+          0.017832136649701152
+        ],
+        "frequencies_radps": [
+          0.052816907084679565,
+          0.0875678833418223,
+          0.1291488404214681,
+          0.09422609569930428,
+          0.09985263047340551,
+          0.09126233759805463
+        ],
+        "phases_rad": [
+          -2.424275156186367,
+          3.0416209303340525,
+          1.5247344247582921,
+          -0.22470906270544688,
+          0.7192774571774443,
+          -2.37252668119739
+        ]
+      }
+    },
+    {
+      "scenario": "depth_stuck",
+      "sensor": "depth",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.3509190196178125,
+      "maximum_estimation_position_error_m": 0.2063554272685133,
+      "seed": 20262717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06497623288081604,
+        "depth_drift_std_m_per_sqrt_s": 0.0008477551892104843,
+        "imu_attitude_noise_std_rad": 0.003027058491063031,
+        "imu_gyro_noise_std_radps": 0.0019073075458389361,
+        "imu_accel_noise_std_mps2": 0.01253317125085051,
+        "dvl_velocity_noise_std_mps": 0.03983473982287829
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.8034203781474399,
+          0.2359915674590345,
+          0.20355735323533414,
+          0.00013846259906819425,
+          0.00825549328878835,
+          0.006101239283305109
+        ],
+        "frequencies_radps": [
+          0.07026809331773837,
+          0.11576962130566827,
+          0.09806610192273844,
+          0.0752334026598737,
+          0.07618341245152267,
+          0.05460139548626178
+        ],
+        "phases_rad": [
+          -0.808607903363741,
+          -1.9974790456639497,
+          2.2922921584453473,
+          -0.8696912027377337,
+          1.8025342861119515,
+          0.6601853659010737
+        ]
+      }
+    },
+    {
+      "scenario": "depth_stuck",
+      "sensor": "depth",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.3306858111033163,
+      "maximum_estimation_position_error_m": 0.3219203857838392,
+      "seed": 20262718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.02785370193178114,
+        "depth_drift_std_m_per_sqrt_s": 0.000394291969283782,
+        "imu_attitude_noise_std_rad": 0.002331299537436807,
+        "imu_gyro_noise_std_radps": 0.0007170589574957707,
+        "imu_accel_noise_std_mps2": 0.015579329603307775,
+        "dvl_velocity_noise_std_mps": 0.039171747335623654
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.24347112036171148,
+          0.9923114972799985,
+          0.6911768535785312,
+          0.0006101335924033812,
+          0.00894635283213556,
+          0.01431641989137967
+        ],
+        "frequencies_radps": [
+          0.13490079724268328,
+          0.13929198399653164,
+          0.13273351735567734,
+          0.0769835419658119,
+          0.13455006269158942,
+          0.08952798957892458
+        ],
+        "phases_rad": [
+          2.271389834567258,
+          1.2594194188349705,
+          -1.8435020442628003,
+          -1.6247239848453712,
+          0.7112523780324258,
+          2.3599523562745315
+        ]
+      }
+    },
+    {
+      "scenario": "depth_spike",
+      "sensor": "depth",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.3636935672407698,
+      "maximum_estimation_position_error_m": 0.19428238350664492,
+      "seed": 20263717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04909295921107875,
+        "depth_drift_std_m_per_sqrt_s": 0.0018682392145263822,
+        "imu_attitude_noise_std_rad": 0.0029071232396173535,
+        "imu_gyro_noise_std_radps": 0.0021862239600954716,
+        "imu_accel_noise_std_mps2": 0.029377896905878158,
+        "dvl_velocity_noise_std_mps": 0.028537082418881143
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6122905785943736,
+          0.9936105386486447,
+          0.10077027105630348,
+          0.0067408278846454815,
+          0.002785386116238884,
+          0.024339465344377666
+        ],
+        "frequencies_radps": [
+          0.06920393128479986,
+          0.0818961782202613,
+          0.05275069201659303,
+          0.09349781126137305,
+          0.13850985704022784,
+          0.12951213519188423
+        ],
+        "phases_rad": [
+          2.1167300292549953,
+          3.061845677936634,
+          0.16361699137934194,
+          -1.4716266705200705,
+          -0.304015949948389,
+          -2.275176915876944
+        ]
+      }
+    },
+    {
+      "scenario": "depth_spike",
+      "sensor": "depth",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.36464119516080645,
+      "maximum_estimation_position_error_m": 0.24922672272635463,
+      "seed": 20263718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0647368026586109,
+        "depth_drift_std_m_per_sqrt_s": 0.0005408994072375296,
+        "imu_attitude_noise_std_rad": 0.0005638757127295866,
+        "imu_gyro_noise_std_radps": 0.002389573176437494,
+        "imu_accel_noise_std_mps2": 0.015014564316798908,
+        "dvl_velocity_noise_std_mps": 0.038044935276037764
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.3245192132647451,
+          0.30445149684665995,
+          0.09031490214255973,
+          0.016571616080576505,
+          0.0012878708016469931,
+          0.060374498150559765
+        ],
+        "frequencies_radps": [
+          0.12852321798573835,
+          0.05727420676495645,
+          0.07718875117407628,
+          0.14715366619907905,
+          0.08572428799652423,
+          0.09225132977503608
+        ],
+        "phases_rad": [
+          1.4174801630789107,
+          1.7207624810683608,
+          -2.777680760540864,
+          -0.812560346323898,
+          1.3932454754730665,
+          0.376046253721797
+        ]
+      }
+    },
+    {
+      "scenario": "imu_unavailable",
+      "sensor": "imu",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 1.5930324026843432,
+      "maximum_estimation_position_error_m": 1.3978368814291346,
+      "seed": 20264717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.05528691106677261,
+        "depth_drift_std_m_per_sqrt_s": 0.0008762465392597354,
+        "imu_attitude_noise_std_rad": 0.003551608464666248,
+        "imu_gyro_noise_std_radps": 0.002094513904986021,
+        "imu_accel_noise_std_mps2": 0.029848845444042354,
+        "dvl_velocity_noise_std_mps": 0.031006069441270035
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.11533392883218707,
+          0.5065397088137747,
+          0.66670749172991,
+          0.007212148431530603,
+          0.013368623595407183,
+          0.007998604212939062
+        ],
+        "frequencies_radps": [
+          0.06141683663651999,
+          0.13113452047063057,
+          0.1208684847863208,
+          0.11572236621023764,
+          0.07254885793202007,
+          0.13332338360514456
+        ],
+        "phases_rad": [
+          1.40334941338838,
+          2.384653883312689,
+          1.8328141516746248,
+          -0.33852908231643397,
+          -0.5530347675971785,
+          2.383233369853455
+        ]
+      }
+    },
+    {
+      "scenario": "imu_unavailable",
+      "sensor": "imu",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 1.5823148047254725,
+      "maximum_estimation_position_error_m": 1.384455837816099,
+      "seed": 20264718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.058650921696997656,
+        "depth_drift_std_m_per_sqrt_s": 0.0015061782010287383,
+        "imu_attitude_noise_std_rad": 0.004628627866138895,
+        "imu_gyro_noise_std_radps": 0.0016237878783853315,
+        "imu_accel_noise_std_mps2": 0.007425075986368777,
+        "dvl_velocity_noise_std_mps": 0.046725346815432715
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.525642468544644,
+          0.4021868058998703,
+          0.44525036885011715,
+          0.013466398175070981,
+          0.01088644708914646,
+          0.06060537657319327
+        ],
+        "frequencies_radps": [
+          0.0991102962843897,
+          0.08225914708858077,
+          0.076259270735514,
+          0.0520265783291652,
+          0.08703368309954834,
+          0.06068972894696857
+        ],
+        "phases_rad": [
+          -2.111543931499896,
+          0.9948981660650089,
+          2.1627551498285307,
+          -0.7006086995404734,
+          1.9881817676056706,
+          1.967634277202741
+        ]
+      }
+    },
+    {
+      "scenario": "imu_stuck",
+      "sensor": "imu",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 1.7083261727876211,
+      "maximum_estimation_position_error_m": 1.5071820939462592,
+      "seed": 20265717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.037923715837765416,
+        "depth_drift_std_m_per_sqrt_s": 0.0015587889214835628,
+        "imu_attitude_noise_std_rad": 0.0027131111344301543,
+        "imu_gyro_noise_std_radps": 0.0029868244100896856,
+        "imu_accel_noise_std_mps2": 0.0229223145951491,
+        "dvl_velocity_noise_std_mps": 0.02314592887830332
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.529789207126959,
+          0.14159816823421478,
+          0.29343082579902013,
+          0.016891556897747233,
+          0.007842045240059879,
+          0.026139475135005537
+        ],
+        "frequencies_radps": [
+          0.09116729076564764,
+          0.1490573002132407,
+          0.09437134383922186,
+          0.1351323937109259,
+          0.0920527128552959,
+          0.09658291087156776
+        ],
+        "phases_rad": [
+          -2.336124824969752,
+          2.425181800171848,
+          1.448794185229005,
+          0.7714284755644609,
+          -3.0695384668537247,
+          -0.29239766847604853
+        ]
+      }
+    },
+    {
+      "scenario": "imu_stuck",
+      "sensor": "imu",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 1.7599461701206451,
+      "maximum_estimation_position_error_m": 1.559787532428519,
+      "seed": 20265718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.05573245192516771,
+        "depth_drift_std_m_per_sqrt_s": 0.00035688635093827095,
+        "imu_attitude_noise_std_rad": 0.001928799216733825,
+        "imu_gyro_noise_std_radps": 0.0008556230425082288,
+        "imu_accel_noise_std_mps2": 0.010598935103726795,
+        "dvl_velocity_noise_std_mps": 0.011441834969825097
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.4019971597826483,
+          0.8168990104644285,
+          0.1479433311915184,
+          0.014719457131362459,
+          0.010840684881672565,
+          0.03201148907091707
+        ],
+        "frequencies_radps": [
+          0.05662994935921864,
+          0.09862147246990302,
+          0.1015254222020722,
+          0.09007468348756643,
+          0.08513513904537821,
+          0.08060427223736219
+        ],
+        "phases_rad": [
+          2.5221895703872574,
+          -1.868084418496084,
+          -2.543554852735649,
+          0.6330023786440888,
+          2.2911862114301407,
+          1.4750504917982097
+        ]
+      }
+    },
+    {
+      "scenario": "imu_spike",
+      "sensor": "imu",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.43279946283956416,
+      "maximum_estimation_position_error_m": 0.11789832595649978,
+      "seed": 20266717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.013407350927685417,
+        "depth_drift_std_m_per_sqrt_s": 0.0007094520104627968,
+        "imu_attitude_noise_std_rad": 0.0033107189903048536,
+        "imu_gyro_noise_std_radps": 0.0007794414721280908,
+        "imu_accel_noise_std_mps2": 0.017032268250710775,
+        "dvl_velocity_noise_std_mps": 0.037242545723086745
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.16841026099163092,
+          0.3225714416093237,
+          0.21749723998861836,
+          0.005936556314152895,
+          0.009806476868211464,
+          0.039351009611281136
+        ],
+        "frequencies_radps": [
+          0.12755787325968887,
+          0.057612630740985965,
+          0.11351268447533998,
+          0.05316941694298645,
+          0.08612666573935865,
+          0.050903813613964836
+        ],
+        "phases_rad": [
+          2.5557573426047533,
+          2.5550977120373304,
+          -0.34331393763048235,
+          2.9332734177305344,
+          -0.6300523132349762,
+          -1.1251239551916101
+        ]
+      }
+    },
+    {
+      "scenario": "imu_spike",
+      "sensor": "imu",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.34291863866534317,
+      "maximum_estimation_position_error_m": 0.09098384716145978,
+      "seed": 20266718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0288882779214866,
+        "depth_drift_std_m_per_sqrt_s": 0.00038112073916980396,
+        "imu_attitude_noise_std_rad": 0.0029312585405540936,
+        "imu_gyro_noise_std_radps": 0.000779447169301906,
+        "imu_accel_noise_std_mps2": 0.01844075168327214,
+        "dvl_velocity_noise_std_mps": 0.03553096884166856
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.05886540342667934,
+          0.27256029749281996,
+          0.02982234109760151,
+          0.01258952767905228,
+          0.009020292193644997,
+          0.05017926330329837
+        ],
+        "frequencies_radps": [
+          0.11429909004719933,
+          0.1335459941326389,
+          0.06700511055562859,
+          0.055233656237281104,
+          0.09147243415027959,
+          0.11097567019252456
+        ],
+        "phases_rad": [
+          1.5685489702324436,
+          -0.5599323831115011,
+          -0.2744356267400798,
+          1.057235988146001,
+          2.4493448501979413,
+          1.4821153466352026
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_unavailable",
+      "sensor": "dvl",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.21709059286259225,
+      "maximum_estimation_position_error_m": 0.29875911495101315,
+      "seed": 20267717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0701065564278074,
+        "depth_drift_std_m_per_sqrt_s": 0.000570269916073018,
+        "imu_attitude_noise_std_rad": 0.0012819812456680783,
+        "imu_gyro_noise_std_radps": 0.0028891549368188093,
+        "imu_accel_noise_std_mps2": 0.025766092867321396,
+        "dvl_velocity_noise_std_mps": 0.020256006075677357
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.7382906619027235,
+          0.7067943945413335,
+          0.6205020803740796,
+          0.008341065470575271,
+          0.019202374414007316,
+          0.021609740995611013
+        ],
+        "frequencies_radps": [
+          0.11078532845550815,
+          0.09245095224319522,
+          0.09991164566050606,
+          0.12461201760645034,
+          0.14171671435883715,
+          0.052229524499458196
+        ],
+        "phases_rad": [
+          -0.40696281383082233,
+          -0.18963335052227537,
+          2.1127602054289456,
+          1.093313832916639,
+          -0.4831858969534695,
+          2.581343156714211
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_unavailable",
+      "sensor": "dvl",
+      "mode": "unavailable",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.3501954868100553,
+      "maximum_estimation_position_error_m": 0.17050223846872167,
+      "seed": 20267718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04223578347726053,
+        "depth_drift_std_m_per_sqrt_s": 0.0005089975128041076,
+        "imu_attitude_noise_std_rad": 0.002448208229821901,
+        "imu_gyro_noise_std_radps": 0.0012559275682111474,
+        "imu_accel_noise_std_mps2": 0.02737659137294749,
+        "dvl_velocity_noise_std_mps": 0.027049647223583766
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.721808079123045,
+          0.8657933183190204,
+          0.6663232738091093,
+          0.019995284852166374,
+          0.007217057104538589,
+          0.04209799213848126
+        ],
+        "frequencies_radps": [
+          0.06887620495220224,
+          0.12996064816880848,
+          0.11611169717990147,
+          0.13676385451611162,
+          0.05133706108395867,
+          0.12010602585079806
+        ],
+        "phases_rad": [
+          -1.379463901504822,
+          0.04500681047732291,
+          -1.7806277445893262,
+          2.4905214808029603,
+          -2.188306201611679,
+          1.3497082971258854
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_stuck",
+      "sensor": "dvl",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.8284273221048848,
+      "maximum_estimation_position_error_m": 1.0933630654050226,
+      "seed": 20268717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06684771921546724,
+        "depth_drift_std_m_per_sqrt_s": 0.001728044540539087,
+        "imu_attitude_noise_std_rad": 0.003023531374068684,
+        "imu_gyro_noise_std_radps": 0.0015817754219659638,
+        "imu_accel_noise_std_mps2": 0.0286152261896474,
+        "dvl_velocity_noise_std_mps": 0.02351121830760196
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.992469588580656,
+          0.5682776719078899,
+          0.31056960410580436,
+          0.0031747974634449582,
+          0.01982049576096926,
+          0.07189320671616437
+        ],
+        "frequencies_radps": [
+          0.09758497345163794,
+          0.07528115834790192,
+          0.12440794920514843,
+          0.11989778694947903,
+          0.12199127824048311,
+          0.10545326508079295
+        ],
+        "phases_rad": [
+          1.3251904869489897,
+          1.9791162920916214,
+          1.3218705743560264,
+          -1.9499648328000052,
+          -0.9238096058300034,
+          -1.3788773546397133
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_stuck",
+      "sensor": "dvl",
+      "mode": "stuck",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.899999999999987,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": true,
+      "final_true_position_error_m": 0.6250628250882062,
+      "maximum_estimation_position_error_m": 0.8516911006842588,
+      "seed": 20268718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.022456350343268906,
+        "depth_drift_std_m_per_sqrt_s": 0.0019679612714066214,
+        "imu_attitude_noise_std_rad": 0.0005035206487635264,
+        "imu_gyro_noise_std_radps": 0.0016234867184597133,
+        "imu_accel_noise_std_mps2": 0.015657405265004132,
+        "dvl_velocity_noise_std_mps": 0.029167242334680255
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.19577909739635668,
+          0.2804221092806476,
+          0.4987864480226838,
+          0.007310281254109388,
+          0.002659129917263696,
+          0.053640080861275544
+        ],
+        "frequencies_radps": [
+          0.09243053150672424,
+          0.07803210240807075,
+          0.12943500420523701,
+          0.09801014145301509,
+          0.0753439643336565,
+          0.13545496351479827
+        ],
+        "phases_rad": [
+          -2.8082101885279647,
+          -2.286220398518223,
+          -0.7010956080499819,
+          -0.15129760556075578,
+          -0.36105580296425765,
+          -2.2062301169055387
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_spike",
+      "sensor": "dvl",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.35491978369467087,
+      "maximum_estimation_position_error_m": 0.1819554280713475,
+      "seed": 20269717,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06416133649677669,
+        "depth_drift_std_m_per_sqrt_s": 0.0009647700336218588,
+        "imu_attitude_noise_std_rad": 0.0012626931613999456,
+        "imu_gyro_noise_std_radps": 0.0027056563051838208,
+        "imu_accel_noise_std_mps2": 0.029682742381201426,
+        "dvl_velocity_noise_std_mps": 0.02176778356005721
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6214862249559767,
+          0.33611083182752777,
+          0.6022777308768774,
+          0.01902097200316881,
+          0.0061914535489057945,
+          0.058347092693664414
+        ],
+        "frequencies_radps": [
+          0.12028915881424132,
+          0.06654110231913926,
+          0.0607948358327735,
+          0.12083931740763178,
+          0.1292573447984517,
+          0.14115656524545406
+        ],
+        "phases_rad": [
+          -2.7131055475712587,
+          1.7780519844922598,
+          -2.708202534846425,
+          -2.321710711507042,
+          2.111845850440048,
+          0.28227304245252816
+        ]
+      }
+    },
+    {
+      "scenario": "dvl_spike",
+      "sensor": "dvl",
+      "mode": "spike",
+      "is_fault": true,
+      "exact_event_detected": true,
+      "detection_delay_s": 0.04999999999999005,
+      "confirmed_event_count": 1,
+      "spurious_event_count": 0,
+      "spurious_events": [],
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "recovered": true,
+      "wrong_thruster_target_count": 0,
+      "protective_action_observed": false,
+      "final_true_position_error_m": 0.32556286041755905,
+      "maximum_estimation_position_error_m": 0.16204782635973178,
+      "seed": 20269718,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.052994751767154576,
+        "depth_drift_std_m_per_sqrt_s": 0.0019859876293203942,
+        "imu_attitude_noise_std_rad": 0.0030906685787642427,
+        "imu_gyro_noise_std_radps": 0.0015403830810574999,
+        "imu_accel_noise_std_mps2": 0.02361517225728497,
+        "dvl_velocity_noise_std_mps": 0.03534187518262522
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.7386409105879188,
+          0.7006083991819526,
+          0.5773812639669472,
+          0.009013688025204305,
+          0.007475678699108992,
+          0.030008375180128662
+        ],
+        "frequencies_radps": [
+          0.11918947240479819,
+          0.06500235235661007,
+          0.07079632707335023,
+          0.05860596163353263,
+          0.1407613037154763,
+          0.05259982709550368
+        ],
+        "phases_rad": [
+          -0.6630013831087478,
+          0.3622339837370152,
+          -2.285830094431117,
+          -1.9731619862769194,
+          2.0909471326460904,
+          2.2564310759212
+        ]
+      }
+    }
+  ]
+}

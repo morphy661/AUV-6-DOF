@@ -1,0 +1,166 @@
+{
+  "benchmark": "six_dof_final_blind_v2",
+  "protocol_id": "six_dof_final_blind_20260717_v2",
+  "protocol_sha256": "BF5CAD1FB7441707A5DFB282D09FBF7B1A4282ADD177F66B2995E6E3E5B712AB",
+  "dataset_sha256": "86658F4221A5C38947F38B7B4049E33AE32E3EB6343ADCA77CA6A6A8C3D04F59",
+  "device": "cuda",
+  "calibration_or_training_performed": false,
+  "mission_count": 65,
+  "window_count": 4662,
+  "scenario_counts": {
+    "H1 No Output": 5,
+    "H1 Thrust Loss": 5,
+    "H2 No Output": 5,
+    "H2 Thrust Loss": 5,
+    "H3 No Output": 5,
+    "H3 Thrust Loss": 5,
+    "H4 No Output": 5,
+    "H4 Thrust Loss": 5,
+    "Normal": 5,
+    "V1 No Output": 5,
+    "V1 Thrust Loss": 5,
+    "V2 No Output": 5,
+    "V2 Thrust Loss": 5
+  },
+  "guidance_context_side_channel": {
+    "available": true,
+    "context_count": 4,
+    "stable_window_rate": 0.8393393158912659
+  },
+  "raw": {
+    "classification": {
+      "mode_macro_f1": 0.813401486808675,
+      "location_macro_f1": 0.5707389783234553,
+      "joint_macro_f1": 0.58688185429939,
+      "joint_accuracy": 0.6259116259116259
+    },
+    "operations": {
+      "normal_window_false_alarm_rate": 0.3259292837715322,
+      "mode_detection_rate": 1.0,
+      "exact_diagnosis_rate": 0.9166666666666666,
+      "mode_detected_missions": 60,
+      "exactly_diagnosed_missions": 55,
+      "total_fault_missions": 60,
+      "mean_mode_detection_delay_s": 1.152854855855306,
+      "median_mode_detection_delay_s": 1.1159210205078125,
+      "mean_exact_diagnosis_delay_s": 5.900242476029829,
+      "median_exact_diagnosis_delay_s": 1.3289375305175781,
+      "thrust_loss_exact_accuracy_by_efficiency": {
+        "0.30-0.45": 0.14862385321100918,
+        "0.45-0.60": 0.3373737373737374,
+        "0.60-0.75": 0.12195121951219512
+      }
+    }
+  },
+  "temporal": {
+    "classification": {
+      "mode_macro_f1": 0.834989149545995,
+      "location_macro_f1": 0.5808177326156122,
+      "joint_macro_f1": 0.5944528666113824,
+      "joint_accuracy": 0.6439296439296439
+    },
+    "operations": {
+      "normal_window_false_alarm_rate": 0.29193109700815956,
+      "mode_detection_rate": 1.0,
+      "exact_diagnosis_rate": 0.95,
+      "mode_detected_missions": 60,
+      "exactly_diagnosed_missions": 57,
+      "total_fault_missions": 60,
+      "mean_mode_detection_delay_s": 1.9728548049926757,
+      "median_mode_detection_delay_s": 1.2171573638916016,
+      "mean_exact_diagnosis_delay_s": 6.824423539011102,
+      "median_exact_diagnosis_delay_s": 1.3372573852539062,
+      "thrust_loss_exact_accuracy_by_efficiency": {
+        "0.30-0.45": 0.1669724770642202,
+        "0.45-0.60": 0.33535353535353535,
+        "0.60-0.75": 0.11707317073170732
+      }
+    }
+  },
+  "maintenance_log": {
+    "event_recall": 1.0,
+    "event_precision": 0.5504587155963303,
+    "fault_mode_judgement_rate": 1.0,
+    "severe_no_output_miss_rate": 0.0,
+    "false_advisory_events_per_hour": 63.97098821396192,
+    "normal_window_observation_rate": 0.3558476881233001,
+    "normal_window_advisory_rate": 0.29193109700815956,
+    "mean_detection_delay_s": 1.5858333587646485,
+    "median_detection_delay_s": 0.0,
+    "stable_single_alert_rate": 0.95,
+    "mean_alert_fragments_per_detected_mission": 1.05,
+    "probable_group_accuracy": 0.8166666666666667,
+    "top2_location_hit_rate": 0.75,
+    "top1_location_hit_rate_for_reference": 0.6166666666666667,
+    "detected_fault_missions": 60,
+    "total_fault_missions": 60,
+    "false_advisory_events": 49
+  },
+  "maintenance_tickets": {
+    "ticket_event_recall": 0.5333333333333333,
+    "ticket_event_precision": 1.0,
+    "no_output_ticket_recall": 1.0,
+    "thrust_loss_ticket_recall": 0.06666666666666667,
+    "ticket_fault_mode_judgement_rate": 0.5333333333333333,
+    "false_tickets_per_hour": 0.0,
+    "false_maintenance_tickets": 0,
+    "formal_maintenance_ticket_count": 32,
+    "maintenance_observation_count": 67,
+    "recovered_before_confirmation_observations": 64,
+    "pending_at_mission_end_observations": 0,
+    "superseded_by_no_output_observations": 0,
+    "context_transition_observations": 3,
+    "intermittent_thrust_loss_advisories": 0,
+    "mean_ticket_detection_delay_s": 7.5546873807907104,
+    "median_ticket_detection_delay_s": 4.92500114440918,
+    "single_ticket_per_detected_mission_rate": 1.0,
+    "ticket_probable_group_accuracy": 1.0,
+    "ticket_top2_location_hit_rate": 0.96875,
+    "detected_ticket_missions": 32,
+    "total_fault_missions": 60
+  },
+  "acceptance": {
+    "checks": {
+      "raw_health_event_recall": {
+        "value": 1.0,
+        "threshold": 0.95,
+        "passed": true
+      },
+      "no_output_ticket_recall": {
+        "value": 1.0,
+        "threshold": 0.95,
+        "passed": true
+      },
+      "false_maintenance_tickets": {
+        "value": 0,
+        "threshold": 0,
+        "passed": true
+      }
+    },
+    "all_passed": true,
+    "thrust_loss_ticket_recall_is_informational": true
+  },
+  "frozen_temporal_config": {
+    "enter_fault_probability": 0.55,
+    "no_output_confirmation_s": 0.0,
+    "thrust_loss_confirmation_s": 2.5,
+    "exit_normal_probability": 0.75,
+    "recovery_confirmation_s": 3.75,
+    "probability_time_constant_s": 0.0,
+    "location_probability_threshold": 0.0,
+    "location_confirmation_s": 0.0
+  },
+  "frozen_ticket_config": {
+    "minimum_excitation_ratio": 0.05,
+    "minimum_thrust_loss_motion_evidence": 0.1,
+    "minimum_no_output_local_anomaly": 0.5,
+    "ticket_confirmation_s": 0.0,
+    "thrust_loss_pending_confirmation_s": 8.0,
+    "thrust_loss_recovery_cancel_s": 3.75,
+    "thrust_loss_recurrence_window_s": 30.0,
+    "thrust_loss_recurrence_count": 2,
+    "ticket_recovery_s": 1.25,
+    "merge_gap_s": 30.0,
+    "evidence_tail_steps": 20
+  }
+}

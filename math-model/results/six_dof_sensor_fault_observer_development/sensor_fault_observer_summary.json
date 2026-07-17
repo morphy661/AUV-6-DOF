@@ -1,0 +1,4313 @@
+{
+  "benchmark": "sensor_fault_observer_development_not_blind",
+  "configuration": {
+    "missions_per_scenario": 2,
+    "duration_s": 18.0,
+    "dt_s": 0.05,
+    "base_seed": 2026071800,
+    "scenario_matrix": [
+      {
+        "name": "normal_nominal",
+        "category": "normal",
+        "sensor": null,
+        "truth_mode": "normal",
+        "disturbance_scale": 1.0,
+        "events": []
+      },
+      {
+        "name": "normal_strong_disturbance",
+        "category": "normal",
+        "sensor": null,
+        "truth_mode": "normal",
+        "disturbance_scale": 2.5,
+        "events": []
+      },
+      {
+        "name": "strong_depth_unavailable",
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_depth_unavailable"
+          }
+        ]
+      },
+      {
+        "name": "strong_depth_stuck",
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "stuck",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "stuck",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_depth_stuck"
+          }
+        ]
+      },
+      {
+        "name": "strong_depth_spike",
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [],
+            "magnitude": 2.0,
+            "event_id": "strong_depth_spike"
+          }
+        ]
+      },
+      {
+        "name": "strong_imu_unavailable",
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_imu_unavailable"
+          }
+        ]
+      },
+      {
+        "name": "strong_imu_stuck",
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "stuck",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "stuck",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_imu_stuck"
+          }
+        ]
+      },
+      {
+        "name": "strong_imu_spike",
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.8,
+            "event_id": "strong_imu_spike"
+          }
+        ]
+      },
+      {
+        "name": "strong_dvl_unavailable",
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_dvl_unavailable"
+          }
+        ]
+      },
+      {
+        "name": "strong_dvl_stuck",
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "stuck",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "stuck",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "strong_dvl_stuck"
+          }
+        ]
+      },
+      {
+        "name": "strong_dvl_spike",
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [
+              0
+            ],
+            "magnitude": 2.0,
+            "event_id": "strong_dvl_spike"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_depth_weak_spike",
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [],
+            "magnitude": 0.3,
+            "event_id": "ambiguous_depth_weak_spike"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_imu_weak_spike",
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.15,
+            "event_id": "ambiguous_imu_weak_spike"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_dvl_weak_spike",
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "spike",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "spike",
+            "start_time_s": 6.0,
+            "end_time_s": 6.5,
+            "channels": [
+              0
+            ],
+            "magnitude": 0.4,
+            "event_id": "ambiguous_dvl_weak_spike"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_imu_partial_stuck",
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "stuck",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "stuck",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_imu_partial_stuck"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_dvl_partial_stuck",
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "stuck",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "stuck",
+            "start_time_s": 5.0,
+            "end_time_s": 9.0,
+            "channels": [
+              0
+            ],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_dvl_partial_stuck"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_depth_bias",
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "bias",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "bias",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [],
+            "magnitude": 0.35,
+            "event_id": "ambiguous_depth_bias"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_imu_bias",
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "bias",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "bias",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.15,
+            "event_id": "ambiguous_imu_bias"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_dvl_bias",
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "bias",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "bias",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [
+              0
+            ],
+            "magnitude": 0.3,
+            "event_id": "ambiguous_dvl_bias"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_depth_drift",
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "drift",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "drift",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [],
+            "magnitude": 0.04,
+            "event_id": "ambiguous_depth_drift"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_imu_drift",
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "drift",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "drift",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.02,
+            "event_id": "ambiguous_imu_drift"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_dvl_drift",
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "drift",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "drift",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [
+              0
+            ],
+            "magnitude": 0.04,
+            "event_id": "ambiguous_dvl_drift"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_depth_intermittent_unavailable",
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "intermittent_unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "depth",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 5.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_depth_intermittent_unavailable_1"
+          },
+          {
+            "sensor": "depth",
+            "mode": "unavailable",
+            "start_time_s": 6.0,
+            "end_time_s": 6.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_depth_intermittent_unavailable_2"
+          },
+          {
+            "sensor": "depth",
+            "mode": "unavailable",
+            "start_time_s": 7.0,
+            "end_time_s": 7.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_depth_intermittent_unavailable_3"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_imu_intermittent_unavailable",
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "intermittent_unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 5.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_imu_intermittent_unavailable_1"
+          },
+          {
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 6.0,
+            "end_time_s": 6.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_imu_intermittent_unavailable_2"
+          },
+          {
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 7.0,
+            "end_time_s": 7.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_imu_intermittent_unavailable_3"
+          }
+        ]
+      },
+      {
+        "name": "ambiguous_dvl_intermittent_unavailable",
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "intermittent_unavailable",
+        "disturbance_scale": 1.0,
+        "events": [
+          {
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 5.0,
+            "end_time_s": 5.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_dvl_intermittent_unavailable_1"
+          },
+          {
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 6.0,
+            "end_time_s": 6.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_dvl_intermittent_unavailable_2"
+          },
+          {
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 7.0,
+            "end_time_s": 7.15,
+            "channels": [],
+            "magnitude": 0.0,
+            "event_id": "ambiguous_dvl_intermittent_unavailable_3"
+          }
+        ]
+      }
+    ]
+  },
+  "summary": {
+    "evaluation_type": "sensor_fault_observer_development",
+    "mission_count": 50,
+    "strong_direct_event_recall": 1.0,
+    "strong_direct_event_precision": 1.0,
+    "strong_direct_ftc_action_match_rate": 1,
+    "normal_false_confirmed_missions": 0,
+    "normal_false_protective_missions": 0,
+    "normal_possible_observation_missions": 0,
+    "ambiguous_possible_evidence_rate": 0.9642857142857143,
+    "ambiguous_possible_display_rate": 0.6428571428571429,
+    "ambiguous_conflicting_certainty_rate": 0,
+    "observer_confirmed_sample_count": 0,
+    "observer_protective_request_count": 0,
+    "wrong_thruster_target_count": 0,
+    "per_scenario": {
+      "ambiguous_depth_bias": {
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "bias",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_depth_drift": {
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "drift",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_depth_intermittent_unavailable": {
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "intermittent_unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_depth_weak_spike": {
+        "category": "ambiguous",
+        "sensor": "depth",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_dvl_bias": {
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "bias",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_dvl_drift": {
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "drift",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_dvl_intermittent_unavailable": {
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "intermittent_unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_dvl_partial_stuck": {
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "stuck",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_dvl_weak_spike": {
+        "category": "ambiguous",
+        "sensor": "dvl",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_imu_bias": {
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "bias",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_imu_drift": {
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "drift",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_imu_intermittent_unavailable": {
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "intermittent_unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_imu_partial_stuck": {
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "stuck",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "ambiguous_imu_weak_spike": {
+        "category": "ambiguous",
+        "sensor": "imu",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "normal_nominal": {
+        "category": "normal",
+        "sensor": null,
+        "truth_mode": "normal",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "normal_strong_disturbance": {
+        "category": "normal",
+        "sensor": null,
+        "truth_mode": "normal",
+        "missions": 2,
+        "exact_event_rate": 0,
+        "any_evidence_rate": 0,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_depth_spike": {
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_depth_stuck": {
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "stuck",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 1,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_depth_unavailable": {
+        "category": "strong_direct",
+        "sensor": "depth",
+        "truth_mode": "unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_dvl_spike": {
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_dvl_stuck": {
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "stuck",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 1,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 2
+      },
+      "strong_dvl_unavailable": {
+        "category": "strong_direct",
+        "sensor": "dvl",
+        "truth_mode": "unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 2
+      },
+      "strong_imu_spike": {
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "spike",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 0
+      },
+      "strong_imu_stuck": {
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "stuck",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 1,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 2
+      },
+      "strong_imu_unavailable": {
+        "category": "strong_direct",
+        "sensor": "imu",
+        "truth_mode": "unavailable",
+        "missions": 2,
+        "exact_event_rate": 1,
+        "any_evidence_rate": 1,
+        "possible_evidence_rate": 0,
+        "conflicting_certainty_rate": 0,
+        "post_recovery_protective_missions": 2
+      }
+    },
+    "acceptance_checks": {
+      "strong_direct_recall_at_least_95pct": true,
+      "strong_direct_precision_at_least_95pct": true,
+      "normal_false_confirmed_missions_zero": true,
+      "normal_operator_possible_missions_zero": true,
+      "ambiguous_possible_evidence_at_least_70pct": true,
+      "policy_required_operator_possible_at_least_60pct": true,
+      "ambiguous_conflicting_certainty_zero": true,
+      "observer_never_confirms": true,
+      "observer_never_requests_protection": true,
+      "wrong_thruster_targets_zero": true
+    },
+    "all_acceptance_checks_passed": true
+  },
+  "missions": [
+    {
+      "scenario": "normal_nominal",
+      "category": "normal",
+      "sensor": null,
+      "truth_mode": "normal",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 420,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "none",
+      "seed": 2026071800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.1051451216168252,
+        "depth_drift_std_m_per_sqrt_s": 0.002676074455829425,
+        "imu_attitude_noise_std_rad": 0.0021264045869266086,
+        "imu_gyro_noise_std_radps": 0.0012909933077625022,
+        "imu_accel_noise_std_mps2": 0.008507710942576348,
+        "dvl_velocity_noise_std_mps": 0.05885245434166868
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6348053000020822,
+          1.3590815114246226,
+          0.8556633320368074,
+          0.02953439200034305,
+          0.03115355845346956,
+          0.012488163756491456
+        ],
+        "frequencies_radps": [
+          0.07090075190760997,
+          0.17133285530799988,
+          0.14891093254594218,
+          0.15397504592656358,
+          0.07734010211340878,
+          0.05600429494257344
+        ],
+        "phases_rad": [
+          -0.6395382969310206,
+          2.1908454313315,
+          2.809038089285801,
+          -2.6123483342293037,
+          2.769811459341116,
+          -0.8735470729291261
+        ]
+      }
+    },
+    {
+      "scenario": "normal_nominal",
+      "category": "normal",
+      "sensor": null,
+      "truth_mode": "normal",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 0,
+      "observer_all_possible_hypotheses": [],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "none",
+      "seed": 2026071801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.01308219107831145,
+        "depth_drift_std_m_per_sqrt_s": 0.0028480474322280943,
+        "imu_attitude_noise_std_rad": 0.007283611889534218,
+        "imu_gyro_noise_std_radps": 0.005109038105379684,
+        "imu_accel_noise_std_mps2": 0.008977441607253476,
+        "dvl_velocity_noise_std_mps": 0.052131336235465675
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.8421571872318069,
+          0.6440623735573885,
+          0.9842002400436075,
+          0.022305975419971428,
+          0.01928586973935704,
+          0.08485958830601431
+        ],
+        "frequencies_radps": [
+          0.11892515344671595,
+          0.1631540580730612,
+          0.06440732302013336,
+          0.17310259943126188,
+          0.16553955884976332,
+          0.055318935222981674
+        ],
+        "phases_rad": [
+          0.3423251423257043,
+          2.1279565780156213,
+          -2.1150976716315832,
+          0.5345341560281529,
+          -1.7449504039362251,
+          0.17368818914907136
+        ]
+      }
+    },
+    {
+      "scenario": "normal_strong_disturbance",
+      "category": "normal",
+      "sensor": null,
+      "truth_mode": "normal",
+      "disturbance_scale": 2.5,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 419,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "none",
+      "seed": 2026072800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0740931759712651,
+        "depth_drift_std_m_per_sqrt_s": 0.0014664519371795552,
+        "imu_attitude_noise_std_rad": 0.001312441081261922,
+        "imu_gyro_noise_std_radps": 0.0008111032344782654,
+        "imu_accel_noise_std_mps2": 0.03530334808339269,
+        "dvl_velocity_noise_std_mps": 0.06998693515438942
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          2.335439415423183,
+          1.500105211938517,
+          0.6754999776203324,
+          0.05967485619624975,
+          0.025884873989929415,
+          0.028323511880721172
+        ],
+        "frequencies_radps": [
+          0.13044348553485052,
+          0.06573559377439364,
+          0.16221425506044435,
+          0.07538660657045546,
+          0.08933169139200148,
+          0.10945713488890439
+        ],
+        "phases_rad": [
+          0.8794578335942447,
+          2.75066990862486,
+          2.863172195891666,
+          2.358793186570228,
+          2.219496334613136,
+          2.2731096248628813
+        ]
+      }
+    },
+    {
+      "scenario": "normal_strong_disturbance",
+      "category": "normal",
+      "sensor": null,
+      "truth_mode": "normal",
+      "disturbance_scale": 2.5,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 60,
+      "observer_all_possible_hypotheses": [
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "none",
+      "seed": 2026072801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.02477128974876064,
+        "depth_drift_std_m_per_sqrt_s": 0.0020348442226149877,
+        "imu_attitude_noise_std_rad": 0.005399142389781873,
+        "imu_gyro_noise_std_radps": 0.0009557239811381548,
+        "imu_accel_noise_std_mps2": 0.03941656402933469,
+        "dvl_velocity_noise_std_mps": 0.02058302545375418
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.7570990776969462,
+          3.181365499092488,
+          1.3173604642022632,
+          0.09095115984551884,
+          0.025900693588885127,
+          0.2552857073435227
+        ],
+        "frequencies_radps": [
+          0.10872757678832133,
+          0.06667808562921293,
+          0.12631969016770606,
+          0.1170841697925141,
+          0.09164460335367991,
+          0.1341267984104118
+        ],
+        "phases_rad": [
+          2.7265069852442245,
+          1.8531243360046545,
+          3.130723881579561,
+          -0.1057387672597101,
+          1.5590213349749753,
+          -2.853479044337012
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_unavailable",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 0,
+      "observer_all_possible_hypotheses": [],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026073800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.024470021841466696,
+        "depth_drift_std_m_per_sqrt_s": 0.0014564404107167462,
+        "imu_attitude_noise_std_rad": 0.0005189661223769194,
+        "imu_gyro_noise_std_radps": 0.0018971973998073866,
+        "imu_accel_noise_std_mps2": 0.04675803207126792,
+        "dvl_velocity_noise_std_mps": 0.024558010459925533
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.7751967567352228,
+          0.537532762901987,
+          0.5135559939020458,
+          0.0012540410998578943,
+          0.0031107548912420757,
+          0.04685163297645909
+        ],
+        "frequencies_radps": [
+          0.05170907226063762,
+          0.17490711879088225,
+          0.11839690308614631,
+          0.1434379764398333,
+          0.08837166015717143,
+          0.09065154157999042
+        ],
+        "phases_rad": [
+          -0.4684266485326578,
+          -0.37029769338239626,
+          -2.886503056032514,
+          -1.3294335743512453,
+          0.16579194666471686,
+          1.3605371688975865
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_unavailable",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 0,
+      "observer_all_possible_hypotheses": [],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026073801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.02601102828070194,
+        "depth_drift_std_m_per_sqrt_s": 0.0010598144725788984,
+        "imu_attitude_noise_std_rad": 0.00561532452271361,
+        "imu_gyro_noise_std_radps": 0.0035896369698748664,
+        "imu_accel_noise_std_mps2": 0.019318260448258358,
+        "dvl_velocity_noise_std_mps": 0.05909330074856061
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.474070251427773,
+          0.7182860577606938,
+          0.1788117277910749,
+          0.020326295051346577,
+          0.03687540629396209,
+          0.08431688576589494
+        ],
+        "frequencies_radps": [
+          0.10828827215566542,
+          0.1456600998859241,
+          0.17820421536180042,
+          0.1286960313397547,
+          0.06719847434726102,
+          0.11584845340892409
+        ],
+        "phases_rad": [
+          1.3033708775883746,
+          -2.6453321753475247,
+          -1.1145742947800308,
+          2.1662482341751685,
+          -0.03049628748261668,
+          1.588453861194255
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_stuck",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 90,
+      "any_observer_possible_sample_count": 642,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 138,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026074800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.07076375108565225,
+        "depth_drift_std_m_per_sqrt_s": 0.0020453755261274622,
+        "imu_attitude_noise_std_rad": 0.006922282081353648,
+        "imu_gyro_noise_std_radps": 0.0009803866796091667,
+        "imu_accel_noise_std_mps2": 0.04851557486601403,
+        "dvl_velocity_noise_std_mps": 0.07783663879985339
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.0735579643929496,
+          0.36033000498666873,
+          0.8730467829253333,
+          0.005900514953056755,
+          0.006290426126949717,
+          0.08952757537771908
+        ],
+        "frequencies_radps": [
+          0.16185030531090863,
+          0.15363649096330045,
+          0.05947236052235118,
+          0.05801489053185215,
+          0.16567938540324056,
+          0.1195402352299429
+        ],
+        "phases_rad": [
+          1.0845691405090987,
+          -2.6032216235849166,
+          -1.5093786044937312,
+          -2.3577223064380397,
+          2.4816157057454333,
+          0.9663369483979594
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_stuck",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 90,
+      "any_observer_possible_sample_count": 349,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 157,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026074801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.07260446771533537,
+        "depth_drift_std_m_per_sqrt_s": 0.003042901230292252,
+        "imu_attitude_noise_std_rad": 0.001441235280346869,
+        "imu_gyro_noise_std_radps": 0.003450607633983927,
+        "imu_accel_noise_std_mps2": 0.008671507917204394,
+        "dvl_velocity_noise_std_mps": 0.051828775699932814
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4802737209036096,
+          0.24651097968840047,
+          0.5050064028756047,
+          0.0012374654852324518,
+          0.026102982022055087,
+          0.03179103051570145
+        ],
+        "frequencies_radps": [
+          0.0907498183152051,
+          0.09409985170576796,
+          0.14211305353312417,
+          0.06355500331363503,
+          0.14208278742812924,
+          0.07544403799361082
+        ],
+        "phases_rad": [
+          -2.0018760475976833,
+          -0.523998470176601,
+          -1.5531977247177795,
+          0.36551332963983496,
+          -1.4832183538019028,
+          1.374620090015254
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_spike",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 37,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026075800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04883899189827136,
+        "depth_drift_std_m_per_sqrt_s": 0.0035772440497876647,
+        "imu_attitude_noise_std_rad": 0.002133782559324115,
+        "imu_gyro_noise_std_radps": 0.003344514065032093,
+        "imu_accel_noise_std_mps2": 0.006589321652439532,
+        "dvl_velocity_noise_std_mps": 0.014567970980857301
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.049970806356844,
+          0.8713278792898562,
+          0.8301290097421729,
+          0.03779817345040445,
+          0.009801730226641442,
+          0.013691790880244418
+        ],
+        "frequencies_radps": [
+          0.14568181007188497,
+          0.15295121064736328,
+          0.06593056661589188,
+          0.14767680105897008,
+          0.09385411355636812,
+          0.14485288758757153
+        ],
+        "phases_rad": [
+          -0.558627629978937,
+          2.2594036760062295,
+          2.464259538830871,
+          -2.494767993043979,
+          -1.7367818656050715,
+          2.65183987558141
+        ]
+      }
+    },
+    {
+      "scenario": "strong_depth_spike",
+      "category": "strong_direct",
+      "sensor": "depth",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 342,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026075801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.09420558859469709,
+        "depth_drift_std_m_per_sqrt_s": 0.0008829123920525519,
+        "imu_attitude_noise_std_rad": 0.006426249945396962,
+        "imu_gyro_noise_std_radps": 0.001787556276474149,
+        "imu_accel_noise_std_mps2": 0.008943250821303778,
+        "dvl_velocity_noise_std_mps": 0.010288917866722331
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6040990043404377,
+          1.250740874942806,
+          0.3970994284661644,
+          0.015517356185486633,
+          0.004029995464162086,
+          0.07340174335277509
+        ],
+        "frequencies_radps": [
+          0.058518118948849854,
+          0.1399987127245674,
+          0.14582030842093308,
+          0.13589781884940288,
+          0.15940986412881988,
+          0.07337425402662841
+        ],
+        "phases_rad": [
+          -1.267644540756668,
+          -2.2155608851595834,
+          2.0594659895507768,
+          -0.20589721783421622,
+          -2.015852697758329,
+          -0.38984684272297043
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_unavailable",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 9,
+      "any_observer_possible_sample_count": 120,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026076800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04463751609458868,
+        "depth_drift_std_m_per_sqrt_s": 0.0036894683421629373,
+        "imu_attitude_noise_std_rad": 0.007209080911962066,
+        "imu_gyro_noise_std_radps": 0.0006687618769646768,
+        "imu_accel_noise_std_mps2": 0.021065186267949832,
+        "dvl_velocity_noise_std_mps": 0.006145688406382339
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.24969861446281216,
+          1.4867535913971548,
+          0.32764514582090576,
+          0.039165208743722826,
+          0.033293463065118274,
+          0.03638494026394845
+        ],
+        "frequencies_radps": [
+          0.07326193776206864,
+          0.14793959015773356,
+          0.13223404104532335,
+          0.1123935362533528,
+          0.06259873077554948,
+          0.1700902083962837
+        ],
+        "phases_rad": [
+          0.5456671862721754,
+          -1.0005115227236496,
+          -1.394871886463238,
+          1.3359110713546967,
+          0.775216797108838,
+          -2.168999582802041
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_unavailable",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 9,
+      "any_observer_possible_sample_count": 420,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026076801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.07036597273064307,
+        "depth_drift_std_m_per_sqrt_s": 0.002367508024734334,
+        "imu_attitude_noise_std_rad": 0.005908316002398283,
+        "imu_gyro_noise_std_radps": 0.0009560304915789102,
+        "imu_accel_noise_std_mps2": 0.011582448704167232,
+        "dvl_velocity_noise_std_mps": 0.07027101193201685
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.09884063622895423,
+          0.9123919167716719,
+          0.9277850889533823,
+          0.014666328455821515,
+          0.033916326020605576,
+          0.0452960586207345
+        ],
+        "frequencies_radps": [
+          0.11659076531810815,
+          0.12258533322618176,
+          0.06958582187569963,
+          0.1670717595977947,
+          0.08216709590675769,
+          0.1586144578544174
+        ],
+        "phases_rad": [
+          -0.9123314347249658,
+          -2.222798585144676,
+          2.004047067169198,
+          -0.618413083269421,
+          -2.79674794315912,
+          -1.6179613879988834
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_stuck",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_partial_stuck"
+      ],
+      "observer_possible_sample_count": 75,
+      "any_observer_possible_sample_count": 585,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "dvl:possible_bias_or_drift",
+        "imu:possible_bias_or_drift",
+        "imu:possible_partial_stuck"
+      ],
+      "observer_operator_possible_sample_count": 585,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026077800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0427575853238922,
+        "depth_drift_std_m_per_sqrt_s": 0.003603789652532169,
+        "imu_attitude_noise_std_rad": 0.0019684291841752964,
+        "imu_gyro_noise_std_radps": 0.0026504183295275453,
+        "imu_accel_noise_std_mps2": 0.044487254048205596,
+        "dvl_velocity_noise_std_mps": 0.03895467329792087
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6657320206462205,
+          0.08318618649931403,
+          0.9834990638272638,
+          0.025741805364024494,
+          0.02953558661838545,
+          0.05852699398706559
+        ],
+        "frequencies_radps": [
+          0.07365370974615865,
+          0.05278317750884782,
+          0.1272192171543107,
+          0.1534082375362168,
+          0.05431716055137859,
+          0.07670829231187606
+        ],
+        "phases_rad": [
+          1.5378230773286496,
+          -0.1141430512576429,
+          0.10826393982222315,
+          0.3537787513627966,
+          -1.5289966816924045,
+          -1.6244346144383177
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_stuck",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "safe_hold_or_abort",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_partial_stuck"
+      ],
+      "observer_possible_sample_count": 75,
+      "any_observer_possible_sample_count": 579,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "dvl:possible_bias_or_drift",
+        "imu:possible_bias_or_drift",
+        "imu:possible_partial_stuck"
+      ],
+      "observer_operator_possible_sample_count": 579,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026077801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.011284143428629899,
+        "depth_drift_std_m_per_sqrt_s": 0.00038189101205137333,
+        "imu_attitude_noise_std_rad": 0.0017161152306298215,
+        "imu_gyro_noise_std_radps": 0.002544623985440829,
+        "imu_accel_noise_std_mps2": 0.0332595863198228,
+        "dvl_velocity_noise_std_mps": 0.04893900231754144
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.1957627346673066,
+          1.3455860929859154,
+          0.1800021474352378,
+          0.03324186870035204,
+          0.01799021676029849,
+          0.01668776726691762
+        ],
+        "frequencies_radps": [
+          0.06393006111142262,
+          0.15838122126128165,
+          0.11779270165761789,
+          0.06351362470940994,
+          0.09596091663388712,
+          0.17629425040455804
+        ],
+        "phases_rad": [
+          -0.34379004625311094,
+          -0.35375232249947386,
+          0.9784013331673851,
+          1.9764534559604856,
+          -2.9940807351254914,
+          0.49201618249127277
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_spike",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 60,
+      "observer_all_possible_hypotheses": [
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026078800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.03431557190470362,
+        "depth_drift_std_m_per_sqrt_s": 0.003918410912723632,
+        "imu_attitude_noise_std_rad": 0.0058841964358852215,
+        "imu_gyro_noise_std_radps": 0.002873232799800494,
+        "imu_accel_noise_std_mps2": 0.03487911006422108,
+        "dvl_velocity_noise_std_mps": 0.02357042937477384
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.07519529794763574,
+          0.0005264454411593733,
+          0.38173900130400595,
+          0.03961143995058579,
+          0.031235417072711807,
+          0.007715758868826228
+        ],
+        "frequencies_radps": [
+          0.10808550353911597,
+          0.1334108038996413,
+          0.06860670199992805,
+          0.09246854324099638,
+          0.15996526111019105,
+          0.05454892080505812
+        ],
+        "phases_rad": [
+          2.3735791473761036,
+          2.3202767567725306,
+          -0.8684999806169089,
+          0.21309655543563677,
+          -0.4464981551383871,
+          1.9512275287074194
+        ]
+      }
+    },
+    {
+      "scenario": "strong_imu_spike",
+      "category": "strong_direct",
+      "sensor": "imu",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 354,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026078801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.10715452828461301,
+        "depth_drift_std_m_per_sqrt_s": 0.0011187443986032458,
+        "imu_attitude_noise_std_rad": 0.005312875151982588,
+        "imu_gyro_noise_std_radps": 0.005115991654636462,
+        "imu_accel_noise_std_mps2": 0.018674594432793297,
+        "dvl_velocity_noise_std_mps": 0.057980811791285336
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.8520728410594334,
+          0.7566799802535124,
+          0.5114133011733164,
+          0.03453401564914455,
+          0.03951481601180368,
+          0.1190451005012968
+        ],
+        "frequencies_radps": [
+          0.12961959260419303,
+          0.10150462255321935,
+          0.12388919857965973,
+          0.0980536058270653,
+          0.07601630451243836,
+          0.11369016492414105
+        ],
+        "phases_rad": [
+          -1.862719052221426,
+          -0.06876061817233747,
+          2.825470815674124,
+          -2.5024098502449337,
+          3.070517970139104,
+          -1.8924276031923515
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_unavailable",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 332,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026079800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.07488980879464642,
+        "depth_drift_std_m_per_sqrt_s": 0.0004403008581777421,
+        "imu_attitude_noise_std_rad": 0.001023263961099931,
+        "imu_gyro_noise_std_radps": 0.002221044650902737,
+        "imu_accel_noise_std_mps2": 0.00931539686706126,
+        "dvl_velocity_noise_std_mps": 0.016140896102850452
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.410987127920083,
+          0.5665238722359499,
+          0.7454146077318211,
+          0.02529063509151918,
+          0.0349515514880081,
+          0.09295606239477974
+        ],
+        "frequencies_radps": [
+          0.1482031726392032,
+          0.12739153809554404,
+          0.16638441202760162,
+          0.16712809473644658,
+          0.05625035326517968,
+          0.07149144649862346
+        ],
+        "phases_rad": [
+          1.7179963183922213,
+          -2.6359238154244182,
+          2.0124724783633443,
+          2.28008655202788,
+          1.031784593424094,
+          -1.9454281356709444
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_unavailable",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 351,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026079801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.083934666615346,
+        "depth_drift_std_m_per_sqrt_s": 0.0028457023370338057,
+        "imu_attitude_noise_std_rad": 0.001889814222866684,
+        "imu_gyro_noise_std_radps": 0.0010574061440473364,
+        "imu_accel_noise_std_mps2": 0.009158238931393888,
+        "dvl_velocity_noise_std_mps": 0.04263924909396545
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.4513323850716115,
+          0.6291092835422398,
+          0.7740030284503889,
+          0.039838174876028844,
+          0.024871139092722906,
+          0.11727182352648256
+        ],
+        "frequencies_radps": [
+          0.07184559338880456,
+          0.10141618370503483,
+          0.06918916884548154,
+          0.08966026990945061,
+          0.06782923284732932,
+          0.17981191221246967
+        ],
+        "phases_rad": [
+          1.8014409894100032,
+          -2.8988346418481488,
+          2.737317286200196,
+          1.5853423035112142,
+          -1.7867518829341067,
+          1.3287963119650348
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_stuck",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_partial_stuck",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 73,
+      "any_observer_possible_sample_count": 579,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_partial_stuck",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 281,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026080800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.10377883108814188,
+        "depth_drift_std_m_per_sqrt_s": 0.0014375890633868006,
+        "imu_attitude_noise_std_rad": 0.0032025533216726285,
+        "imu_gyro_noise_std_radps": 0.002413297451509023,
+        "imu_accel_noise_std_mps2": 0.016145611830193345,
+        "dvl_velocity_noise_std_mps": 0.018936991745022873
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.012718344327006,
+          1.418434868358831,
+          0.6767861861913229,
+          0.0002844877113103239,
+          0.0003605706040254653,
+          0.04937553423117121
+        ],
+        "frequencies_radps": [
+          0.1149383941318464,
+          0.11003762579887907,
+          0.16566552029069875,
+          0.1415909307642806,
+          0.14121211101394165,
+          0.08642496128478042
+        ],
+        "phases_rad": [
+          -1.227423197101766,
+          -2.7044654633641705,
+          1.5387316232849377,
+          2.42815976480935,
+          2.6320994268145483,
+          -0.09040512120825372
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_stuck",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": true,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "degraded_operation",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": true,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_partial_stuck"
+      ],
+      "observer_possible_sample_count": 71,
+      "any_observer_possible_sample_count": 385,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_partial_stuck"
+      ],
+      "observer_operator_possible_sample_count": 385,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026080801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.029796825964198956,
+        "depth_drift_std_m_per_sqrt_s": 0.0011855646123132594,
+        "imu_attitude_noise_std_rad": 0.005435006861729512,
+        "imu_gyro_noise_std_radps": 0.005484605815030243,
+        "imu_accel_noise_std_mps2": 0.04595912032045175,
+        "dvl_velocity_noise_std_mps": 0.05008769272044431
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.2658951970348227,
+          1.1495261533597114,
+          0.9037910090726106,
+          0.03494533694778901,
+          0.017968305506648886,
+          0.042456868589108916
+        ],
+        "frequencies_radps": [
+          0.14302600456365255,
+          0.16341600412121648,
+          0.10738184097013989,
+          0.13027250910991695,
+          0.05082854774911453,
+          0.15570224381083547
+        ],
+        "phases_rad": [
+          2.0399293877510134,
+          -2.762091605929091,
+          1.5631524455840617,
+          -2.1914901327320226,
+          1.024565397395719,
+          -2.75327126156005
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_spike",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 353,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026081800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.10729341982380347,
+        "depth_drift_std_m_per_sqrt_s": 0.0020323690368609323,
+        "imu_attitude_noise_std_rad": 0.006798665656511622,
+        "imu_gyro_noise_std_radps": 0.0015188581399913801,
+        "imu_accel_noise_std_mps2": 0.027529534874038995,
+        "dvl_velocity_noise_std_mps": 0.005659824486782252
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.07061560111493814,
+          0.19851882319383074,
+          0.6983979518503887,
+          0.02159188932112179,
+          0.009326759259456075,
+          0.003984559115292972
+        ],
+        "frequencies_radps": [
+          0.07616612027331505,
+          0.17521791994673858,
+          0.09597906104745152,
+          0.07847919403696774,
+          0.14291394482177083,
+          0.0982396312879194
+        ],
+        "phases_rad": [
+          0.3535424179877924,
+          1.467069602488805,
+          -1.757935268614366,
+          0.6767075254593728,
+          -0.04694438225601605,
+          1.8403352859620954
+        ]
+      }
+    },
+    {
+      "scenario": "strong_dvl_spike",
+      "category": "strong_direct",
+      "sensor": "dvl",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 1,
+      "target_confirmed_event_count": 1,
+      "exact_event_detected": true,
+      "exact_event_count": 1,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": "log_only",
+      "correct_ftc_action_observed": true,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 314,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "confirmed",
+      "seed": 2026081801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0735661268432375,
+        "depth_drift_std_m_per_sqrt_s": 0.002702986790190942,
+        "imu_attitude_noise_std_rad": 0.00553069616610705,
+        "imu_gyro_noise_std_radps": 0.004242409728564163,
+        "imu_accel_noise_std_mps2": 0.04875012288532624,
+        "dvl_velocity_noise_std_mps": 0.02400157542767452
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6110740375673229,
+          0.3729493665667587,
+          0.4829766015715097,
+          0.01581060204372515,
+          0.0011544459884177804,
+          0.11983860693048412
+        ],
+        "frequencies_radps": [
+          0.09995759655309087,
+          0.0642444746898798,
+          0.12394550738070584,
+          0.12925541599796475,
+          0.07134930739563233,
+          0.17040286014336303
+        ],
+        "phases_rad": [
+          1.9297721078996855,
+          0.31596086031369364,
+          0.06402283695095434,
+          2.382916692237348,
+          0.3385202728601566,
+          1.3809685623728543
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_weak_spike",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 237,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026082800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.05780962412192337,
+        "depth_drift_std_m_per_sqrt_s": 0.003153605144065198,
+        "imu_attitude_noise_std_rad": 0.0019389461177015807,
+        "imu_gyro_noise_std_radps": 0.0056979026777133155,
+        "imu_accel_noise_std_mps2": 0.041254240461960995,
+        "dvl_velocity_noise_std_mps": 0.0230353560623488
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.09084598075124584,
+          0.5175167390798601,
+          0.6531589930810452,
+          0.01808364980605016,
+          0.020796392324031913,
+          0.001623018166804182
+        ],
+        "frequencies_radps": [
+          0.10096795089845524,
+          0.14293514857219852,
+          0.07975782463565997,
+          0.17008924362264555,
+          0.15293114857945755,
+          0.1508482218284267
+        ],
+        "phases_rad": [
+          -1.3546294172347018,
+          -0.6501725762738397,
+          1.630598041115979,
+          0.24502758815808878,
+          1.5378520795238115,
+          -2.780905555783934
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_weak_spike",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 109,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026082801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.042361039315448386,
+        "depth_drift_std_m_per_sqrt_s": 0.0009555102381615158,
+        "imu_attitude_noise_std_rad": 0.003218527462858696,
+        "imu_gyro_noise_std_radps": 0.0056703323662406525,
+        "imu_accel_noise_std_mps2": 0.012792560713120234,
+        "dvl_velocity_noise_std_mps": 0.005306800741820415
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.9612561232298724,
+          0.8447025701792287,
+          0.09151098374306577,
+          0.019667356924525287,
+          0.03470815690749846,
+          0.01723347939884341
+        ],
+        "frequencies_radps": [
+          0.07992527751820645,
+          0.06852946035833599,
+          0.09278249182864191,
+          0.11328536312437654,
+          0.12364720197159923,
+          0.05940172965154921
+        ],
+        "phases_rad": [
+          0.5662291425639556,
+          2.10766939063586,
+          2.636093834427082,
+          1.341963209122131,
+          0.8083235974208556,
+          -2.2211917530638945
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_weak_spike",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 305,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026083800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.05914871952815409,
+        "depth_drift_std_m_per_sqrt_s": 0.003841791697700137,
+        "imu_attitude_noise_std_rad": 0.0016324582143226335,
+        "imu_gyro_noise_std_radps": 0.0008045734986999917,
+        "imu_accel_noise_std_mps2": 0.01688754876177407,
+        "dvl_velocity_noise_std_mps": 0.049173453695674746
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4947700930993004,
+          0.5091481609828044,
+          0.06640433766173204,
+          0.032431588677895466,
+          0.02496166134365735,
+          0.007049671252501306
+        ],
+        "frequencies_radps": [
+          0.15645968918291292,
+          0.06946997456709511,
+          0.11375539340972879,
+          0.14673135807543514,
+          0.055969663464502384,
+          0.12987457445212802
+        ],
+        "phases_rad": [
+          -1.2560108321966112,
+          0.9203430143648053,
+          1.1523990170368794,
+          -2.2039400124768593,
+          2.0189780549599785,
+          0.08755884037835537
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_weak_spike",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 101,
+      "observer_all_possible_hypotheses": [
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026083801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.029453167446496557,
+        "depth_drift_std_m_per_sqrt_s": 0.002124080758801948,
+        "imu_attitude_noise_std_rad": 0.0022545048068351335,
+        "imu_gyro_noise_std_radps": 0.004727003050682197,
+        "imu_accel_noise_std_mps2": 0.028742013679646558,
+        "dvl_velocity_noise_std_mps": 0.058328233973269354
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.3575214998671605,
+          1.399386738254962,
+          0.2847509182358945,
+          0.016689978972545202,
+          0.022121159608438773,
+          0.11551303080174277
+        ],
+        "frequencies_radps": [
+          0.10008247183019822,
+          0.07487369093960122,
+          0.17742009883482496,
+          0.15752838028077118,
+          0.14012253077551595,
+          0.16076144895271646
+        ],
+        "phases_rad": [
+          2.6147423712811326,
+          -2.045617141225818,
+          0.6453255882477613,
+          2.8018132274139473,
+          2.8773246748331083,
+          3.009765781892029
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_weak_spike",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 121,
+      "observer_all_possible_hypotheses": [
+        "dvl:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026084800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.04188203230706003,
+        "depth_drift_std_m_per_sqrt_s": 0.00218083104384134,
+        "imu_attitude_noise_std_rad": 0.0013149855244355304,
+        "imu_gyro_noise_std_radps": 0.0011442557515903373,
+        "imu_accel_noise_std_mps2": 0.03653140280483389,
+        "dvl_velocity_noise_std_mps": 0.056146374801924026
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.6838504360875508,
+          0.13828895737891822,
+          0.9815059639331591,
+          0.026476989840651836,
+          0.022940220512656876,
+          0.11146843947004359
+        ],
+        "frequencies_radps": [
+          0.14419708641763757,
+          0.13860397361152543,
+          0.15381786530408395,
+          0.129460966444018,
+          0.12708423538661134,
+          0.08493541108114495
+        ],
+        "phases_rad": [
+          -2.8156935136387657,
+          0.8068263372459952,
+          -3.008139976244253,
+          -2.7282222874957363,
+          -2.2189778891171255,
+          -2.8964101541581964
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_weak_spike",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "spike",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 20,
+      "any_observer_possible_sample_count": 182,
+      "observer_all_possible_hypotheses": [
+        "dvl:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026084801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.01761725245878619,
+        "depth_drift_std_m_per_sqrt_s": 0.0009611357761417365,
+        "imu_attitude_noise_std_rad": 0.00562307090842693,
+        "imu_gyro_noise_std_radps": 0.005186847654322388,
+        "imu_accel_noise_std_mps2": 0.017687873089844694,
+        "dvl_velocity_noise_std_mps": 0.062059131913674764
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.23644442612439603,
+          0.14159501634886362,
+          0.39828572906218973,
+          0.034767529224975655,
+          0.0019200600833125625,
+          0.10591339305305333
+        ],
+        "frequencies_radps": [
+          0.1571247977317643,
+          0.09289726511535681,
+          0.09434394866944287,
+          0.09241184759224796,
+          0.07303504668955905,
+          0.07749508605735189
+        ],
+        "phases_rad": [
+          -1.705110492128336,
+          2.1939253998776724,
+          -2.0504056311889594,
+          -1.9629194110842574,
+          0.3775296773465606,
+          -1.7444545745786084
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_partial_stuck",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_partial_stuck",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 75,
+      "any_observer_possible_sample_count": 224,
+      "observer_all_possible_hypotheses": [
+        "imu:possible_bias_or_drift",
+        "imu:possible_partial_stuck",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 192,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026085800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.015399312109984313,
+        "depth_drift_std_m_per_sqrt_s": 0.001971467416481545,
+        "imu_attitude_noise_std_rad": 0.0016258878244876135,
+        "imu_gyro_noise_std_radps": 0.002930468284978881,
+        "imu_accel_noise_std_mps2": 0.01947997469747134,
+        "dvl_velocity_noise_std_mps": 0.02751876337042561
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.8021094018326397,
+          1.3102826545060136,
+          0.1454135863267635,
+          0.033454777430490905,
+          0.004175351388352393,
+          0.09094938339360087
+        ],
+        "frequencies_radps": [
+          0.07536238249207217,
+          0.1266972382142302,
+          0.0861264496513863,
+          0.0789252865216211,
+          0.0885487566509576,
+          0.17639526751182993
+        ],
+        "phases_rad": [
+          3.1344878440967214,
+          -2.320775287325985,
+          -1.1332231806069504,
+          -3.060816362561488,
+          2.3036170209391322,
+          2.736233680085131
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_partial_stuck",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_partial_stuck",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 75,
+      "any_observer_possible_sample_count": 394,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_bias_or_drift",
+        "imu:possible_partial_stuck",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 192,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026085801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.059459918208279096,
+        "depth_drift_std_m_per_sqrt_s": 0.0018724945971996146,
+        "imu_attitude_noise_std_rad": 0.0015848047655548073,
+        "imu_gyro_noise_std_radps": 0.005060003977057543,
+        "imu_accel_noise_std_mps2": 0.03565445076834566,
+        "dvl_velocity_noise_std_mps": 0.048667050115942224
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.3394567825104784,
+          1.188217794556858,
+          0.15720059811187326,
+          0.01917669915133353,
+          0.024152375378813058,
+          0.11487388814377747
+        ],
+        "frequencies_radps": [
+          0.08999400696746121,
+          0.06622789318676892,
+          0.07888064011988168,
+          0.05384069072672071,
+          0.06174636803030846,
+          0.119282626505834
+        ],
+        "phases_rad": [
+          2.237498715967863,
+          -2.314574180476221,
+          2.9349934699001823,
+          -1.960332797951763,
+          1.6231596703301294,
+          -0.3079691837932885
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_partial_stuck",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_partial_stuck"
+      ],
+      "observer_possible_sample_count": 57,
+      "any_observer_possible_sample_count": 353,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_partial_stuck"
+      ],
+      "observer_operator_possible_sample_count": 353,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026086800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.029845872270650622,
+        "depth_drift_std_m_per_sqrt_s": 0.001927288395971712,
+        "imu_attitude_noise_std_rad": 0.004625311491140628,
+        "imu_gyro_noise_std_radps": 0.00066629237171674,
+        "imu_accel_noise_std_mps2": 0.0430393868648345,
+        "dvl_velocity_noise_std_mps": 0.033674139942443615
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.0611295836801862,
+          0.09066599774327427,
+          0.6190644586622608,
+          0.009122175971281865,
+          0.004016261297600572,
+          0.07265639148465364
+        ],
+        "frequencies_radps": [
+          0.06782532790860976,
+          0.15156589666832457,
+          0.10833747829287768,
+          0.1232500678574274,
+          0.14010214349472655,
+          0.08188997303753356
+        ],
+        "phases_rad": [
+          1.8693747933567284,
+          0.4190240499801581,
+          0.6204222299824669,
+          -1.2315997909289833,
+          1.6295247105805677,
+          1.8271700896920082
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_partial_stuck",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "stuck",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_partial_stuck"
+      ],
+      "observer_possible_sample_count": 54,
+      "any_observer_possible_sample_count": 301,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_partial_stuck"
+      ],
+      "observer_operator_possible_sample_count": 301,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026086801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0348673340199666,
+        "depth_drift_std_m_per_sqrt_s": 0.0028932695026319248,
+        "imu_attitude_noise_std_rad": 0.005277162348281822,
+        "imu_gyro_noise_std_radps": 0.005289342666576923,
+        "imu_accel_noise_std_mps2": 0.02208654921035606,
+        "dvl_velocity_noise_std_mps": 0.06431096682159641
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.3061174686832158,
+          0.10507030491622682,
+          0.4739472272619606,
+          0.0065200690517616166,
+          0.02322185565805606,
+          0.06662304787208305
+        ],
+        "frequencies_radps": [
+          0.14643234623073642,
+          0.08792273459513301,
+          0.06990382419182893,
+          0.1298472882027033,
+          0.08043516343222692,
+          0.07282724084418873
+        ],
+        "phases_rad": [
+          -2.2973734903510086,
+          2.6717389188476197,
+          2.8996687882910326,
+          -1.5982290605936458,
+          -2.45654484802333,
+          -1.4931334977621542
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_bias",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 260,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 239,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026087800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.013578792795680496,
+        "depth_drift_std_m_per_sqrt_s": 0.0014276098164296331,
+        "imu_attitude_noise_std_rad": 0.0011783219450505515,
+        "imu_gyro_noise_std_radps": 0.0012197587655801661,
+        "imu_accel_noise_std_mps2": 0.021626184982565456,
+        "dvl_velocity_noise_std_mps": 0.04481753008801164
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.0098318288690296,
+          1.2639163223484409,
+          0.6352921921244543,
+          0.0375855954779799,
+          0.03902052164636354,
+          0.054844582622688605
+        ],
+        "frequencies_radps": [
+          0.11792125244793404,
+          0.06579703337376908,
+          0.12022065371220385,
+          0.1630746045991247,
+          0.0920775562236299,
+          0.1709499519254705
+        ],
+        "phases_rad": [
+          -1.7896641503376418,
+          -0.07155673363569948,
+          2.9854559872611155,
+          0.09897835726444182,
+          1.9922445222128689,
+          2.2221695268095747
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_bias",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 260,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_bias_or_drift",
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 192,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026087801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06373929780174752,
+        "depth_drift_std_m_per_sqrt_s": 0.002969363409580172,
+        "imu_attitude_noise_std_rad": 0.005463370971729628,
+        "imu_gyro_noise_std_radps": 0.004433360322637409,
+        "imu_accel_noise_std_mps2": 0.028925756665646066,
+        "dvl_velocity_noise_std_mps": 0.030912078034430333
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.354453183569388,
+          0.9006210070771634,
+          0.6444309207113628,
+          0.03621657423617202,
+          0.03311468581744388,
+          0.0762038501744533
+        ],
+        "frequencies_radps": [
+          0.05034466786400753,
+          0.1409514682385268,
+          0.07950876007818744,
+          0.1307218852478204,
+          0.17827267784753326,
+          0.14435937553987638
+        ],
+        "phases_rad": [
+          2.1636917802100637,
+          -0.7949933824030402,
+          2.563883521236354,
+          0.30564443849594536,
+          -1.3798677979012643,
+          0.19913321194061284
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_bias",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 260,
+      "observer_all_possible_hypotheses": [
+        "imu:possible_bias_or_drift",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 239,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026088800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.02686796484945176,
+        "depth_drift_std_m_per_sqrt_s": 0.001073754186498122,
+        "imu_attitude_noise_std_rad": 0.0017181485205472271,
+        "imu_gyro_noise_std_radps": 0.004797574044072571,
+        "imu_accel_noise_std_mps2": 0.027390899196962346,
+        "dvl_velocity_noise_std_mps": 0.03714888560571003
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.1580398599428605,
+          0.4514473763715421,
+          0.06000208699285614,
+          0.024731334553552968,
+          0.020556208142922687,
+          0.029269722122622823
+        ],
+        "frequencies_radps": [
+          0.09982645381068558,
+          0.051537920852227186,
+          0.08798049121861529,
+          0.1408280765674716,
+          0.13857480030095365,
+          0.08707171647293915
+        ],
+        "phases_rad": [
+          -2.655864792760489,
+          -0.9250985520188659,
+          1.8738156105774628,
+          0.7831325915651819,
+          1.4296836687757386,
+          2.3184295481475843
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_bias",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 579,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_bias_or_drift",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 239,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026088801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.09223877811006126,
+        "depth_drift_std_m_per_sqrt_s": 0.0020227982761797988,
+        "imu_attitude_noise_std_rad": 0.0074195205594261016,
+        "imu_gyro_noise_std_radps": 0.0009479181276487621,
+        "imu_accel_noise_std_mps2": 0.04562284263946153,
+        "dvl_velocity_noise_std_mps": 0.04108465635016883
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.9193617536191372,
+          0.03553492152442961,
+          0.9961762978149142,
+          0.03236108079842444,
+          0.02106607184539964,
+          0.04349520800627403
+        ],
+        "frequencies_radps": [
+          0.12680922353434396,
+          0.11699390989110771,
+          0.11521947604902245,
+          0.14413347099376134,
+          0.1068344243505245,
+          0.1258735825952087
+        ],
+        "phases_rad": [
+          0.9823939635966941,
+          1.6864880754664489,
+          1.4638520369920371,
+          1.426392633748768,
+          -1.623027826157942,
+          1.2106893468784872
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_bias",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 118,
+      "any_observer_possible_sample_count": 607,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 239,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026089800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11467435002515494,
+        "depth_drift_std_m_per_sqrt_s": 0.0023885689721777708,
+        "imu_attitude_noise_std_rad": 0.006339608774662206,
+        "imu_gyro_noise_std_radps": 0.0035418815991852446,
+        "imu_accel_noise_std_mps2": 0.03515138154956207,
+        "dvl_velocity_noise_std_mps": 0.049662726387292785
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4781739398503622,
+          0.6385801408814542,
+          0.0076670714077091695,
+          0.011866900083124046,
+          0.01791436328964457,
+          0.03542749935214296
+        ],
+        "frequencies_radps": [
+          0.15634926648675235,
+          0.08312197605924837,
+          0.05292034838836597,
+          0.07035948718998461,
+          0.14773356565445128,
+          0.1360000636035279
+        ],
+        "phases_rad": [
+          2.4823606251193917,
+          -1.5268409553945657,
+          1.440228428361089,
+          -1.465893928211077,
+          -0.0009571388656794966,
+          -1.5958128350919358
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_bias",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "bias",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 687,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 223,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026089801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.07966159518558714,
+        "depth_drift_std_m_per_sqrt_s": 0.0013408515557673522,
+        "imu_attitude_noise_std_rad": 0.0016244532446817747,
+        "imu_gyro_noise_std_radps": 0.0024187935882813566,
+        "imu_accel_noise_std_mps2": 0.04676781375943332,
+        "dvl_velocity_noise_std_mps": 0.06872064844754966
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.35984212248422365,
+          1.2784626378543502,
+          0.8781225900617861,
+          0.012480987974225251,
+          0.0043956112827106784,
+          0.0747388635603666
+        ],
+        "frequencies_radps": [
+          0.13264079641834942,
+          0.08575579796652925,
+          0.16268339805017745,
+          0.06107158209590213,
+          0.06275263152109438,
+          0.06833628227697384
+        ],
+        "phases_rad": [
+          -2.405495020197571,
+          0.8847156907873446,
+          -2.8441398120319428,
+          0.23654312268252609,
+          2.695675355481513,
+          2.8017499792911904
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_drift",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 359,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026090800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11507620724966981,
+        "depth_drift_std_m_per_sqrt_s": 0.0039360001659034275,
+        "imu_attitude_noise_std_rad": 0.005041153464011468,
+        "imu_gyro_noise_std_radps": 0.0013607839461395287,
+        "imu_accel_noise_std_mps2": 0.037356054706380544,
+        "dvl_velocity_noise_std_mps": 0.03978021723464568
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.8214411853526398,
+          0.25550853845388444,
+          0.48076396608063277,
+          0.03196378147161015,
+          0.03305730077500509,
+          0.01105971107591547
+        ],
+        "frequencies_radps": [
+          0.06955387071566145,
+          0.16350013556318777,
+          0.16983097922889573,
+          0.17587202783394473,
+          0.05520134015001363,
+          0.11053787263626536
+        ],
+        "phases_rad": [
+          0.1542849094929335,
+          -0.964325863601398,
+          -0.565136890229017,
+          -1.744010846173953,
+          -0.0012114329730752438,
+          -0.616899477362987
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_drift",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 129,
+      "any_observer_possible_sample_count": 359,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026090801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.10291807860515481,
+        "depth_drift_std_m_per_sqrt_s": 0.0008248342929485391,
+        "imu_attitude_noise_std_rad": 0.0011206864460006666,
+        "imu_gyro_noise_std_radps": 0.001719915688364123,
+        "imu_accel_noise_std_mps2": 0.043616841778368415,
+        "dvl_velocity_noise_std_mps": 0.0118706425405711
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.10387903792804665,
+          1.4348736481442204,
+          0.6582559763721318,
+          0.016918804882662456,
+          0.032170462468149114,
+          0.08010968692001617
+        ],
+        "frequencies_radps": [
+          0.0703639941188316,
+          0.13604176115080605,
+          0.0740985656359624,
+          0.1382775711712829,
+          0.10604935196438635,
+          0.09548969437459678
+        ],
+        "phases_rad": [
+          -0.24715212711484513,
+          1.2121378969320507,
+          -1.6081113609833677,
+          0.9227290700302069,
+          -2.4422202516287133,
+          2.6902384131070685
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_drift",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 68,
+      "any_observer_possible_sample_count": 557,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_bias_or_drift",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 125,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026091800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.08074816076422621,
+        "depth_drift_std_m_per_sqrt_s": 0.0034178975039113172,
+        "imu_attitude_noise_std_rad": 0.005653459677479433,
+        "imu_gyro_noise_std_radps": 0.00065950672804074,
+        "imu_accel_noise_std_mps2": 0.014916569677933735,
+        "dvl_velocity_noise_std_mps": 0.05966183952705137
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.7808376297469953,
+          1.3775072288722976,
+          0.25503908982714907,
+          0.007450483988248284,
+          0.010972353325445102,
+          0.05746445552280345
+        ],
+        "frequencies_radps": [
+          0.05052958190515877,
+          0.09310394222935148,
+          0.07361542377827342,
+          0.09270580950457485,
+          0.17221429187504833,
+          0.1310872770862515
+        ],
+        "phases_rad": [
+          -0.13557797554467932,
+          0.3303786513189575,
+          -2.1147980365688133,
+          3.0074651049259735,
+          -0.7982495450436895,
+          0.5181071190898159
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_drift",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_bias_or_drift",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 49,
+      "any_observer_possible_sample_count": 539,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_bias_or_drift",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 128,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026091801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11641308761367321,
+        "depth_drift_std_m_per_sqrt_s": 0.002330311953041364,
+        "imu_attitude_noise_std_rad": 0.0048606888445691925,
+        "imu_gyro_noise_std_radps": 0.0036444527514717558,
+        "imu_accel_noise_std_mps2": 0.03161320377748167,
+        "dvl_velocity_noise_std_mps": 0.04065575760320969
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.38562478789828464,
+          0.5266373101889612,
+          0.7772992933377896,
+          0.035182791012923625,
+          0.014990269470996225,
+          0.05930097689559106
+        ],
+        "frequencies_radps": [
+          0.13552939450390136,
+          0.17357312393749458,
+          0.052300169691159144,
+          0.17559091945988425,
+          0.16026689323129445,
+          0.08939394357081569
+        ],
+        "phases_rad": [
+          -1.6254138957520397,
+          1.1309557059433102,
+          -0.7266571652284548,
+          -0.8824771120032331,
+          -2.2411121227711193,
+          0.0752889557268448
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_drift",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 10,
+      "any_observer_possible_sample_count": 469,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_bias_or_drift",
+        "dvl:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 54,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026092800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11521409555862014,
+        "depth_drift_std_m_per_sqrt_s": 0.0032684515286124983,
+        "imu_attitude_noise_std_rad": 0.0006935967948422993,
+        "imu_gyro_noise_std_radps": 0.003046621312627156,
+        "imu_accel_noise_std_mps2": 0.03335415087076697,
+        "dvl_velocity_noise_std_mps": 0.04136419713076635
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.1700725536774685,
+          1.3214691549318172,
+          0.797612975096263,
+          0.020643792969109766,
+          0.032626504446760324,
+          0.006472887023971134
+        ],
+        "frequencies_radps": [
+          0.11290123661782354,
+          0.17927845963894806,
+          0.09096455128289517,
+          0.11629628024357848,
+          0.17403821800653718,
+          0.12939076182159612
+        ],
+        "phases_rad": [
+          2.4490790071248867,
+          0.9778333086460513,
+          -0.560379479826179,
+          -1.2376461398783707,
+          1.0104496081068595,
+          -1.9774406666445494
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_drift",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "drift",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 0,
+      "target_confirmed_event_count": 0,
+      "exact_event_detected": false,
+      "exact_event_count": 0,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 0,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": false,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": false,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": false,
+      "observer_operator_possible_evidence_observed": false,
+      "observer_possible_hypotheses": [],
+      "observer_possible_sample_count": 0,
+      "any_observer_possible_sample_count": 357,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 0,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "log_only",
+      "seed": 2026092801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11328025473640144,
+        "depth_drift_std_m_per_sqrt_s": 0.0014195316082026095,
+        "imu_attitude_noise_std_rad": 0.006488346416705752,
+        "imu_gyro_noise_std_radps": 0.004832910089520446,
+        "imu_accel_noise_std_mps2": 0.02970740321552629,
+        "dvl_velocity_noise_std_mps": 0.07217076708462733
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4797377046592715,
+          1.063818286996411,
+          0.7998711801076112,
+          0.02022089014318223,
+          0.025426880924218482,
+          0.007966097940645782
+        ],
+        "frequencies_radps": [
+          0.10766991977263556,
+          0.1461143549759517,
+          0.13884405806256506,
+          0.07743756408231321,
+          0.13208430660262774,
+          0.14997474419687076
+        ],
+        "phases_rad": [
+          -0.29831921346719037,
+          -0.7513161575888119,
+          2.7653231582206717,
+          -1.893300036708432,
+          0.8680663368328307,
+          -2.5375086826714917
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 39,
+      "any_observer_possible_sample_count": 428,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_intermittent_unavailability",
+        "depth:possible_weak_spike_or_bias",
+        "dvl:possible_weak_spike_or_bias",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 240,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026093800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.0552777798086478,
+        "depth_drift_std_m_per_sqrt_s": 0.0018906957640869916,
+        "imu_attitude_noise_std_rad": 0.006819472133311742,
+        "imu_gyro_noise_std_radps": 0.004063775338093123,
+        "imu_accel_noise_std_mps2": 0.030663602776629648,
+        "dvl_velocity_noise_std_mps": 0.06048788458857634
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4871644470385394,
+          0.9717040902145229,
+          0.7414102244506001,
+          0.012309784590196516,
+          0.020203265737521334,
+          0.04570358925083592
+        ],
+        "frequencies_radps": [
+          0.12530531454548813,
+          0.13708724135507666,
+          0.10369999909098478,
+          0.12005030666060872,
+          0.05890317380596855,
+          0.17876495631019662
+        ],
+        "phases_rad": [
+          -0.484235375918745,
+          -1.0663425849429213,
+          -0.9003584879518121,
+          2.477840837424334,
+          2.9528642144664987,
+          1.8258720451994828
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_depth_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "depth",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability",
+        "possible_weak_spike_or_bias"
+      ],
+      "observer_possible_sample_count": 39,
+      "any_observer_possible_sample_count": 341,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_intermittent_unavailability",
+        "depth:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 200,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026093801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.11645989443845532,
+        "depth_drift_std_m_per_sqrt_s": 0.0034597060556191194,
+        "imu_attitude_noise_std_rad": 0.0008319598600165213,
+        "imu_gyro_noise_std_radps": 0.004608636805494991,
+        "imu_accel_noise_std_mps2": 0.030294161707920528,
+        "dvl_velocity_noise_std_mps": 0.018869279809574157
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.4818516143116629,
+          0.3614689927369215,
+          0.7810885094445315,
+          0.02649167785659367,
+          0.02077433252506297,
+          0.06447226268745554
+        ],
+        "frequencies_radps": [
+          0.13334281780917695,
+          0.13892268305932132,
+          0.17796429848585893,
+          0.07575711149055947,
+          0.15787159841648368,
+          0.09764328675911824
+        ],
+        "phases_rad": [
+          0.3038689238495369,
+          -1.5491660492492039,
+          -0.29003318303105363,
+          -2.0247176513749086,
+          2.1470401990763044,
+          -2.5454614606844483
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability"
+      ],
+      "observer_possible_sample_count": 26,
+      "any_observer_possible_sample_count": 426,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_intermittent_unavailability"
+      ],
+      "observer_operator_possible_sample_count": 240,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026094800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.06416793309904034,
+        "depth_drift_std_m_per_sqrt_s": 0.0022202793734021477,
+        "imu_attitude_noise_std_rad": 0.0078080926803940996,
+        "imu_gyro_noise_std_radps": 0.0015420365977786945,
+        "imu_accel_noise_std_mps2": 0.03902760738864606,
+        "dvl_velocity_noise_std_mps": 0.02693869024240074
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.274266317468636,
+          0.8060611139242728,
+          0.6001412047625467,
+          0.010611625121127437,
+          0.03467138414187106,
+          0.05466540680805829
+        ],
+        "frequencies_radps": [
+          0.13379571559423198,
+          0.1179664121085589,
+          0.10430367216591785,
+          0.1680157701821851,
+          0.10720989097727918,
+          0.1284716756516385
+        ],
+        "phases_rad": [
+          -2.046463773742179,
+          -0.24305388041002152,
+          -0.05301427919936108,
+          -2.838995648831034,
+          -2.537746032187755,
+          -0.3160313190734265
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_imu_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "imu",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability"
+      ],
+      "observer_possible_sample_count": 26,
+      "any_observer_possible_sample_count": 598,
+      "observer_all_possible_hypotheses": [
+        "depth:possible_weak_spike_or_bias",
+        "imu:possible_intermittent_unavailability"
+      ],
+      "observer_operator_possible_sample_count": 240,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026094801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.10964391145239347,
+        "depth_drift_std_m_per_sqrt_s": 0.0027533692649692144,
+        "imu_attitude_noise_std_rad": 0.006671516516590733,
+        "imu_gyro_noise_std_radps": 0.0012529020388600417,
+        "imu_accel_noise_std_mps2": 0.006163472332219977,
+        "dvl_velocity_noise_std_mps": 0.0325684793949758
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.4444777336346953,
+          0.7437167954962405,
+          0.6518021203354566,
+          0.03251657627971653,
+          0.030177705805150428,
+          0.03931707476863136
+        ],
+        "frequencies_radps": [
+          0.13790692427645257,
+          0.17195192310349283,
+          0.053550195413271155,
+          0.14176759828658508,
+          0.1257239870971186,
+          0.06762664158453699
+        ],
+        "phases_rad": [
+          -2.5196175589265457,
+          0.49331110168781445,
+          -1.4784549131472011,
+          -1.7994901072979888,
+          -0.3280840727852734,
+          1.752211541354077
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability"
+      ],
+      "observer_possible_sample_count": 26,
+      "any_observer_possible_sample_count": 300,
+      "observer_all_possible_hypotheses": [
+        "dvl:possible_intermittent_unavailability",
+        "imu:possible_weak_spike_or_bias"
+      ],
+      "observer_operator_possible_sample_count": 240,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026095800,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.03319731253179566,
+        "depth_drift_std_m_per_sqrt_s": 0.002339251806999173,
+        "imu_attitude_noise_std_rad": 0.002432492531343373,
+        "imu_gyro_noise_std_radps": 0.002661759565432213,
+        "imu_accel_noise_std_mps2": 0.0069779672009162245,
+        "dvl_velocity_noise_std_mps": 0.027293861048807468
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          0.4418263543225874,
+          0.5790303744699131,
+          0.596242530085642,
+          0.002325523545589783,
+          0.02872413590589528,
+          0.11047683353708218
+        ],
+        "frequencies_radps": [
+          0.13101067413947537,
+          0.1377622412093194,
+          0.14427095855298774,
+          0.14740968569469662,
+          0.08224301859399387,
+          0.06055507643027844
+        ],
+        "phases_rad": [
+          -0.0013157070043741115,
+          1.6559879192131435,
+          1.2404748199252547,
+          2.218041053495165,
+          0.08081800094868896,
+          -2.0168664415519615
+        ]
+      }
+    },
+    {
+      "scenario": "ambiguous_dvl_intermittent_unavailable",
+      "category": "ambiguous",
+      "sensor": "dvl",
+      "truth_mode": "intermittent_unavailable",
+      "disturbance_scale": 1.0,
+      "confirmed_event_count": 3,
+      "target_confirmed_event_count": 3,
+      "exact_event_detected": true,
+      "exact_event_count": 3,
+      "conflicting_confirmed_event_count": 0,
+      "direct_spurious_event_count": 2,
+      "possible_evidence_observed": false,
+      "any_fault_evidence_observed": true,
+      "expected_ftc_action": null,
+      "correct_ftc_action_observed": null,
+      "protective_action_observed": true,
+      "post_recovery_protective_action_observed": false,
+      "wrong_thruster_target_count": 0,
+      "observer_possible_evidence_observed": true,
+      "observer_operator_possible_evidence_observed": true,
+      "observer_possible_hypotheses": [
+        "possible_intermittent_unavailability"
+      ],
+      "observer_possible_sample_count": 26,
+      "any_observer_possible_sample_count": 240,
+      "observer_all_possible_hypotheses": [
+        "dvl:possible_intermittent_unavailability"
+      ],
+      "observer_operator_possible_sample_count": 240,
+      "observer_confirmed_count": 0,
+      "observer_protective_count": 0,
+      "display_tier": "possible",
+      "seed": 2026095801,
+      "sensor_parameters": {
+        "depth_noise_std_m": 0.012814445702602243,
+        "depth_drift_std_m_per_sqrt_s": 0.001265904423519727,
+        "imu_attitude_noise_std_rad": 0.003754311315273498,
+        "imu_gyro_noise_std_radps": 0.005513747930540928,
+        "imu_accel_noise_std_mps2": 0.04168069442873367,
+        "dvl_velocity_noise_std_mps": 0.026887306749592305
+      },
+      "disturbance_parameters": {
+        "amplitudes": [
+          1.4518584071052452,
+          0.25001411194294715,
+          0.4272148362281132,
+          0.027991409458445724,
+          0.017540012764395284,
+          0.1055439825335863
+        ],
+        "frequencies_radps": [
+          0.09120121069081097,
+          0.06766623847994922,
+          0.1350811052414459,
+          0.12999296888571743,
+          0.10644678675693688,
+          0.15125102549001324
+        ],
+        "phases_rad": [
+          3.0739733413321018,
+          2.5951509995777906,
+          0.59357550356683,
+          0.40958826126682535,
+          0.858762630706928,
+          1.1208139316290096
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "protocol_id": "six_dof_final_blind_20260716_v1",
+  "state": "frozen_before_evaluation",
+  "frozen_on": "2026-07-16",
+  "purpose": "One-shot held-out OOD evaluation after freezing the detector and maintenance decision policy.",
+  "blind_use_policy": "No training, calibration, threshold selection, or code modification may use this dataset before the result is recorded. A failed criterion remains a failed result; any revised system requires a new protocol id and new seeds.",
+  "model_checkpoint_path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry/best_model.pth",
+  "temporal_config_path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal/temporal_decision_config.json",
+  "ticket_config_path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal/maintenance_ticket_config.json",
+  "evaluation_seed": 2026071601,
+  "dataset": {
+    "base_seed": 20260716,
+    "repeats_per_scenario": 5,
+    "scenario_count": 13,
+    "expected_mission_count": 65,
+    "duration_s": 90.0,
+    "dt_s": 0.05,
+    "sequence_length": 100,
+    "stride": 25,
+    "domain": "held_out_ood_final_blind",
+    "output_path": "depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset_six_dof_final_blind_20260716.pth"
+  },
+  "acceptance_criteria": {
+    "minimum_raw_health_event_recall": 0.95,
+    "minimum_no_output_ticket_recall": 0.95,
+    "maximum_false_maintenance_tickets": 0,
+    "thrust_loss_ticket_recall": "informational because compensated thrust loss is intentionally log-first"
+  },
+  "output_directory": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_final_blind_20260716",
+  "frozen_artifacts": [
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry/best_model.pth",
+      "sha256": "6814A14BDCAE5214A59269A2C53C47D3B93A1544E6030FC37C91A3F5EC6D1661"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal/temporal_decision_config.json",
+      "sha256": "905BF007AE9F3F9D5B9311563D1E4E79B180753A394A76D8E36A1572256C0538"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal/maintenance_ticket_config.json",
+      "sha256": "1DC9830F59495DD4EDA2FDB6B58EFE0418C3103FA28324C37D91CBF8DC84FC1C"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/generate_six_dof_final_blind_dataset.py",
+      "sha256": "9CAEE561C4BB7B9C8C53328A2F2EEF32DD0A9A906A4E2866540025D8D04A7D51"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/evaluate_six_dof_final_blind.py",
+      "sha256": "5F3ED51C897BB199CD37BE7C2662C61007362F3A0BE845F1D04C4BD824BE95D9"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/model_six_dof_multitask.py",
+      "sha256": "6D349288678D1E19C2591D9FB679A13F2C8D4A77CE578C3F67EF1EE79287194E"
+    },
+    {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/train_six_dof_multitask.py",
+      "sha256": "71BE58C0BE6EF39328DD13CB5A7E4073172E48DBD3239CABA8347D5837A3A532"
+    },
+    {
+      "path": "math-model/examples/generate_six_dof_fault_dataset.py",
+      "sha256": "FBD3CE12C0A450BDDF7E899DC32F12C64E87789FF84D8234894E3BC517EEE709"
+    },
+    {
+      "path": "math-model/src/utils/six_dof_dataset_builder.py",
+      "sha256": "C3AC53900D0E5881AE6578F0E4DD2197B7014F9D8D7514535A0C1DF86374D129"
+    },
+    {
+      "path": "math-model/src/utils/six_dof_feature_extractor.py",
+      "sha256": "8AD2A8F46ACE1C8A3769F4592F0D9C53C242FE6D33555334E246145E243691D4"
+    },
+    {
+      "path": "math-model/src/diagnosis/temporal_fault_decision.py",
+      "sha256": "5016954AD74E7702F7246C4B65C3D4E9440EC5DED676E74C8374E62D2CB81694"
+    },
+    {
+      "path": "math-model/src/diagnosis/maintenance_health_decision.py",
+      "sha256": "8B4F0BD7A2D14A95C5B3F02A6806B6A68C9FE9626884DC7E7DC912CBE4756B06"
+    },
+    {
+      "path": "math-model/src/diagnosis/maintenance_ticket_policy.py",
+      "sha256": "D87B4CD98CB9CB7BE96FE522EB580CE30AC95B82A8B7D818514225525A92DEB7"
+    },
+    {
+      "path": "math-model/src/environment/six_dof_dynamics.py",
+      "sha256": "E5AF2BE0A4A654AD5284699CAB97F19C0D4A8B4B564BEBAF3008329DC6E147E0"
+    },
+    {
+      "path": "math-model/src/environment/six_dof_simulator.py",
+      "sha256": "0F214D21F971ABE4AF0E4288AFC69CC70BE2568B7791485193C2D68378AFC856"
+    },
+    {
+      "path": "math-model/src/actuators/six_dof_thruster_faults.py",
+      "sha256": "3BE7160A93FA41B290A743EB57CF9D6690117274C01A78607839BE2B56CFAE56"
+    },
+    {
+      "path": "math-model/src/actuators/thruster_array.py",
+      "sha256": "C15DE92A33163200A41FDFF4179E0384AADF135D786C7F94011EE507706AF631"
+    },
+    {
+      "path": "math-model/src/sensors/depth_sensor.py",
+      "sha256": "A206FB842FC3A63EA506402273E6F3F5A5965B7DA5D053265D41E191469FF3D3"
+    },
+    {
+      "path": "math-model/src/sensors/imu_sensor.py",
+      "sha256": "442CAFA14AA374E507A566829524105C99C83ED85D687DB68B381C3EDE9C82E2"
+    },
+    {
+      "path": "math-model/src/sensors/dvl_sensor.py",
+      "sha256": "49423A8CE4539712DBC7FB4F67A4A9CFF8FA5303F473097EB4A1FCC634EAA32C"
+    },
+    {
+      "path": "math-model/src/sensors/six_dof_sensor_suite.py",
+      "sha256": "9BE21D9D064F3A8C247413C06876FB792C3B6757AB1288C89091E30668CEE891"
+    },
+    {
+      "path": "math-model/src/simple_control/six_dof_controller.py",
+      "sha256": "62123C88FEEE2A4B3525AFDC1D1971D816E49BBC3CFE43882E5B1038B484AE9E"
+    }
+  ]
+}

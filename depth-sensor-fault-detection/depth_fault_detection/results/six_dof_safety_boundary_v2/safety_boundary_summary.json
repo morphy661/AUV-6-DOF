@@ -1,0 +1,2100 @@
+{
+  "benchmark": "six_dof_safety_boundary_v1",
+  "device": "cuda",
+  "matrix": {
+    "body_wrench_durations_s": [
+      1.0,
+      2.0,
+      4.0
+    ],
+    "body_wrench_intensities": [
+      "weak",
+      "medium",
+      "strong"
+    ],
+    "dvl_dropout_durations_s": [
+      1.0,
+      2.0,
+      4.0
+    ],
+    "repeats_per_setting": 3
+  },
+  "mission_count": 36,
+  "window_count": 1332,
+  "setting_summary": [
+    {
+      "kind": "body_wrench",
+      "intensity": "medium",
+      "duration_s": 1.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 0.3333333333333333,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.23172082281256356,
+      "outcome_counts": {
+        "log_only_recovered": 1,
+        "normal_recovered": 2
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "medium",
+      "duration_s": 2.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 0.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 1.0,
+      "degraded_observation_mission_rate": 1.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.431627889232394,
+      "outcome_counts": {
+        "degraded_observation": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "medium",
+      "duration_s": 4.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 0.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 1.0,
+      "degraded_observation_mission_rate": 1.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.7402278521763394,
+      "outcome_counts": {
+        "degraded_observation": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "strong",
+      "duration_s": 1.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.3394797297588231,
+      "outcome_counts": {
+        "log_only_recovered": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "strong",
+      "duration_s": 2.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 0.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 1.0,
+      "degraded_observation_mission_rate": 1.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.6337559653862663,
+      "outcome_counts": {
+        "degraded_observation": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "strong",
+      "duration_s": 4.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 0.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 1.0,
+      "degraded_observation_mission_rate": 1.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 1.126881307866392,
+      "outcome_counts": {
+        "degraded_observation": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "weak",
+      "duration_s": 1.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 0.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.11360593731994648,
+      "outcome_counts": {
+        "normal_recovered": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "weak",
+      "duration_s": 2.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 0.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.21352911024289953,
+      "outcome_counts": {
+        "normal_recovered": 3
+      }
+    },
+    {
+      "kind": "body_wrench",
+      "intensity": "weak",
+      "duration_s": 4.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.3661295541271717,
+      "outcome_counts": {
+        "log_only_recovered": 3
+      }
+    },
+    {
+      "kind": "dvl_dropout",
+      "intensity": null,
+      "duration_s": 1.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 0.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.017375118728140432,
+      "outcome_counts": {
+        "normal_recovered": 3
+      }
+    },
+    {
+      "kind": "dvl_dropout",
+      "intensity": null,
+      "duration_s": 2.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 0.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.020184331902604703,
+      "outcome_counts": {
+        "normal_recovered": 3
+      }
+    },
+    {
+      "kind": "dvl_dropout",
+      "intensity": null,
+      "duration_s": 4.0,
+      "missions": 3,
+      "safe_no_intervention_rate": 1.0,
+      "safe_observation_rate": 1.0,
+      "recovery_rate": 1.0,
+      "raw_log_mission_rate": 1.0,
+      "maintenance_ticket_mission_rate": 0.0,
+      "ftc_intervention_mission_rate": 0.0,
+      "degraded_observation_mission_rate": 0.0,
+      "abort_or_ascent_mission_rate": 0.0,
+      "targeted_reallocation_mission_rate": 0.0,
+      "maximum_peak_position_error_m": 0.019149846289239138,
+      "outcome_counts": {
+        "log_only_recovered": 3
+      }
+    }
+  ],
+  "derived_boundaries": {
+    "body_wrench_by_intensity": {
+      "weak": {
+        "maximum_fully_safe_tested_duration_s": 4.0,
+        "maximum_safe_observation_tested_duration_s": 4.0,
+        "first_non_safe_tested_duration_s": null,
+        "first_non_safe_outcomes": {}
+      },
+      "medium": {
+        "maximum_fully_safe_tested_duration_s": 1.0,
+        "maximum_safe_observation_tested_duration_s": 4.0,
+        "first_non_safe_tested_duration_s": 2.0,
+        "first_non_safe_outcomes": {
+          "degraded_observation": 3
+        }
+      },
+      "strong": {
+        "maximum_fully_safe_tested_duration_s": 1.0,
+        "maximum_safe_observation_tested_duration_s": 4.0,
+        "first_non_safe_tested_duration_s": 2.0,
+        "first_non_safe_outcomes": {
+          "degraded_observation": 3
+        }
+      }
+    },
+    "maximum_fully_safe_tested_dvl_dropout_s": 4.0,
+    "maximum_safe_observation_tested_dvl_dropout_s": 4.0,
+    "interpretation": "fully safe means recovered with no formal ticket or FTC action; safe observation additionally permits degraded operation but still forbids tickets, abort/ascent, and thruster isolation; boundaries are discrete tested durations, not exact continuous thresholds"
+  },
+  "outcome_counts": {
+    "degraded_observation": 12,
+    "log_only_recovered": 10,
+    "normal_recovered": 14
+  },
+  "mission_results": [
+    {
+      "mission_id": 0,
+      "scenario": "multi_axis_weak_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "weak",
+      "seed": 18421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.027676167560090233,
+      "peak_normalized_pose_error": 0.5904299249501841,
+      "final_normalized_pose_error": 0.03372823090442914,
+      "remaining_excursion_fraction": 0.010754372165202078,
+      "peak_position_error_m": 0.11360593731994648,
+      "final_position_error_m": 0.008103138244831385,
+      "peak_attitude_error_rad": 0.06197741915399987,
+      "final_attitude_error_rad": 0.0013992674188161255,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 1,
+      "scenario": "multi_axis_weak_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "weak",
+      "seed": 18422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.0496655696149325,
+      "peak_normalized_pose_error": 0.5603338814853942,
+      "final_normalized_pose_error": 0.029165185100203942,
+      "remaining_excursion_fraction": 0.0,
+      "peak_position_error_m": 0.10212655275620797,
+      "final_position_error_m": 0.007180656208393317,
+      "peak_attitude_error_rad": 0.06251975783878698,
+      "final_attitude_error_rad": 0.0007510309090780046,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 2,
+      "scenario": "multi_axis_weak_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "weak",
+      "seed": 18423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.030701926803123003,
+      "peak_normalized_pose_error": 0.5881469864222584,
+      "final_normalized_pose_error": 0.04057791953404946,
+      "remaining_excursion_fraction": 0.01771653109218343,
+      "peak_position_error_m": 0.11156932411676368,
+      "final_position_error_m": 0.00987119358775473,
+      "peak_attitude_error_rad": 0.06286569397156297,
+      "final_attitude_error_rad": 0.0014032830554170106,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 3,
+      "scenario": "multi_axis_medium_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "medium",
+      "seed": 19421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04515390560938162,
+      "peak_normalized_pose_error": 1.1732210232405869,
+      "final_normalized_pose_error": 0.056357277945123775,
+      "remaining_excursion_fraction": 0.00993147673630252,
+      "peak_position_error_m": 0.21995954964944509,
+      "final_position_error_m": 0.013965188924248905,
+      "peak_attitude_error_rad": 0.1266118963478734,
+      "final_attitude_error_rad": 0.0011298078621840137,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 4,
+      "scenario": "multi_axis_medium_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "medium",
+      "seed": 19422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.05772326007067626,
+      "peak_normalized_pose_error": 1.206944278086937,
+      "final_normalized_pose_error": 0.0676701914316292,
+      "remaining_excursion_fraction": 0.008655368467001176,
+      "peak_position_error_m": 0.23172082281256356,
+      "final_position_error_m": 0.01688259276366999,
+      "peak_attitude_error_rad": 0.12613777273163174,
+      "final_attitude_error_rad": 0.0006814052551328475,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 5,
+      "scenario": "multi_axis_medium_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "medium",
+      "seed": 19423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.011696948885118151,
+      "peak_normalized_pose_error": 1.195730640881616,
+      "final_normalized_pose_error": 0.03757283259792236,
+      "remaining_excursion_fraction": 0.021854009634787272,
+      "peak_position_error_m": 0.22740626022330643,
+      "final_position_error_m": 0.009148089843999731,
+      "peak_attitude_error_rad": 0.1267885624132514,
+      "final_attitude_error_rad": 0.0012791138168309795,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 6,
+      "scenario": "multi_axis_strong_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "strong",
+      "seed": 20421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.039374185067083664,
+      "peak_normalized_pose_error": 1.805228578048897,
+      "final_normalized_pose_error": 0.06504511264535785,
+      "remaining_excursion_fraction": 0.014537397692754486,
+      "peak_position_error_m": 0.3394797297588231,
+      "final_position_error_m": 0.01591409859644569,
+      "peak_attitude_error_rad": 0.19309856855466634,
+      "final_attitude_error_rad": 0.0020123826383417493,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 7,
+      "scenario": "multi_axis_strong_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "strong",
+      "seed": 20422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.010278911242529097,
+      "peak_normalized_pose_error": 1.7852990308973469,
+      "final_normalized_pose_error": 0.07235069075563061,
+      "remaining_excursion_fraction": 0.03496962024586651,
+      "peak_position_error_m": 0.33341461560229024,
+      "final_position_error_m": 0.0179790312213436,
+      "peak_attitude_error_rad": 0.19240779166164013,
+      "final_attitude_error_rad": 0.0012001496217378625,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 2,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 8,
+      "scenario": "multi_axis_strong_1s",
+      "kind": "body_wrench",
+      "duration_s": 1.0,
+      "intensity": "strong",
+      "seed": 20423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04478132083643929,
+      "peak_normalized_pose_error": 1.7888340694718072,
+      "final_normalized_pose_error": 0.10080681152052427,
+      "remaining_excursion_fraction": 0.03212373635368659,
+      "peak_position_error_m": 0.33557040194975357,
+      "final_position_error_m": 0.02505072518322322,
+      "peak_attitude_error_rad": 0.19186180256357813,
+      "final_attitude_error_rad": 0.001652670114418395,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 2,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 9,
+      "scenario": "multi_axis_weak_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "weak",
+      "seed": 21421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04867084885959849,
+      "peak_normalized_pose_error": 1.067260981120494,
+      "final_normalized_pose_error": 0.07941640144200025,
+      "remaining_excursion_fraction": 0.030184420218324653,
+      "peak_position_error_m": 0.21146068984898073,
+      "final_position_error_m": 0.019715835025061326,
+      "peak_attitude_error_rad": 0.10711546738998866,
+      "final_attitude_error_rad": 0.0014034294211589565,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 10,
+      "scenario": "multi_axis_weak_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "weak",
+      "seed": 21422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.054775852445526074,
+      "peak_normalized_pose_error": 1.0380357584715658,
+      "final_normalized_pose_error": 0.00973031239325854,
+      "remaining_excursion_fraction": 0.0,
+      "peak_position_error_m": 0.20412724590094153,
+      "final_position_error_m": 0.0018610712326046239,
+      "peak_attitude_error_rad": 0.10562449733300229,
+      "final_attitude_error_rad": 0.0009342941278061703,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 11,
+      "scenario": "multi_axis_weak_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "weak",
+      "seed": 21423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.027538077284382304,
+      "peak_normalized_pose_error": 1.0682073995084762,
+      "final_normalized_pose_error": 0.058926500857676464,
+      "remaining_excursion_fraction": 0.03016176503234626,
+      "peak_position_error_m": 0.21352911024289953,
+      "final_position_error_m": 0.014610843462859515,
+      "peak_attitude_error_rad": 0.1057749195762015,
+      "final_attitude_error_rad": 0.0011295364156559114,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 12,
+      "scenario": "multi_axis_medium_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "medium",
+      "seed": 22421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.06257400966989399,
+      "peak_normalized_pose_error": 2.1688599502847974,
+      "final_normalized_pose_error": 0.1431854674910362,
+      "remaining_excursion_fraction": 0.038271849166694204,
+      "peak_position_error_m": 0.42900074084167245,
+      "final_position_error_m": 0.03556500833201214,
+      "peak_attitude_error_rad": 0.2174176795842184,
+      "final_attitude_error_rad": 0.002420299594248456,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 109,
+        "normal_control": 891
+      },
+      "ftc_intervention_steps": 109,
+      "ftc_degraded_steps": 109,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 13,
+      "scenario": "multi_axis_medium_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "medium",
+      "seed": 22422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.06606067097064794,
+      "peak_normalized_pose_error": 2.1033631669347184,
+      "final_normalized_pose_error": 0.057949069207262165,
+      "remaining_excursion_fraction": 0.0,
+      "peak_position_error_m": 0.409469939197321,
+      "final_position_error_m": 0.014406664696294216,
+      "peak_attitude_error_rad": 0.21581773901338347,
+      "final_attitude_error_rad": 0.0009156491866480837,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 106,
+        "normal_control": 894
+      },
+      "ftc_intervention_steps": 106,
+      "ftc_degraded_steps": 106,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 14,
+      "scenario": "multi_axis_medium_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "medium",
+      "seed": 22423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03701373734727681,
+      "peak_normalized_pose_error": 2.1751405222055635,
+      "final_normalized_pose_error": 0.11959547756752889,
+      "remaining_excursion_fraction": 0.038623406621663706,
+      "peak_position_error_m": 0.431627889232394,
+      "final_position_error_m": 0.02970497453847526,
+      "peak_attitude_error_rad": 0.2167823070328626,
+      "final_attitude_error_rad": 0.0020397245621143548,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 109,
+        "normal_control": 891
+      },
+      "ftc_intervention_steps": 109,
+      "ftc_degraded_steps": 109,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 15,
+      "scenario": "multi_axis_strong_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "strong",
+      "seed": 23421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.035952028763065906,
+      "peak_normalized_pose_error": 3.260379558907027,
+      "final_normalized_pose_error": 0.10257453049896134,
+      "remaining_excursion_fraction": 0.02066180775131917,
+      "peak_position_error_m": 0.6321923259730964,
+      "final_position_error_m": 0.025187209338796382,
+      "peak_attitude_error_rad": 0.33443062699394155,
+      "final_attitude_error_rad": 0.0028900063615615573,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 132,
+        "normal_control": 868
+      },
+      "ftc_intervention_steps": 132,
+      "ftc_degraded_steps": 132,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 16,
+      "scenario": "multi_axis_strong_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "strong",
+      "seed": 23422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04139171666614079,
+      "peak_normalized_pose_error": 3.2204018181922343,
+      "final_normalized_pose_error": 0.14215025798730613,
+      "remaining_excursion_fraction": 0.031694942168568725,
+      "peak_position_error_m": 0.6203886150089791,
+      "final_position_error_m": 0.03521168579568912,
+      "peak_attitude_error_rad": 0.33298175598209506,
+      "final_attitude_error_rad": 0.00288097944543822,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 130,
+        "normal_control": 870
+      },
+      "ftc_intervention_steps": 130,
+      "ftc_degraded_steps": 130,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 17,
+      "scenario": "multi_axis_strong_2s",
+      "kind": "body_wrench",
+      "duration_s": 2.0,
+      "intensity": "strong",
+      "seed": 23423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.03270453448018152,
+      "peak_normalized_pose_error": 3.2685719404383815,
+      "final_normalized_pose_error": 0.11412493368875934,
+      "remaining_excursion_fraction": 0.02516184657586974,
+      "peak_position_error_m": 0.6337559653862663,
+      "final_position_error_m": 0.027965222219084408,
+      "peak_attitude_error_rad": 0.33517855767492205,
+      "final_attitude_error_rad": 0.0033929258256459975,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 132,
+        "normal_control": 868
+      },
+      "ftc_intervention_steps": 132,
+      "ftc_degraded_steps": 132,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 18,
+      "scenario": "multi_axis_weak_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "weak",
+      "seed": 24421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.028177437458326383,
+      "peak_normalized_pose_error": 1.6258500147304802,
+      "final_normalized_pose_error": 0.11750139875292503,
+      "remaining_excursion_fraction": 0.05590880294578835,
+      "peak_position_error_m": 0.36296826402261195,
+      "final_position_error_m": 0.029240741494693034,
+      "peak_attitude_error_rad": 0.13326910928769123,
+      "final_attitude_error_rad": 0.0016853706454978757,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 19,
+      "scenario": "multi_axis_weak_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "weak",
+      "seed": 24422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.020164170756047324,
+      "peak_normalized_pose_error": 1.6125260058666953,
+      "final_normalized_pose_error": 0.11444135176111257,
+      "remaining_excursion_fraction": 0.05920587829117007,
+      "peak_position_error_m": 0.36010150614938397,
+      "final_position_error_m": 0.028497546768568343,
+      "peak_attitude_error_rad": 0.13211748710278856,
+      "final_attitude_error_rad": 0.0015227788686688754,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 20,
+      "scenario": "multi_axis_weak_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "weak",
+      "seed": 24423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.033676086937962174,
+      "peak_normalized_pose_error": 1.6375451563643177,
+      "final_normalized_pose_error": 0.12306070699344497,
+      "remaining_excursion_fraction": 0.05573062150731067,
+      "peak_position_error_m": 0.3661295541271717,
+      "final_position_error_m": 0.030307142522291112,
+      "peak_attitude_error_rad": 0.13354309767354416,
+      "final_attitude_error_rad": 0.0031733825008843177,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 21,
+      "scenario": "multi_axis_medium_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "medium",
+      "seed": 25421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.029527948712427605,
+      "peak_normalized_pose_error": 3.31973340863408,
+      "final_normalized_pose_error": 0.22741520555063088,
+      "remaining_excursion_fraction": 0.06014434637857401,
+      "peak_position_error_m": 0.7393549823923491,
+      "final_position_error_m": 0.056616581304582726,
+      "peak_attitude_error_rad": 0.2753193085991886,
+      "final_attitude_error_rad": 0.003112921987324728,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 158,
+        "normal_control": 842
+      },
+      "ftc_intervention_steps": 158,
+      "ftc_degraded_steps": 158,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 22,
+      "scenario": "multi_axis_medium_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "medium",
+      "seed": 25422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.030264205443993074,
+      "peak_normalized_pose_error": 3.3062280298296427,
+      "final_normalized_pose_error": 0.1721058644833304,
+      "remaining_excursion_fraction": 0.04329768783876522,
+      "peak_position_error_m": 0.7352348517843298,
+      "final_position_error_m": 0.04277745742855959,
+      "peak_attitude_error_rad": 0.2759592640786235,
+      "final_attitude_error_rad": 0.002773397231947467,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 157,
+        "normal_control": 843
+      },
+      "ftc_intervention_steps": 157,
+      "ftc_degraded_steps": 157,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 23,
+      "scenario": "multi_axis_medium_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "medium",
+      "seed": 25423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.04739917595437437,
+      "peak_normalized_pose_error": 3.324310500715802,
+      "final_normalized_pose_error": 0.22764709953500037,
+      "remaining_excursion_fraction": 0.0550054321637003,
+      "peak_position_error_m": 0.7402278521763394,
+      "final_position_error_m": 0.056627144146437325,
+      "peak_attitude_error_rad": 0.2759249647618905,
+      "final_attitude_error_rad": 0.0033888770262287403,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 158,
+        "normal_control": 842
+      },
+      "ftc_intervention_steps": 158,
+      "ftc_degraded_steps": 158,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 24,
+      "scenario": "multi_axis_strong_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "strong",
+      "seed": 26421,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.030589650726271435,
+      "peak_normalized_pose_error": 5.155178462349146,
+      "final_normalized_pose_error": 0.2703263542000675,
+      "remaining_excursion_fraction": 0.046781646740136275,
+      "peak_position_error_m": 1.1167492850096663,
+      "final_position_error_m": 0.06736213692429915,
+      "peak_attitude_error_rad": 0.44733340105427427,
+      "final_attitude_error_rad": 0.0032715933896398227,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 178,
+        "normal_control": 822
+      },
+      "ftc_intervention_steps": 178,
+      "ftc_degraded_steps": 178,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 25,
+      "scenario": "multi_axis_strong_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "strong",
+      "seed": 26422,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.06530083511341274,
+      "peak_normalized_pose_error": 5.1138933759034755,
+      "final_normalized_pose_error": 0.2597087923137725,
+      "remaining_excursion_fraction": 0.03850735737329607,
+      "peak_position_error_m": 1.1063803473487597,
+      "final_position_error_m": 0.06475768290552822,
+      "peak_attitude_error_rad": 0.4461972028181087,
+      "final_attitude_error_rad": 0.002817630477589391,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 177,
+        "normal_control": 823
+      },
+      "ftc_intervention_steps": 177,
+      "ftc_degraded_steps": 177,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 26,
+      "scenario": "multi_axis_strong_4s",
+      "kind": "body_wrench",
+      "duration_s": 4.0,
+      "intensity": "strong",
+      "seed": 26423,
+      "response_observed": true,
+      "recovered": true,
+      "baseline_normalized_pose_error": 0.01643691891800024,
+      "peak_normalized_pose_error": 5.192004966361602,
+      "final_normalized_pose_error": 0.282611254264671,
+      "remaining_excursion_fraction": 0.05142900893325975,
+      "peak_position_error_m": 1.126881307866392,
+      "final_position_error_m": 0.07038314848296641,
+      "peak_attitude_error_rad": 0.44795313656613844,
+      "final_attitude_error_rad": 0.0037002284792334,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "degraded_operation": 180,
+        "normal_control": 820
+      },
+      "ftc_intervention_steps": 180,
+      "ftc_degraded_steps": 180,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "degraded_observation",
+      "safe_no_intervention": false,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 27,
+      "scenario": "dvl_dropout_1s",
+      "kind": "dvl_dropout",
+      "duration_s": 1.0,
+      "intensity": null,
+      "seed": 27421,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 20,
+      "final_dvl_valid_rate": 0.9900990099009901,
+      "peak_position_error_m": 0.013827062072632164,
+      "final_position_error_m": 0.012790921130186912,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 28,
+      "scenario": "dvl_dropout_1s",
+      "kind": "dvl_dropout",
+      "duration_s": 1.0,
+      "intensity": null,
+      "seed": 27422,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 20,
+      "final_dvl_valid_rate": 0.9900990099009901,
+      "peak_position_error_m": 0.012416220580137064,
+      "final_position_error_m": 0.009994249227835227,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 29,
+      "scenario": "dvl_dropout_1s",
+      "kind": "dvl_dropout",
+      "duration_s": 1.0,
+      "intensity": null,
+      "seed": 27423,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 20,
+      "final_dvl_valid_rate": 0.9900990099009901,
+      "peak_position_error_m": 0.017375118728140432,
+      "final_position_error_m": 0.008560613696975607,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 30,
+      "scenario": "dvl_dropout_2s",
+      "kind": "dvl_dropout",
+      "duration_s": 2.0,
+      "intensity": null,
+      "seed": 28421,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 40,
+      "final_dvl_valid_rate": 1.0,
+      "peak_position_error_m": 0.020184331902604703,
+      "final_position_error_m": 0.01544040671378181,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 31,
+      "scenario": "dvl_dropout_2s",
+      "kind": "dvl_dropout",
+      "duration_s": 2.0,
+      "intensity": null,
+      "seed": 28422,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 40,
+      "final_dvl_valid_rate": 1.0,
+      "peak_position_error_m": 0.007615967082363706,
+      "final_position_error_m": 0.004942345185918264,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 32,
+      "scenario": "dvl_dropout_2s",
+      "kind": "dvl_dropout",
+      "duration_s": 2.0,
+      "intensity": null,
+      "seed": 28423,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 40,
+      "final_dvl_valid_rate": 1.0,
+      "peak_position_error_m": 0.005178841895929877,
+      "final_position_error_m": 0.004965219770028918,
+      "maximum_health_level": 0,
+      "raw_health_event_count": 0,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "normal_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 33,
+      "scenario": "dvl_dropout_4s",
+      "kind": "dvl_dropout",
+      "duration_s": 4.0,
+      "intensity": null,
+      "seed": 29421,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 80,
+      "final_dvl_valid_rate": 0.9801980198019802,
+      "peak_position_error_m": 0.012724771607167205,
+      "final_position_error_m": 0.004196245858463656,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 34,
+      "scenario": "dvl_dropout_4s",
+      "kind": "dvl_dropout",
+      "duration_s": 4.0,
+      "intensity": null,
+      "seed": 29422,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 80,
+      "final_dvl_valid_rate": 0.9900990099009901,
+      "peak_position_error_m": 0.01601342466499887,
+      "final_position_error_m": 0.007767168780223117,
+      "maximum_health_level": 1,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    },
+    {
+      "mission_id": 35,
+      "scenario": "dvl_dropout_4s",
+      "kind": "dvl_dropout",
+      "duration_s": 4.0,
+      "intensity": null,
+      "seed": 29423,
+      "response_observed": true,
+      "recovered": true,
+      "scheduled_dropout_samples": 80,
+      "final_dvl_valid_rate": 0.9900990099009901,
+      "peak_position_error_m": 0.019149846289239138,
+      "final_position_error_m": 0.018745096218728753,
+      "maximum_health_level": 2,
+      "raw_health_event_count": 1,
+      "formal_maintenance_ticket_count": 0,
+      "ftc_action_counts": {
+        "normal_control": 1000
+      },
+      "ftc_intervention_steps": 0,
+      "ftc_degraded_steps": 0,
+      "ftc_abort_or_ascent_steps": 0,
+      "ftc_targeted_reallocation_steps": 0,
+      "ftc_targeted_thrusters": [],
+      "outcome": "log_only_recovered",
+      "safe_no_intervention": true,
+      "safe_observation": true
+    }
+  ],
+  "raw_health_events": [
+    {
+      "mission_id": 5,
+      "start_time_s": 20.0,
+      "end_time_s": 20.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.716614395907867,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6193250712768057,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.32114889391019974
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2833953093778922
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 6,
+      "start_time_s": 20.0,
+      "end_time_s": 20.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8965126418574358,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5465972926369346,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4770934092348831
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.26557922956897084
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 7,
+      "start_time_s": 16.25,
+      "end_time_s": 16.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6615494464453269,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5361975082195028,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.5846943477054815
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.1599882602687277
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 7,
+      "start_time_s": 18.75,
+      "end_time_s": 20.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8889120309077924,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5322710019300883,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.48958785849787595
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.229691386067204
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 8,
+      "start_time_s": 16.25,
+      "end_time_s": 16.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5739595389226182,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5078055878430211,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.5516880257369583
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.18911032730918986
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 8,
+      "start_time_s": 20.0,
+      "end_time_s": 20.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.899267247495932,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6068930303686013,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.41189734977025494
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3169569582597271
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 12,
+      "start_time_s": 17.5,
+      "end_time_s": 25.0,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9087513663980962,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5601085015373926,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.33101391852692824
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.22213409434280967
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 13,
+      "start_time_s": 17.5,
+      "end_time_s": 25.0,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9014180917946809,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5305512167080019,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.358191092988664
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20068331567487424
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 14,
+      "start_time_s": 17.5,
+      "end_time_s": 23.75,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8829574179730588,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5506681200074255,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.3642211802534268
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2148726165132637
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 15,
+      "start_time_s": 16.25,
+      "end_time_s": 25.0,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9598904283701968,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5127964125114481,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4221811312553202
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.1646613648309778
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 16,
+      "start_time_s": 16.25,
+      "end_time_s": 25.0,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9617070210781783,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5033704172019542,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4382560513407551
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.1744741623316381
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 17,
+      "start_time_s": 16.25,
+      "end_time_s": 25.0,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9590458979785716,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5098011747609403,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4159467895864392
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.1784103370426083
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 18,
+      "start_time_s": 18.75,
+      "end_time_s": 25.0,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7836237104651805,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5857262075021145,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.257931904378651
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2539857103376049
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 19,
+      "start_time_s": 18.75,
+      "end_time_s": 25.0,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7632453067348384,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5688244285733309,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.24587898994965307
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2454773203872354
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 20,
+      "start_time_s": 18.75,
+      "end_time_s": 26.25,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7647591165337084,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5807448210764112,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.26468241768315204
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.22780551314008543
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 21,
+      "start_time_s": 17.5,
+      "end_time_s": 26.25,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9567104888942692,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.548427780183926,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4476151613475831
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.15606377200814991
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 22,
+      "start_time_s": 17.5,
+      "end_time_s": 26.25,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9553066369499755,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5425457742886023,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.44701182940939954
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.16858242275990545
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 23,
+      "start_time_s": 17.5,
+      "end_time_s": 26.25,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9568013983011663,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5351649449173395,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.44596253067621333
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.17185372848314667
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 24,
+      "start_time_s": 16.25,
+      "end_time_s": 26.25,
+      "duration_s": 10.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9726714332859696,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5972319359833321,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4807506242085558
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.13287299003663552
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 16.25,
+      "end_time_s": 26.25,
+      "duration_s": 10.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9733292648196448,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5894558568657315,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4858733163535029
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.13279297413981778
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 17.5,
+      "end_time_s": 26.25,
+      "duration_s": 8.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9744975675772604,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6268801883734033,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4906590045849046
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.13945948949422401
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 18.75,
+      "end_time_s": 20.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6175423746568672,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6090344846471328,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.33177472391848517
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.22220555520431845
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 34,
+      "start_time_s": 18.75,
+      "end_time_s": 20.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6766508673124403,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.602406436729529,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.3550439607137684
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.21336375972800647
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 35,
+      "start_time_s": 18.75,
+      "end_time_s": 25.0,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6898912212155361,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5569259619516846,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2666664214653145
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.21965727863609583
+        }
+      ],
+      "requires_ftc": false
+    }
+  ],
+  "formal_maintenance_tickets": [],
+  "pending_maintenance_observations": [
+    {
+      "mission_id": 24,
+      "start_time_s": 18.75,
+      "end_time_s": 18.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 0,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.7875307114325757
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.10367542389397967
+        }
+      ],
+      "maximum_excitation_ratio": 0.6706677436828613,
+      "maximum_independent_evidence": 0.4419317841529846
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 18.75,
+      "end_time_s": 18.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 0,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.776613044791353
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.10291903353543601
+        }
+      ],
+      "maximum_excitation_ratio": 0.6750969409942627,
+      "maximum_independent_evidence": 0.43708133697509766
+    }
+  ]
+}

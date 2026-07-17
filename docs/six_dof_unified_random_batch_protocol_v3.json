@@ -1,0 +1,57 @@
+{
+  "protocol_id": "six_dof_unified_random_batch_v3",
+  "evaluation_type": "development_random_batch",
+  "locked_before_execution": true,
+  "independent_blind_test_claim": false,
+  "real_sea_trial_claim": false,
+  "configuration": {
+    "mission_count": 30,
+    "base_seed": 20261000,
+    "duration_s": 22.0,
+    "dt_s": 0.05,
+    "injection_mode": "random",
+    "advisory_stabilization_time_s": 3.0,
+    "release_requires_fresh_model_inference": true
+  },
+  "acceptance_thresholds": {
+    "weak_spike_overpromotion_rate_max": 0.05,
+    "ambiguous_record_rate_min": 0.90,
+    "intermittent_sample_confirmation_rate_min": 0.95,
+    "sensor_ftc_action_match_rate_min": 0.95,
+    "no_output_target_recall_min": 0.95,
+    "wrong_thruster_target_mission_rate_max": 0.0,
+    "thrust_loss_wrong_isolation_rate_max": 0.0,
+    "model_peak_top2_accuracy_min": 0.65,
+    "pre_thruster_advisory_mission_rate_max": 0.05,
+    "post_fault_advisory_rate_min": 0.80,
+    "no_output_post_fault_advisory_rate_min": 0.95,
+    "thrust_loss_post_fault_advisory_rate_min": 0.50
+  },
+  "model_checkpoint_path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry/best_model.pth",
+  "temporal_config_path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal_v2/temporal_decision_config.json",
+  "baseline_v1_summary_path": "math-model/results/six_dof_unified_random_batch_v1_20260717/unified_random_batch_summary.json",
+  "baseline_v2_summary_path": "math-model/results/six_dof_unified_random_batch_v2_20260717/unified_random_batch_v2_summary.json",
+  "output_directory": "math-model/results/six_dof_unified_random_batch_v3_20260717",
+  "code_sha256": {
+    "math-model/examples/evaluate_six_dof_unified_random_batch_v3.py": "a72d87fb1b320c9795fc62245bb2629e5ac47da31d7341ae1e7767d2a82a78d3",
+    "math-model/examples/evaluate_six_dof_unified_random_batch_v2.py": "1d86a9fe24f2b7b768f2d500b54934118e6594f02913c62e844dc13794f259cf",
+    "math-model/examples/evaluate_six_dof_unified_random_batch.py": "e5cf9716714e045c4a18f85937bfe16e04606f878e13184acf0b3cd75a888fee",
+    "math-model/examples/demo_six_dof_unified_diagnostics.py": "d311570207f3128108050d4542c5ede3c860fee746cbc583bdc62015a61d7c04",
+    "math-model/src/presentation/advisory_context_gate.py": "391ede35d81691a414a42b05e7ab3f8bb843e759349353754712f0481a6d4b1c",
+    "math-model/src/presentation/six_dof_model_bridge.py": "19fb9a201b4e34e5a0629d0fd95a30e782d0e4b1a2808322668247c79346c38f",
+    "math-model/src/presentation/six_dof_demo_adapter.py": "32a706e65f1049614db12708499410ee909f16db3d2dd3c97027c8916f369aa3",
+    "math-model/src/presentation/six_dof_demo_renderer.py": "fdd42a13451d19a2838837a310b8d19f66502fd2392bb626f25a7cc91f5a0e85",
+    "math-model/src/environment/six_dof_simulator.py": "72672ade12569baffa08a802d4c6686e67e2c9dbb89ae3d621b562d541f95f07",
+    "math-model/src/ftc/safety_supervisor.py": "dc709ee95344eadf4096b6be9132259803a4dc8dcbdfb81c9f3f2be246378f3e",
+    "math-model/src/sensors/sensor_faults.py": "e0ee1a2041e82b68194566e363477e6de8a2b20aff190244b0fe143a4c1cca1a",
+    "math-model/src/diagnosis/sensor_health_monitor.py": "2a2be483fca60e6a1942234bb1296372647ec0fbf6633bd841f2c1566daa1097",
+    "math-model/src/diagnosis/sensor_fault_observer.py": "60162311e3373c354c7634bfedff85a57c56fb046cf3d6ba5a21f634c4e6bca8",
+    "math-model/src/utils/six_dof_feature_extractor.py": "8ad2a8f46ace1c8a3769f4592f0d9c53c242fe6d33555334e246145e243691d4"
+  },
+  "artifact_sha256": {
+    "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry/best_model.pth": "6814a14bdcae5214a59269a2c53c47d3b93a1544e6030fc37c91a3f5ec6d1661",
+    "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_temporal_v2/temporal_decision_config.json": "905bf007ae9f3f9d5b9311563d1e4e79b180753a394a76d8e36a1572256c0538",
+    "math-model/results/six_dof_unified_random_batch_v1_20260717/unified_random_batch_summary.json": "cbb298d18aaa9807740deda05a588a07ed48b8110580fe86b1cfbcedfc7928e1",
+    "math-model/results/six_dof_unified_random_batch_v2_20260717/unified_random_batch_v2_summary.json": "6a4bb128cdd20c2d2ca0153fa9b42662d6601485dacf6d9145a56b7abdfe5e99"
+  }
+}

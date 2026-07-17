@@ -99,6 +99,9 @@ class ThrusterFaultActuationTests(unittest.TestCase):
         np.testing.assert_allclose(before.actual_forces, commanded)
         self.assertEqual(after.actual_forces[4], 0.0)
         self.assertLess(after.measured_currents[4], after.expected_currents[4])
+        self.assertLess(abs(after.measured_rpms[4]), abs(after.expected_rpms[4]))
+        np.testing.assert_array_equal(after.telemetry_valid, np.ones(6, dtype=bool))
+        np.testing.assert_allclose(after.telemetry_age_s, np.zeros(6))
         np.testing.assert_allclose(after.actual_forces[:4], commanded[:4])
 
     def test_thrust_loss_preserves_current_but_reduces_force(self):
@@ -117,6 +120,9 @@ class ThrusterFaultActuationTests(unittest.TestCase):
         self.assertAlmostEqual(result.actual_forces[4], 4.5)
         self.assertAlmostEqual(
             result.measured_currents[4], result.expected_currents[4]
+        )
+        self.assertAlmostEqual(
+            result.measured_rpms[4], result.expected_rpms[4]
         )
         self.assertEqual(
             result.fault_modes[4], SixDOFThrusterFaultMode.THRUST_LOSS.value
@@ -167,8 +173,60 @@ class ThrusterFaultActuationTests(unittest.TestCase):
         expected[5] = 0.35
         np.testing.assert_allclose(bank.force_efficiencies_at(5.0), expected)
 
+    def test_current_noise_is_reproducible_after_reset(self):
+        array = default_six_thruster_array()
+        bank = ThrusterActuatorBank(
+            array,
+            current_noise_std=0.1,
+            seed=17,
+        )
+        commanded = np.full(6, 10.0)
+
+        first = bank.apply(commanded, time_s=0.0).measured_currents
+        bank.reset()
+        repeated = bank.apply(commanded, time_s=0.0).measured_currents
+
+        np.testing.assert_allclose(first, repeated)
+        self.assertGreater(
+            np.linalg.norm(first - bank._expected_currents(commanded)),
+            0.0,
+        )
+
+    def test_esc_telemetry_is_finite_and_temperature_has_memory(self):
+        array = default_six_thruster_array()
+        bank = ThrusterActuatorBank(array, seed=5)
+        commanded = np.full(6, 20.0)
+
+        first = bank.apply(commanded, time_s=0.0, dt=1.0)
+        second = bank.apply(commanded, time_s=1.0, dt=1.0)
+
+        self.assertTrue(np.all(np.isfinite(first.measured_rpms)))
+        self.assertTrue(np.all(first.measured_voltages > 0.0))
+        self.assertTrue(np.all(second.measured_temperatures > 20.0))
+        self.assertTrue(np.all(
+            second.measured_temperatures > first.measured_temperatures
+        ))
+
+        bank.reset()
+        repeated = bank.apply(commanded, time_s=0.0, dt=1.0)
+        np.testing.assert_allclose(
+            repeated.measured_temperatures,
+            first.measured_temperatures,
+        )
+
 
 class SixDOFControllerTests(unittest.TestCase):
+    def test_guidance_context_is_validated_and_logged(self):
+        with self.assertRaises(ValueError):
+            PoseTarget(np.zeros(3), guidance_context_id=-1)
+        with self.assertRaises(ValueError):
+            PoseTarget(np.zeros(3), guidance_context_id=1.5)
+
+        target = PoseTarget(np.zeros(3), guidance_context_id=3)
+        log = SixDOFNominalSimulator().step(target, dt=0.05)
+
+        self.assertEqual(log["guidance_context_id"], 3)
+
     def test_controller_is_zero_at_level_target(self):
         controller = CascadedSixDOFController()
         state = SixDOFState()

@@ -1,0 +1,88 @@
+{
+  "protocol_id": "six_dof_sensor_fault_observer_v3",
+  "frozen_on": "2026-07-17",
+  "evaluation_type": "hash_locked_one_shot_three_tier_display_policy_benchmark",
+  "locked_before_execution": true,
+  "purpose": "Validate confirmed, required-possible, optional-possible, and required-log-only sensor presentation tiers without changing the V2 detector or FTC.",
+  "configuration": {
+    "missions_per_scenario": 3,
+    "duration_s": 18.0,
+    "dt_s": 0.05,
+    "base_seed": 2040011700,
+    "scenario_count": 25,
+    "mission_count": 75
+  },
+  "display_policy": {
+    "required_operator_possible": [
+      "ambiguous_imu_partial_stuck",
+      "ambiguous_dvl_partial_stuck",
+      "ambiguous_depth_bias",
+      "ambiguous_imu_bias",
+      "ambiguous_dvl_bias",
+      "ambiguous_imu_drift",
+      "ambiguous_depth_intermittent_unavailable",
+      "ambiguous_imu_intermittent_unavailable",
+      "ambiguous_dvl_intermittent_unavailable"
+    ],
+    "optional_operator_possible": [
+      "ambiguous_depth_drift",
+      "ambiguous_dvl_drift"
+    ],
+    "required_log_only": [
+      "ambiguous_depth_weak_spike",
+      "ambiguous_imu_weak_spike",
+      "ambiguous_dvl_weak_spike"
+    ]
+  },
+  "acceptance_thresholds": {
+    "strong_direct_event_recall_min": 0.95,
+    "strong_direct_event_precision_min": 0.95,
+    "strong_direct_ftc_action_match_min": 0.95,
+    "normal_false_confirmed_missions_max": 0,
+    "normal_false_protective_missions_max": 0,
+    "normal_operator_possible_missions_max": 0,
+    "ambiguous_raw_possible_evidence_rate_min": 0.90,
+    "required_operator_possible_rate_min": 0.95,
+    "required_log_only_overpromoted_missions_max": 0,
+    "ambiguous_conflicting_certainty_rate_max": 0.0,
+    "observer_confirmed_sample_count_max": 0,
+    "observer_protective_request_count_max": 0,
+    "wrong_thruster_target_count_max": 0
+  },
+  "interpretation_rules": {
+    "required_operator_possible": "These persistent or recurrent ambiguous signatures must produce a possible operator message.",
+    "optional_operator_possible": "Depth and DVL slow drift may produce a possible message when persistent residual evidence is sufficient, otherwise they remain in the raw log.",
+    "required_log_only": "A single weak spike stays in the background log and must not create an operator maintenance prompt.",
+    "ftc_separation": "The observation layer must remain unconfirmed, non-protective, and unable to identify a thruster."
+  },
+  "scenario_matrix_sha256": "a7f54c075ab5d53e67e6470e8fea76f300d12795592b59dfa0c397e41ec90cb1",
+  "code_sha256": {
+    "math-model/src/sensors/sensor_faults.py": "e0ee1a2041e82b68194566e363477e6de8a2b20aff190244b0fe143a4c1cca1a",
+    "math-model/src/sensors/six_dof_sensor_suite.py": "c793dca2ec9f1877dd1d0f335333d654a06984a4713fd2e2c46d97ff396fe24c",
+    "math-model/src/sensors/depth_sensor.py": "a206fb842fc3a63ea506402273e6f3f5a5965b7da5d053265d41e191469ff3d3",
+    "math-model/src/sensors/imu_sensor.py": "442cafa14aa374e507a566829524105c99c83ed85d687db68b381c3ede9c82e2",
+    "math-model/src/sensors/dvl_sensor.py": "49423a8ce4539712dbc7fb4f67a4a9cff8fa5303f473097eb4a1fcc634eaa32c",
+    "math-model/src/diagnosis/sensor_fault_observer.py": "60162311e3373c354c7634bfedff85a57c56fb046cf3d6ba5a21f634c4e6bca8",
+    "math-model/src/diagnosis/sensor_health_monitor.py": "2a2be483fca60e6a1942234bb1296372647ec0fbf6633bd841f2c1566daa1097",
+    "math-model/src/estimation/six_dof_state_estimator.py": "acf83ec94507b47cfa8678ecfe17fac22120a15d38ea6898ddddb2d62a5fe5b2",
+    "math-model/src/ftc/safety_supervisor.py": "dc709ee95344eadf4096b6be9132259803a4dc8dcbdfb81c9f3f2be246378f3e",
+    "math-model/src/environment/six_dof_dynamics.py": "e5af2be0a4a654ad5284699cab97f19c0d4a8b4b564bebaf3008329dc6e147e0",
+    "math-model/src/environment/six_dof_simulator.py": "72672ade12569baffa08a802d4c6686e67e2c9dbb89ae3d621b562d541f95f07",
+    "math-model/src/simple_control/six_dof_controller.py": "b9cbec5dda71078767e4fd639bc49aa741eebaa474f3ca1f992da7a8e780b49c",
+    "math-model/src/actuators/thruster_array.py": "c15de92a33163200a41fdff4179e0384aadf135d786c7f94011ee507706af631",
+    "math-model/src/actuators/six_dof_thruster_faults.py": "3be7160a93fa41b290a743eb57cf9d6690117274c01a78607839be2b56cfae56",
+    "math-model/src/evaluation/sensor_fault_stress_benchmark.py": "28eae7f631bbb5ea41db72e71ef0c7c860cc67c2781090fd0e859926b048ad47",
+    "math-model/src/evaluation/sensor_fault_observer_benchmark.py": "9b76e223791bc22ab440bf7856ccf2c4c43283d9d5a39fe1878dde61f5425ba5",
+    "math-model/src/evaluation/sensor_fault_observer_benchmark_v3.py": "4862a7a4b52f4801a85b5ebb3b002e8148cbceb570c54ea1e8dbc8720b238031",
+    "math-model/examples/evaluate_six_dof_sensor_fault_stress.py": "f1c9e7b2091c55460d97b1a8bdfd213acf6336dab423211a83ec3b40071f0f64",
+    "math-model/examples/evaluate_six_dof_sensor_fault_observer_development.py": "091a321ffddce0779cdc26cc919feaafb083d1434f3c33f44d1f730b422ea9cb",
+    "math-model/examples/evaluate_six_dof_sensor_fault_observer_v3.py": "5da814a639990f0744e63ce119ebee1919304b098c0cb6af8c78b818d3294b14"
+  },
+  "output_directory": "math-model/results/six_dof_sensor_fault_observer_v3_20260717",
+  "execution_rules": [
+    "Do not edit any hashed file or display-policy group after this protocol is written.",
+    "Do not inspect outcomes before all 75 missions finish.",
+    "Do not overwrite or rerun the V3 output directory.",
+    "Preserve any failed check and use new hashes, seeds, and directory for later revisions."
+  ]
+}

@@ -1,0 +1,5353 @@
+{
+  "raw_health_events": [
+    {
+      "mission_id": 0,
+      "start_time_s": 20.0,
+      "end_time_s": 20.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6519838338185437,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5886805909047134,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2563890631372808
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.23926026698620323
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 0,
+      "start_time_s": 22.5,
+      "end_time_s": 22.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5595970022558272,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5622052639013638,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.26816585060583387
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.23895655038304886
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 0,
+      "start_time_s": 26.25,
+      "end_time_s": 90.0,
+      "duration_s": 63.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8976784776463821,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5693327908869228,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.22361088623900985
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.1745124626789475
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 1,
+      "start_time_s": 46.25,
+      "end_time_s": 78.75,
+      "duration_s": 32.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9610522960900978,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5141445234429324,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.23349506348830634
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.22165929727119518
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 1,
+      "start_time_s": 83.75,
+      "end_time_s": 90.0,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.868826687335968,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5198419976900612,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2754455654286703
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.1718444226683481
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 2,
+      "start_time_s": 5.0,
+      "end_time_s": 6.25,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7964536093043297,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6102566950048935,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.41097538340786105
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.22875775466826803
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 2,
+      "start_time_s": 25.0,
+      "end_time_s": 90.0,
+      "duration_s": 65.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9934162779983003,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8505102156441346,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.6494674102496407
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2303326370300148
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 3,
+      "start_time_s": 5.0,
+      "end_time_s": 90.0,
+      "duration_s": 85.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.89884037014153,
+      "suspected_group": "vertical",
+      "group_confidence": 0.7044107717390228,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2733470515922383
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.27035210580545627
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 4,
+      "start_time_s": 60.0,
+      "end_time_s": 60.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6124142645029746,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5782610448504386,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.33253192151179384
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20763543150364522
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 4,
+      "start_time_s": 66.25,
+      "end_time_s": 88.75,
+      "duration_s": 22.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8476406744553691,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5700645457536662,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.23245008387293528
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.20922872108927376
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 5,
+      "start_time_s": 37.5,
+      "end_time_s": 90.0,
+      "duration_s": 52.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999949800774575,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8542772360431025,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.8024367321013864
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.05779218782593378
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 6,
+      "start_time_s": 27.5,
+      "end_time_s": 90.0,
+      "duration_s": 62.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999950795256686,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9308733395547899,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.8319648919745382
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.10216936546373295
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 7,
+      "start_time_s": 31.25,
+      "end_time_s": 90.0,
+      "duration_s": 58.75,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999961448646383,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8209363800620446,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.7680426654764158
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.05572628310668056
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 8,
+      "start_time_s": 33.75,
+      "end_time_s": 90.0,
+      "duration_s": 56.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999962034442574,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.855953017501969,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.8421690848929393
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.0603012546678518
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 9,
+      "start_time_s": 30.0,
+      "end_time_s": 90.0,
+      "duration_s": 60.0,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999951595311625,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.821635850343287,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.7225177491509194
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.14477338286761546
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 10,
+      "start_time_s": 41.25,
+      "end_time_s": 90.0,
+      "duration_s": 48.75,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999968652966826,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9339697845412512,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9177419876998802
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.03128997797149462
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 11,
+      "start_time_s": 21.25,
+      "end_time_s": 22.5,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6484760124576983,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6312282421992363,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3042474121693397
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.20777326292967532
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 11,
+      "start_time_s": 28.75,
+      "end_time_s": 90.0,
+      "duration_s": 61.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.999993461150072,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7448428682916776,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.7467440442052562
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.12409599759440987
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 12,
+      "start_time_s": 26.25,
+      "end_time_s": 90.0,
+      "duration_s": 63.75,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999948721225502,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8897100775399784,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.8234854264393702
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.047603900985666435
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 13,
+      "start_time_s": 37.5,
+      "end_time_s": 90.0,
+      "duration_s": 52.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999949221534664,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8769636468272223,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.8295809009580936
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.06653114141585928
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 14,
+      "start_time_s": 26.25,
+      "end_time_s": 26.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7589351656913962,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.558300564457306,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.37038102663308964
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.19451671870369872
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 14,
+      "start_time_s": 37.5,
+      "end_time_s": 90.0,
+      "duration_s": 52.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999887636499267,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7743184054951534,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.7801663838976604
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.10200382473069565
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 15,
+      "start_time_s": 40.0,
+      "end_time_s": 40.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8302901599888398,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5107341640512438,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2998249113455362
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2359377286397057
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 15,
+      "start_time_s": 42.5,
+      "end_time_s": 90.0,
+      "duration_s": 47.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999966075269148,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9927120827612094,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.988267575853757
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.005324755184283741
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 16,
+      "start_time_s": 20.0,
+      "end_time_s": 30.0,
+      "duration_s": 10.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8082702919224628,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.654925170660758,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.4098729679611478
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.3060055068467456
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 16,
+      "start_time_s": 34.95000076293945,
+      "end_time_s": 90.0,
+      "duration_s": 55.04999923706055,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999946416417089,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9955738367514003,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9789941095790083
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.01652142227215922
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 17,
+      "start_time_s": 40.0,
+      "end_time_s": 90.0,
+      "duration_s": 50.0,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999955648024652,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.989648573351211,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9830709802607834
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.006896155080735337
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 18,
+      "start_time_s": 20.0,
+      "end_time_s": 21.25,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5757648193020992,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6711451069862788,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3652923107113351
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.21254535168068317
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 18,
+      "start_time_s": 35.0,
+      "end_time_s": 90.0,
+      "duration_s": 55.0,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999960352668446,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7598675480320771,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.7420262321185056
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.08849536524064275
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 19,
+      "start_time_s": 38.599998474121094,
+      "end_time_s": 90.0,
+      "duration_s": 51.400001525878906,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999963385128039,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9993904957152542,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.998883457078005
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.0005357918800745106
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 20,
+      "start_time_s": 5.0,
+      "end_time_s": 5.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5561714768409729,
+      "suspected_group": "vertical",
+      "group_confidence": 0.8850339717271241,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.7476028396180229
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.0940097668649941
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 20,
+      "start_time_s": 39.45000076293945,
+      "end_time_s": 90.0,
+      "duration_s": 50.54999923706055,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.999996381646919,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8956374500455433,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9437028398631961
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.054039623568439846
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 21,
+      "start_time_s": 18.75,
+      "end_time_s": 18.75,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5863394667898402,
+      "suspected_group": "vertical",
+      "group_confidence": 0.7226139915145002,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.46977745616769784
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2063798586265859
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 21,
+      "start_time_s": 21.25,
+      "end_time_s": 21.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6261437632776561,
+      "suspected_group": "vertical",
+      "group_confidence": 0.666581131829165,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3807527579086737
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.23554021732731845
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 21,
+      "start_time_s": 35.0,
+      "end_time_s": 90.0,
+      "duration_s": 55.0,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999945877440631,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7760709972854161,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.7738815316103006
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.07401037103585824
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 22,
+      "start_time_s": 35.0,
+      "end_time_s": 90.0,
+      "duration_s": 55.0,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999959642452765,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8338483179800809,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.904471830002185
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.08930789570386674
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 23,
+      "start_time_s": 33.75,
+      "end_time_s": 90.0,
+      "duration_s": 56.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.999995569476881,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7631397041201238,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.8330039287211345
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.121929785863512
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 24,
+      "start_time_s": 12.5,
+      "end_time_s": 27.5,
+      "duration_s": 15.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7248504604129378,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6313589389380877,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.267749771572536
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.24669951400929044
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 24,
+      "start_time_s": 38.75,
+      "end_time_s": 90.0,
+      "duration_s": 51.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999948254251104,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.9455906307151696,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9700732455913381
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.021915073910090625
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 25.0,
+      "end_time_s": 25.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.690885834937226,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5417354944075917,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.4052505451785746
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.16552544688408302
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 28.75,
+      "end_time_s": 90.0,
+      "duration_s": 61.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999884036836977,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9061945228645789,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.8152523718850404
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.08585451115295385
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 16.25,
+      "end_time_s": 16.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7447596816931701,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.556204678745229,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4773062561116295
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.22914936156862356
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 32.5,
+      "end_time_s": 33.75,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7183123112880196,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.533863388841953,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.39042125301911956
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2718722134196129
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 36.25,
+      "end_time_s": 36.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5507597394174376,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5778440449929655,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4844737386806464
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.33239042069473407
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 41.25,
+      "end_time_s": 90.0,
+      "duration_s": 48.75,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999803647164058,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9453213655550452,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.8591545908083404
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.08193330581829403
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 27,
+      "start_time_s": 50.0,
+      "end_time_s": 50.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5830831416063096,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6231029020845006,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.27868971851519614
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.24256523495685833
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 27,
+      "start_time_s": 52.5,
+      "end_time_s": 90.0,
+      "duration_s": 37.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999891481320307,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9697858441338516,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9339256232725321
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.027583092529392093
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 28,
+      "start_time_s": 41.5,
+      "end_time_s": 90.0,
+      "duration_s": 48.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999871698032609,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9944997248006792,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9871875408251162
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.00352666805964942
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 29,
+      "start_time_s": 43.75,
+      "end_time_s": 90.0,
+      "duration_s": 46.25,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999648977043734,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9263429030675863,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.7950370361337123
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.06775510272912924
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 30,
+      "start_time_s": 12.5,
+      "end_time_s": 12.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5731752312108286,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6183961661687335,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2995435584353523
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.25176164414077384
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 30,
+      "start_time_s": 15.0,
+      "end_time_s": 15.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7952632708994517,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5986645272499602,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2309360486944314
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2184277607617694
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 30,
+      "start_time_s": 17.5,
+      "end_time_s": 90.0,
+      "duration_s": 72.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999911921599837,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9022396882017838,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.7663298762098859
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.06664292216178795
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 31,
+      "start_time_s": 28.75,
+      "end_time_s": 28.75,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6620233780881994,
+      "suspected_group": "vertical",
+      "group_confidence": 0.7262733514802431,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.505033235809459
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.20027289538558965
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 31,
+      "start_time_s": 32.5,
+      "end_time_s": 90.0,
+      "duration_s": 57.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999912979955672,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9214905895996248,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.7978669659068686
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.07496295295780983
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 32,
+      "start_time_s": 5.0,
+      "end_time_s": 6.25,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7374957384777399,
+      "suspected_group": "vertical",
+      "group_confidence": 0.8593416411153244,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.5915653568686889
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.1618080212526795
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 32,
+      "start_time_s": 10.0,
+      "end_time_s": 28.75,
+      "duration_s": 18.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.770335311952398,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6524156131406266,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2774967514530018
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.20664036048038922
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 32,
+      "start_time_s": 32.5,
+      "end_time_s": 90.0,
+      "duration_s": 57.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999893498843648,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9648988962815932,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.9176824533372214
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.03143048858819127
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 5.0,
+      "end_time_s": 6.25,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9573488795856055,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9140225643886357,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.8105473806714777
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.06434297048169646
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 15.0,
+      "end_time_s": 27.5,
+      "duration_s": 12.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7068109025504103,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5834114718130902,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.40342972792557447
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2646901321170703
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 32.5,
+      "end_time_s": 90.0,
+      "duration_s": 57.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999823691885149,
+      "suspected_group": "vertical",
+      "group_confidence": 0.967482167658824,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.9201337461394433
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.03584514227355065
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 34,
+      "start_time_s": 42.5,
+      "end_time_s": 90.0,
+      "duration_s": 47.5,
+      "peak_health_level": 3,
+      "category": "critical_fault",
+      "probable_fault_mode": "no_output",
+      "maximum_fault_probability": 0.9999934381452917,
+      "suspected_group": "vertical",
+      "group_confidence": 0.9489186242180183,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.872491650256607
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.0488871803006086
+        }
+      ],
+      "requires_ftc": true
+    },
+    {
+      "mission_id": 35,
+      "start_time_s": 45.650001525878906,
+      "end_time_s": 90.0,
+      "duration_s": 44.349998474121094,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9225259296078169,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6229042767248375,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.34494660305783365
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.19928293186389004
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 36,
+      "start_time_s": 25.0,
+      "end_time_s": 90.0,
+      "duration_s": 65.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9479005649341112,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5814061684122812,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.24446464827499165
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.18808506075643097
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 37,
+      "start_time_s": 41.25,
+      "end_time_s": 53.75,
+      "duration_s": 12.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7579390876187097,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5154214034752718,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2726796556822555
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.23214155801665423
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 37,
+      "start_time_s": 60.0,
+      "end_time_s": 90.0,
+      "duration_s": 30.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.854718203712645,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5419578378596983,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3292743945496022
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.26615409706120513
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 38,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.957833211986814,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5110276877640282,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.24161402413732674
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.22231208090041127
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 39,
+      "start_time_s": 37.5,
+      "end_time_s": 37.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.567071747920622,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6888343649040506,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3978551096854657
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2587279124717251
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 39,
+      "start_time_s": 40.0,
+      "end_time_s": 40.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5580871394986047,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6407131565685873,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.3365846342339526
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2817519112959118
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 39,
+      "start_time_s": 45.0,
+      "end_time_s": 90.0,
+      "duration_s": 45.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9774369508791113,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5878386178374151,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.327018483456272
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.22095132159668013
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 40,
+      "start_time_s": 17.5,
+      "end_time_s": 17.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5646200526734435,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6775582426271969,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3752566063833968
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.19581021806173515
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 40,
+      "start_time_s": 21.25,
+      "end_time_s": 21.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.5826078596322916,
+      "suspected_group": "vertical",
+      "group_confidence": 0.656871200695997,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3552511877529146
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.19719853703381812
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 40,
+      "start_time_s": 31.25,
+      "end_time_s": 90.0,
+      "duration_s": 58.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9785204951369174,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6708789551050774,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.36524521740666444
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.19102924304778438
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 41,
+      "start_time_s": 18.75,
+      "end_time_s": 20.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6265089532741777,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.8801895213898461,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.5765766836003257
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3286912313475034
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 41,
+      "start_time_s": 23.75,
+      "end_time_s": 90.0,
+      "duration_s": 66.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9917944549033677,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7773171576874338,
+      "location_confidence": "high",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.6227756199088617
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.19274386207380068
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 42,
+      "start_time_s": 12.5,
+      "end_time_s": 90.0,
+      "duration_s": 77.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9712353663900276,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5535550251390479,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.38118649024322704
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.19321152365198185
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 43,
+      "start_time_s": 45.25,
+      "end_time_s": 90.0,
+      "duration_s": 44.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.94901797421918,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7398076331712018,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3748494413182607
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.25741882173208563
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 44,
+      "start_time_s": 42.5,
+      "end_time_s": 42.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.592606261097128,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5828112018729802,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2975676468598711
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.22385194241449022
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 44,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9566428490426128,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6722372306591594,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2555024612829734
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.24146970909766036
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 45,
+      "start_time_s": 5.0,
+      "end_time_s": 27.5,
+      "duration_s": 22.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7930334309291739,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6157909331184158,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.27202274510394014
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.24024905857796752
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 45,
+      "start_time_s": 32.5,
+      "end_time_s": 90.0,
+      "duration_s": 57.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9651893702560038,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6631545905101576,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3461429264018485
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.17770199608907916
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 46,
+      "start_time_s": 13.75,
+      "end_time_s": 15.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.601122456738839,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6331492745548627,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.4374224445609185
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2500203421761918
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 46,
+      "start_time_s": 17.5,
+      "end_time_s": 90.0,
+      "duration_s": 72.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9741611765019476,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.577543866649268,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.33638929558103364
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.17796826347145195
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 47,
+      "start_time_s": 33.75,
+      "end_time_s": 90.0,
+      "duration_s": 56.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.976783151966941,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5362328381970664,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2587277685414711
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2504327584543247
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 48,
+      "start_time_s": 36.25,
+      "end_time_s": 90.0,
+      "duration_s": 53.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9603842281840395,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5453247886238903,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4504003385831411
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.31183311447403295
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 49,
+      "start_time_s": 5.0,
+      "end_time_s": 5.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7142265082457877,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6278030512994927,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2706321735585902
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.1868845494555749
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 49,
+      "start_time_s": 16.25,
+      "end_time_s": 16.25,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6285172603521485,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.7086888064212444,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.4903472479303461
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2226007199808687
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 49,
+      "start_time_s": 25.0,
+      "end_time_s": 90.0,
+      "duration_s": 65.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9733074171569379,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5127568713316957,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.28170629073125153
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2650506188431192
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 50,
+      "start_time_s": 32.5,
+      "end_time_s": 81.25,
+      "duration_s": 48.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9845392899181713,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5881855131319242,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3955410030417617
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.17456049564103146
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 51,
+      "start_time_s": 32.5,
+      "end_time_s": 90.0,
+      "duration_s": 57.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9857435243075274,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6406324451881205,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.35558405514512004
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2147381668702831
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 52,
+      "start_time_s": 5.0,
+      "end_time_s": 90.0,
+      "duration_s": 85.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9731402120125608,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6410644147468327,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3306307588267257
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.31146331906114333
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 53,
+      "start_time_s": 35.0,
+      "end_time_s": 76.25,
+      "duration_s": 41.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9495313237028374,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5054319978146821,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.370600619875417
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.18640243125761263
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 53,
+      "start_time_s": 82.5,
+      "end_time_s": 90.0,
+      "duration_s": 7.5,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.8314204789929391,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.518429532148037,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2761849888461407
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2190373976793026
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 54,
+      "start_time_s": 38.75,
+      "end_time_s": 40.0,
+      "duration_s": 1.25,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7493247776531227,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5506756954427429,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2765736926119741
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.20171580101434208
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 54,
+      "start_time_s": 42.5,
+      "end_time_s": 42.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.666702791426025,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5354927124097965,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.3078081516084626
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.17792684799650765
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 54,
+      "start_time_s": 45.0,
+      "end_time_s": 90.0,
+      "duration_s": 45.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9779727174059917,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5362633110963324,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.4276017646033061
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.21333616744057748
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 55,
+      "start_time_s": 28.75,
+      "end_time_s": 90.0,
+      "duration_s": 61.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9675706906698806,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6938979199719476,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3966814409180818
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.29090875179399117
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 56,
+      "start_time_s": 35.0,
+      "end_time_s": 35.0,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.7279995310902474,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5941448880753516,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.24738219395982064
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2273807986151696
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 56,
+      "start_time_s": 46.20000076293945,
+      "end_time_s": 90.0,
+      "duration_s": 43.79999923706055,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9430872552981915,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6062727130913481,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2327094580856006
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2022915057228124
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 57,
+      "start_time_s": 36.25,
+      "end_time_s": 90.0,
+      "duration_s": 53.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9088495047264346,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5437106607544395,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20298794302486975
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.17368355999841123
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 58,
+      "start_time_s": 32.5,
+      "end_time_s": 32.5,
+      "duration_s": 0.0,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6238033084374722,
+      "suspected_group": "horizontal",
+      "group_confidence": 0.6965182305450406,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.3673963492006608
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.25446366884613536
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 58,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9481965828821317,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6246146137053483,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.3026108459455573
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.21469748488263266
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 59,
+      "start_time_s": 46.25,
+      "end_time_s": 71.25,
+      "duration_s": 25.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.952089236279265,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6430735311130663,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3718289167635117
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2190998684548098
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 59,
+      "start_time_s": 76.25,
+      "end_time_s": 82.5,
+      "duration_s": 6.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.806477440220983,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6939526629862729,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.40081118195751136
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.1690419593162329
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 60,
+      "start_time_s": 30.0,
+      "end_time_s": 90.0,
+      "duration_s": 60.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9666669686169835,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5389972323702362,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.31654127344227556
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.252503323079021
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 61,
+      "start_time_s": 38.75,
+      "end_time_s": 40.95000076293945,
+      "duration_s": 2.200000762939453,
+      "peak_health_level": 1,
+      "category": "transient_observation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6717353383685638,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5973969895505531,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.34077913503236723
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.307551879295184
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 61,
+      "start_time_s": 42.20000076293945,
+      "end_time_s": 90.0,
+      "duration_s": 47.79999923706055,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9186361296948887,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.5398250964234282,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2535724282763661
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2507627145354383
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 62,
+      "start_time_s": 13.75,
+      "end_time_s": 90.0,
+      "duration_s": 76.25,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.9469563721995052,
+      "suspected_group": "vertical",
+      "group_confidence": 0.6453339200720295,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.30698996610601376
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.18676272272060845
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 63,
+      "start_time_s": 52.5,
+      "end_time_s": 72.5,
+      "duration_s": 20.0,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.6605063563009992,
+      "suspected_group": "uncertain",
+      "group_confidence": 0.558246377098743,
+      "location_confidence": "low",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2572231407456444
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.18070359558519516
+        }
+      ],
+      "requires_ftc": false
+    },
+    {
+      "mission_id": 64,
+      "start_time_s": 41.25,
+      "end_time_s": 90.0,
+      "duration_s": 48.75,
+      "peak_health_level": 2,
+      "category": "persistent_degradation",
+      "probable_fault_mode": "thrust_loss",
+      "maximum_fault_probability": 0.913724848423528,
+      "suspected_group": "vertical",
+      "group_confidence": 0.7653837540085993,
+      "location_confidence": "medium",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.5023080099430358
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.11762855455113516
+        }
+      ],
+      "requires_ftc": false
+    }
+  ],
+  "pending_maintenance_observations": [
+    {
+      "mission_id": 0,
+      "start_time_s": 28.75,
+      "end_time_s": 30.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.49151271352294346
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.19192864474783222
+        }
+      ],
+      "maximum_excitation_ratio": 0.2400178425911403,
+      "maximum_independent_evidence": 0.37875252962112427
+    },
+    {
+      "mission_id": 0,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.45003779387117093
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.15643000008889588
+        }
+      ],
+      "maximum_excitation_ratio": 0.18055093328930832,
+      "maximum_independent_evidence": 0.43037477135658264
+    },
+    {
+      "mission_id": 1,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.23121708689374762
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.21511324563214282
+        }
+      ],
+      "maximum_excitation_ratio": 0.3964493095807115,
+      "maximum_independent_evidence": 0.5086205005645752
+    },
+    {
+      "mission_id": 2,
+      "start_time_s": 27.5,
+      "end_time_s": 28.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.32854100485212595
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.22571880983723322
+        }
+      ],
+      "maximum_excitation_ratio": 0.20184069083080855,
+      "maximum_independent_evidence": 0.30507582426071167
+    },
+    {
+      "mission_id": 2,
+      "start_time_s": 51.25,
+      "end_time_s": 51.25,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.42625327029739657
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3475667924917026
+        }
+      ],
+      "maximum_excitation_ratio": 0.14088491956574115,
+      "maximum_independent_evidence": 0.1385864019393921
+    },
+    {
+      "mission_id": 2,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.6614644023190669
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.18900063928842017
+        }
+      ],
+      "maximum_excitation_ratio": 0.3167832856103682,
+      "maximum_independent_evidence": 0.4090695381164551
+    },
+    {
+      "mission_id": 3,
+      "start_time_s": 27.5,
+      "end_time_s": 28.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3255441664224781
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.251239085954772
+        }
+      ],
+      "maximum_excitation_ratio": 0.2848413224150995,
+      "maximum_independent_evidence": 0.3676491975784302
+    },
+    {
+      "mission_id": 3,
+      "start_time_s": 51.25,
+      "end_time_s": 57.5,
+      "duration_s": 6.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 6.25,
+      "cumulative_qualified_duration_s": 6.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.47935816900994
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.20337255366213214
+        }
+      ],
+      "maximum_excitation_ratio": 0.44142078587707295,
+      "maximum_independent_evidence": 0.5295305252075195
+    },
+    {
+      "mission_id": 3,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.5160946883993985
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.12003448632471586
+        }
+      ],
+      "maximum_excitation_ratio": 0.3431061660202718,
+      "maximum_independent_evidence": 0.6057154536247253
+    },
+    {
+      "mission_id": 4,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.39391595398010026
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.3125451786664873
+        }
+      ],
+      "maximum_excitation_ratio": 0.30909257058163486,
+      "maximum_independent_evidence": 0.3283539116382599
+    },
+    {
+      "mission_id": 6,
+      "start_time_s": 30.0,
+      "end_time_s": 31.25,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.5486297418483761
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2908189795491435
+        }
+      ],
+      "maximum_excitation_ratio": 0.24459225864537537,
+      "maximum_independent_evidence": 0.2610701024532318
+    },
+    {
+      "mission_id": 16,
+      "start_time_s": 27.5,
+      "end_time_s": 30.0,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.28130440725669803
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2436197987602241
+        }
+      ],
+      "maximum_excitation_ratio": 0.32787215243151324,
+      "maximum_independent_evidence": 0.35503315925598145
+    },
+    {
+      "mission_id": 24,
+      "start_time_s": 27.5,
+      "end_time_s": 27.5,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3478816060949329
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.17550661715904575
+        }
+      ],
+      "maximum_excitation_ratio": 0.26853466009002175,
+      "maximum_independent_evidence": 0.25119227170944214
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 31.25,
+      "end_time_s": 31.25,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.5742878633392825
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.320919263115373
+        }
+      ],
+      "maximum_excitation_ratio": 0.0917183224034628,
+      "maximum_independent_evidence": 0.12111207097768784
+    },
+    {
+      "mission_id": 30,
+      "start_time_s": 27.5,
+      "end_time_s": 30.0,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.26000530079003203
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2479822095633879
+        }
+      ],
+      "maximum_excitation_ratio": 0.2153679948255161,
+      "maximum_independent_evidence": 0.33712220191955566
+    },
+    {
+      "mission_id": 32,
+      "start_time_s": 27.5,
+      "end_time_s": 27.5,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.3447076056546896
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.27907371313069973
+        }
+      ],
+      "maximum_excitation_ratio": 0.15169782118330158,
+      "maximum_independent_evidence": 0.11650782823562622
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 27.5,
+      "end_time_s": 27.5,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.24874465352851638
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.23818570552904683
+        }
+      ],
+      "maximum_excitation_ratio": 0.21575377357509273,
+      "maximum_independent_evidence": 0.2141893208026886
+    },
+    {
+      "mission_id": 35,
+      "start_time_s": 51.25,
+      "end_time_s": 55.0,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.3211013462164948
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.25774238193457444
+        }
+      ],
+      "maximum_excitation_ratio": 0.27929540124187807,
+      "maximum_independent_evidence": 0.38575541973114014
+    },
+    {
+      "mission_id": 35,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.4705762472352369
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.18679842353023512
+        }
+      ],
+      "maximum_excitation_ratio": 0.35688309556180303,
+      "maximum_independent_evidence": 0.42098069190979004
+    },
+    {
+      "mission_id": 36,
+      "start_time_s": 27.5,
+      "end_time_s": 30.0,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.40592023030033203
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.26600767156822974
+        }
+      ],
+      "maximum_excitation_ratio": 0.3190638516958569,
+      "maximum_independent_evidence": 0.5676043629646301
+    },
+    {
+      "mission_id": 36,
+      "start_time_s": 50.349998474121094,
+      "end_time_s": 52.849998474121094,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2289537924530514
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20700399869343483
+        }
+      ],
+      "maximum_excitation_ratio": 0.14900461292466052,
+      "maximum_independent_evidence": 0.17171800136566162
+    },
+    {
+      "mission_id": 36,
+      "start_time_s": 73.75,
+      "end_time_s": 73.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.5917619775409538
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.17991572066701986
+        }
+      ],
+      "maximum_excitation_ratio": 0.2099325607407004,
+      "maximum_independent_evidence": 0.24667365849018097
+    },
+    {
+      "mission_id": 37,
+      "start_time_s": 51.25,
+      "end_time_s": 52.5,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.28445365728565125
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.278332751185327
+        }
+      ],
+      "maximum_excitation_ratio": 0.4191672999192561,
+      "maximum_independent_evidence": 0.4519401490688324
+    },
+    {
+      "mission_id": 37,
+      "start_time_s": 73.75,
+      "end_time_s": 80.0,
+      "duration_s": 6.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 6.25,
+      "cumulative_qualified_duration_s": 6.25,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.4163598187294894
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3506988980614614
+        }
+      ],
+      "maximum_excitation_ratio": 0.5721392369460402,
+      "maximum_independent_evidence": 0.5870022177696228
+    },
+    {
+      "mission_id": 38,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.43911615156872813
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.30677431249850634
+        }
+      ],
+      "maximum_excitation_ratio": 0.32206497948194296,
+      "maximum_independent_evidence": 0.30218014121055603
+    },
+    {
+      "mission_id": 39,
+      "start_time_s": 73.75,
+      "end_time_s": 78.75,
+      "duration_s": 5.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 5.0,
+      "cumulative_qualified_duration_s": 5.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.5861813403460069
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.33188835556874785
+        }
+      ],
+      "maximum_excitation_ratio": 0.29098509427830593,
+      "maximum_independent_evidence": 0.3905281722545624
+    },
+    {
+      "mission_id": 41,
+      "start_time_s": 28.75,
+      "end_time_s": 28.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.4647995001107063
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.17623422928496754
+        }
+      ],
+      "maximum_excitation_ratio": 0.13569791030892303,
+      "maximum_independent_evidence": 0.12444238364696503
+    },
+    {
+      "mission_id": 41,
+      "start_time_s": 52.5,
+      "end_time_s": 53.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.6034619085042109
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.19577028855938725
+        }
+      ],
+      "maximum_excitation_ratio": 0.10425993700741745,
+      "maximum_independent_evidence": 0.16388189792633057
+    },
+    {
+      "mission_id": 42,
+      "start_time_s": 27.5,
+      "end_time_s": 30.0,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2346338035274849
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.22449657418359173
+        }
+      ],
+      "maximum_excitation_ratio": 0.18903027599802003,
+      "maximum_independent_evidence": 0.1996227651834488
+    },
+    {
+      "mission_id": 42,
+      "start_time_s": 51.25,
+      "end_time_s": 55.0,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.23801636880946522
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.2163669790147378
+        }
+      ],
+      "maximum_excitation_ratio": 0.30627699404856007,
+      "maximum_independent_evidence": 0.313173770904541
+    },
+    {
+      "mission_id": 42,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.37524883713719853
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.24360492977254472
+        }
+      ],
+      "maximum_excitation_ratio": 0.2171733986039021,
+      "maximum_independent_evidence": 0.32201969623565674
+    },
+    {
+      "mission_id": 43,
+      "start_time_s": 51.25,
+      "end_time_s": 55.0,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.5524236583227953
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.4173535384355434
+        }
+      ],
+      "maximum_excitation_ratio": 0.5369611841986734,
+      "maximum_independent_evidence": 0.5816841125488281
+    },
+    {
+      "mission_id": 43,
+      "start_time_s": 73.75,
+      "end_time_s": 81.25,
+      "duration_s": 7.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 7.5,
+      "cumulative_qualified_duration_s": 7.5,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.3717837341599724
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2880339878179102
+        }
+      ],
+      "maximum_excitation_ratio": 0.5050573070132998,
+      "maximum_independent_evidence": 0.4349323809146881
+    },
+    {
+      "mission_id": 45,
+      "start_time_s": 27.5,
+      "end_time_s": 27.5,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.5384373765147734
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.16449344464565524
+        }
+      ],
+      "maximum_excitation_ratio": 0.16575994537954447,
+      "maximum_independent_evidence": 0.29082411527633667
+    },
+    {
+      "mission_id": 45,
+      "start_time_s": 51.25,
+      "end_time_s": 51.25,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.41747229643942585
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.17072092950647305
+        }
+      ],
+      "maximum_excitation_ratio": 0.1429711379007284,
+      "maximum_independent_evidence": 0.2572384178638458
+    },
+    {
+      "mission_id": 46,
+      "start_time_s": 27.5,
+      "end_time_s": 28.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.4213743719862887
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.14299847634980833
+        }
+      ],
+      "maximum_excitation_ratio": 0.24653455389847304,
+      "maximum_independent_evidence": 0.2940034866333008
+    },
+    {
+      "mission_id": 46,
+      "start_time_s": 50.45000076293945,
+      "end_time_s": 51.25,
+      "duration_s": 0.7999992370605469,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.7999992370605469,
+      "cumulative_qualified_duration_s": 0.7999992370605469,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.25387403831416355
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.19930062201262086
+        }
+      ],
+      "maximum_excitation_ratio": 0.19350647589410527,
+      "maximum_independent_evidence": 0.3573150336742401
+    },
+    {
+      "mission_id": 48,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.42002738282129903
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.27762501968215125
+        }
+      ],
+      "maximum_excitation_ratio": 0.3071814686642769,
+      "maximum_independent_evidence": 0.46814781427383423
+    },
+    {
+      "mission_id": 49,
+      "start_time_s": 27.5,
+      "end_time_s": 33.75,
+      "duration_s": 6.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 6.25,
+      "cumulative_qualified_duration_s": 6.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.5170578087809975
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.1943505810871656
+        }
+      ],
+      "maximum_excitation_ratio": 0.3712732967320658,
+      "maximum_independent_evidence": 0.5211454033851624
+    },
+    {
+      "mission_id": 49,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.48519380685885233
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.14984441061647066
+        }
+      ],
+      "maximum_excitation_ratio": 0.26629380705945965,
+      "maximum_independent_evidence": 0.4656186103820801
+    },
+    {
+      "mission_id": 50,
+      "start_time_s": 73.75,
+      "end_time_s": 78.75,
+      "duration_s": 5.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 5.0,
+      "cumulative_qualified_duration_s": 5.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.27860999709596734
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.19743163610487832
+        }
+      ],
+      "maximum_excitation_ratio": 0.2855229673629242,
+      "maximum_independent_evidence": 0.3146449029445648
+    },
+    {
+      "mission_id": 51,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.5112363925300681
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.15054535475422218
+        }
+      ],
+      "maximum_excitation_ratio": 0.24600103590654823,
+      "maximum_independent_evidence": 0.20784743130207062
+    },
+    {
+      "mission_id": 52,
+      "start_time_s": 7.5,
+      "end_time_s": 8.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 0,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.7421769298849925
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.08721141345037532
+        }
+      ],
+      "maximum_excitation_ratio": 0.11257309440627804,
+      "maximum_independent_evidence": 0.15837201476097107
+    },
+    {
+      "mission_id": 52,
+      "start_time_s": 27.5,
+      "end_time_s": 28.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2190243108555237
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.20906844238589944
+        }
+      ],
+      "maximum_excitation_ratio": 0.20165889315480592,
+      "maximum_independent_evidence": 0.20795507729053497
+    },
+    {
+      "mission_id": 52,
+      "start_time_s": 51.25,
+      "end_time_s": 53.75,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.345099174015633
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2597000486552142
+        }
+      ],
+      "maximum_excitation_ratio": 0.3113876484039636,
+      "maximum_independent_evidence": 0.3279477059841156
+    },
+    {
+      "mission_id": 52,
+      "start_time_s": 73.75,
+      "end_time_s": 73.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.7951673030442135
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.14508030872900043
+        }
+      ],
+      "maximum_excitation_ratio": 0.11968307970441572,
+      "maximum_independent_evidence": 0.148838073015213
+    },
+    {
+      "mission_id": 53,
+      "start_time_s": 51.25,
+      "end_time_s": 55.0,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.6945159562989885
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.14269363100988935
+        }
+      ],
+      "maximum_excitation_ratio": 0.48081394269374744,
+      "maximum_independent_evidence": 0.5549169778823853
+    },
+    {
+      "mission_id": 53,
+      "start_time_s": 73.75,
+      "end_time_s": 76.25,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.34735615310127393
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.19075733962296587
+        }
+      ],
+      "maximum_excitation_ratio": 0.5575542278848952,
+      "maximum_independent_evidence": 0.5605989694595337
+    },
+    {
+      "mission_id": 54,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.8317252367849627
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.08461348649424108
+        }
+      ],
+      "maximum_excitation_ratio": 0.4353909477685072,
+      "maximum_independent_evidence": 0.4980505108833313
+    },
+    {
+      "mission_id": 55,
+      "start_time_s": 73.75,
+      "end_time_s": 77.5,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.35335228344981795
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.35175995955407413
+        }
+      ],
+      "maximum_excitation_ratio": 0.2755938326424395,
+      "maximum_independent_evidence": 0.27952975034713745
+    },
+    {
+      "mission_id": 56,
+      "start_time_s": 51.25,
+      "end_time_s": 51.25,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.640268231044521
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.13261758297432297
+        }
+      ],
+      "maximum_excitation_ratio": 0.08263351782620584,
+      "maximum_independent_evidence": 0.10884226858615875
+    },
+    {
+      "mission_id": 56,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.33729190076463494
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.24406120681761742
+        }
+      ],
+      "maximum_excitation_ratio": 0.35286442172274596,
+      "maximum_independent_evidence": 0.24623605608940125
+    },
+    {
+      "mission_id": 57,
+      "start_time_s": 73.75,
+      "end_time_s": 73.75,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": 0.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.2939425884434265
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2504374282255333
+        }
+      ],
+      "maximum_excitation_ratio": 0.1491932964465496,
+      "maximum_independent_evidence": 0.18880626559257507
+    },
+    {
+      "mission_id": 58,
+      "start_time_s": 50.95000076293945,
+      "end_time_s": 52.20000076293945,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.4839913573370698
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.16845742082001877
+        }
+      ],
+      "maximum_excitation_ratio": 0.2945903805729202,
+      "maximum_independent_evidence": 0.37716037034988403
+    },
+    {
+      "mission_id": 58,
+      "start_time_s": 60.0,
+      "end_time_s": 67.5,
+      "duration_s": 7.5,
+      "fault_mode": "thrust_loss",
+      "status": "context_transition_observation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 7.5,
+      "cumulative_qualified_duration_s": null,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.27303177944129403
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.27007122660739896
+        }
+      ],
+      "maximum_excitation_ratio": 0.09219956058756669,
+      "maximum_independent_evidence": 0.10828904807567596
+    },
+    {
+      "mission_id": 58,
+      "start_time_s": 73.75,
+      "end_time_s": 80.0,
+      "duration_s": 6.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.30403925467447646
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.19846723928290685
+        }
+      ],
+      "maximum_excitation_ratio": 0.711280279782262,
+      "maximum_independent_evidence": 0.8443664312362671
+    },
+    {
+      "mission_id": 59,
+      "start_time_s": 80.0,
+      "end_time_s": 82.5,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.4244013807391595
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.1531725834751914
+        }
+      ],
+      "maximum_excitation_ratio": 0.09761150051658804,
+      "maximum_independent_evidence": 0.16850873827934265
+    },
+    {
+      "mission_id": 60,
+      "start_time_s": 51.25,
+      "end_time_s": 63.75,
+      "duration_s": 12.5,
+      "fault_mode": "thrust_loss",
+      "status": "context_transition_observation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 5.0,
+      "cumulative_qualified_duration_s": null,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.5539915733045513
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.16298334775412077
+        }
+      ],
+      "maximum_excitation_ratio": 0.26133450856586976,
+      "maximum_independent_evidence": 0.3212087154388428
+    },
+    {
+      "mission_id": 60,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.39136920328346425
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.28184246271477914
+        }
+      ],
+      "maximum_excitation_ratio": 0.2421328591569534,
+      "maximum_independent_evidence": 0.3536055386066437
+    },
+    {
+      "mission_id": 61,
+      "start_time_s": 73.75,
+      "end_time_s": 76.25,
+      "duration_s": 2.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 2.5,
+      "cumulative_qualified_duration_s": 2.5,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.27765280869072134
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.23689827210982906
+        }
+      ],
+      "maximum_excitation_ratio": 0.26247622120988895,
+      "maximum_independent_evidence": 0.3187679648399353
+    },
+    {
+      "mission_id": 62,
+      "start_time_s": 27.5,
+      "end_time_s": 28.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 1,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.2859704636872198
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.19018286761421765
+        }
+      ],
+      "maximum_excitation_ratio": 0.25272491307601075,
+      "maximum_independent_evidence": 0.22708408534526825
+    },
+    {
+      "mission_id": 62,
+      "start_time_s": 51.25,
+      "end_time_s": 56.25,
+      "duration_s": 5.0,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 5.0,
+      "cumulative_qualified_duration_s": 5.0,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.64528544471414
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.12313341463694558
+        }
+      ],
+      "maximum_excitation_ratio": 0.32533490151657096,
+      "maximum_independent_evidence": 0.49452582001686096
+    },
+    {
+      "mission_id": 62,
+      "start_time_s": 73.75,
+      "end_time_s": 75.0,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.2932180562120392
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.28282294745424064
+        }
+      ],
+      "maximum_excitation_ratio": 0.23391187972991984,
+      "maximum_independent_evidence": 0.26342082023620605
+    },
+    {
+      "mission_id": 63,
+      "start_time_s": 56.25,
+      "end_time_s": 57.5,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 1.25,
+      "cumulative_qualified_duration_s": 1.25,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.33832393325710614
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.16533487152588808
+        }
+      ],
+      "maximum_excitation_ratio": 0.09532556330766169,
+      "maximum_independent_evidence": 0.1274622678756714
+    },
+    {
+      "mission_id": 64,
+      "start_time_s": 51.25,
+      "end_time_s": 55.0,
+      "duration_s": 3.75,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.5624542855672461
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.16661256613289574
+        }
+      ],
+      "maximum_excitation_ratio": 0.21446841171280226,
+      "maximum_independent_evidence": 0.23560945689678192
+    },
+    {
+      "mission_id": 64,
+      "start_time_s": 66.25,
+      "end_time_s": 66.25,
+      "duration_s": 0.0,
+      "fault_mode": "thrust_loss",
+      "status": "context_transition_observation",
+      "guidance_context_id": 2,
+      "qualified_duration_s": 0.0,
+      "cumulative_qualified_duration_s": null,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.6087069631261892
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.15038971916517577
+        }
+      ],
+      "maximum_excitation_ratio": 0.08894722193210357,
+      "maximum_independent_evidence": 0.10572193562984467
+    },
+    {
+      "mission_id": 64,
+      "start_time_s": 73.75,
+      "end_time_s": 81.25,
+      "duration_s": 7.5,
+      "fault_mode": "thrust_loss",
+      "status": "recovered_before_confirmation",
+      "guidance_context_id": 3,
+      "qualified_duration_s": 3.75,
+      "cumulative_qualified_duration_s": 3.75,
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.4331333762763575
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.20526108438557875
+        }
+      ],
+      "maximum_excitation_ratio": 0.4554099498827877,
+      "maximum_independent_evidence": 0.48631367087364197
+    }
+  ],
+  "maintenance_advisories": [],
+  "formal_maintenance_tickets": [
+    {
+      "mission_id": 5,
+      "start_time_s": 51.04999923706055,
+      "end_time_s": 82.5,
+      "duration_s": 31.450000762939453,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.999985035335356
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 8.459577475833355e-06
+        }
+      ],
+      "maximum_excitation_ratio": 0.7898024717024411,
+      "maximum_independent_evidence": 0.9471397399902344,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 6,
+      "start_time_s": 49.70000076293945,
+      "end_time_s": 78.75,
+      "duration_s": 29.049999237060547,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.9999642899975569
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 2.7101069756238485e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.6644429599307851,
+      "maximum_independent_evidence": 0.9272027015686035,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 7,
+      "start_time_s": 45.75,
+      "end_time_s": 88.75,
+      "duration_s": 43.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.9999082484573812
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 6.559566858410439e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.7093698255260698,
+      "maximum_independent_evidence": 0.9628065824508667,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 8,
+      "start_time_s": 46.25,
+      "end_time_s": 85.0,
+      "duration_s": 38.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.9999746488397144
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 2.0165295420965777e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.97726559004054,
+      "maximum_independent_evidence": 0.9217063784599304,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 9,
+      "start_time_s": 68.75,
+      "end_time_s": 85.0,
+      "duration_s": 16.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.9998402337559285
+        },
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.0001240310529804847
+        }
+      ],
+      "maximum_excitation_ratio": 0.6137742081890948,
+      "maximum_independent_evidence": 0.9292057752609253,
+      "merged_segment_count": 1
+    },
+    {
+      "mission_id": 10,
+      "start_time_s": 46.25,
+      "end_time_s": 81.25,
+      "duration_s": 35.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9997127724390777
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.00027180209620854175
+        }
+      ],
+      "maximum_excitation_ratio": 0.5930998586038932,
+      "maximum_independent_evidence": 0.9445580244064331,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 11,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9999120078081334
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 7.518793360483607e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.890088711701701,
+      "maximum_independent_evidence": 0.9433856010437012,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 12,
+      "start_time_s": 46.25,
+      "end_time_s": 86.25,
+      "duration_s": 40.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9996956766992641
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.0002877554993010161
+        }
+      ],
+      "maximum_excitation_ratio": 0.7014739170427149,
+      "maximum_independent_evidence": 0.9156514406204224,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 13,
+      "start_time_s": 47.5,
+      "end_time_s": 77.5,
+      "duration_s": 30.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9998201201726366
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.00016260008705887592
+        }
+      ],
+      "maximum_excitation_ratio": 0.5673382091016349,
+      "maximum_independent_evidence": 0.9325494766235352,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 14,
+      "start_time_s": 70.0,
+      "end_time_s": 90.0,
+      "duration_s": 20.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 2,
+          "name": "H2",
+          "probability": 0.9997207127416526
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 0.0002180195424941662
+        }
+      ],
+      "maximum_excitation_ratio": 0.13366152321188968,
+      "maximum_independent_evidence": 0.9089401960372925,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 15,
+      "start_time_s": 46.25,
+      "end_time_s": 83.75,
+      "duration_s": 37.5,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9998979129681881
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 3.667269872292905e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.7215026123340197,
+      "maximum_independent_evidence": 0.9481080174446106,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 16,
+      "start_time_s": 46.25,
+      "end_time_s": 82.5,
+      "duration_s": 36.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9999755079693253
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 1.046095529990584e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.6302554713235955,
+      "maximum_independent_evidence": 0.912869930267334,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 17,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9999585264402504
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 1.7084223081213957e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.8905560218556704,
+      "maximum_independent_evidence": 0.9377932548522949,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 18,
+      "start_time_s": 68.75,
+      "end_time_s": 82.5,
+      "duration_s": 13.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.999949227001381
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 1.5779348024271178e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.7592984387271717,
+      "maximum_independent_evidence": 0.9537494778633118,
+      "merged_segment_count": 1
+    },
+    {
+      "mission_id": 19,
+      "start_time_s": 41.25,
+      "end_time_s": 88.75,
+      "duration_s": 47.5,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.9999333022227722
+        },
+        {
+          "index": 1,
+          "name": "H1",
+          "probability": 2.6491325486555552e-05
+        }
+      ],
+      "maximum_excitation_ratio": 1.0,
+      "maximum_independent_evidence": 0.9322963953018188,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 20,
+      "start_time_s": 46.25,
+      "end_time_s": 82.5,
+      "duration_s": 36.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9996889731881793
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.00028961325206130237
+        }
+      ],
+      "maximum_excitation_ratio": 0.9602507171314371,
+      "maximum_independent_evidence": 0.9607788920402527,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 21,
+      "start_time_s": 50.0,
+      "end_time_s": 82.5,
+      "duration_s": 32.5,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9981904438478071
+        },
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.0014577942396597355
+        }
+      ],
+      "maximum_excitation_ratio": 0.619822558133064,
+      "maximum_independent_evidence": 0.9238969087600708,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 22,
+      "start_time_s": 46.25,
+      "end_time_s": 80.0,
+      "duration_s": 33.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9991927846716107
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.000631756937693197
+        }
+      ],
+      "maximum_excitation_ratio": 0.8414287496682945,
+      "maximum_independent_evidence": 0.9523824453353882,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 23,
+      "start_time_s": 47.25,
+      "end_time_s": 73.75,
+      "duration_s": 26.5,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9995539929621038
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.00038137164075072817
+        }
+      ],
+      "maximum_excitation_ratio": 0.4783621360572878,
+      "maximum_independent_evidence": 0.9454910159111023,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 24,
+      "start_time_s": 46.25,
+      "end_time_s": 80.0,
+      "duration_s": 33.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "horizontal",
+      "inspection_candidates": [
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.9996275258021027
+        },
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.00031926519629736096
+        }
+      ],
+      "maximum_excitation_ratio": 0.9543786383671992,
+      "maximum_independent_evidence": 0.9492583274841309,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 25,
+      "start_time_s": 43.75,
+      "end_time_s": 90.0,
+      "duration_s": 46.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.999858616358176
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 9.0266605255401e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.5828379194223795,
+      "maximum_independent_evidence": 0.9132420420646667,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 26,
+      "start_time_s": 48.75,
+      "end_time_s": 77.5,
+      "duration_s": 28.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9998931957211065
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 6.530772422466963e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.537298322802493,
+      "maximum_independent_evidence": 0.9370507001876831,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 27,
+      "start_time_s": 55.0,
+      "end_time_s": 90.0,
+      "duration_s": 35.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9999505932557073
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 2.8854264287635686e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.5392071443501321,
+      "maximum_independent_evidence": 0.9461003541946411,
+      "merged_segment_count": 1
+    },
+    {
+      "mission_id": 28,
+      "start_time_s": 42.75,
+      "end_time_s": 90.0,
+      "duration_s": 47.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9999855528529297
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 7.720036058238207e-06
+        }
+      ],
+      "maximum_excitation_ratio": 0.37782674027988533,
+      "maximum_independent_evidence": 0.9337794184684753,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 29,
+      "start_time_s": 68.75,
+      "end_time_s": 75.0,
+      "duration_s": 6.25,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 5,
+          "name": "V1",
+          "probability": 0.9999726810412727
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 1.2078779923028158e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.34942614654066523,
+      "maximum_independent_evidence": 0.9373504519462585,
+      "merged_segment_count": 1
+    },
+    {
+      "mission_id": 30,
+      "start_time_s": 50.0,
+      "end_time_s": 90.0,
+      "duration_s": 40.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.9999749641136393
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 1.9721216861738202e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.5664431659010951,
+      "maximum_independent_evidence": 0.9480687975883484,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 31,
+      "start_time_s": 48.54999923706055,
+      "end_time_s": 90.0,
+      "duration_s": 41.45000076293945,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.9999131037961881
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 7.470097407493168e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.5487644117968785,
+      "maximum_independent_evidence": 0.9611040353775024,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 32,
+      "start_time_s": 46.25,
+      "end_time_s": 90.0,
+      "duration_s": 43.75,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.9999179931751274
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 6.460642511659352e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.7074399726160935,
+      "maximum_independent_evidence": 0.9091431498527527,
+      "merged_segment_count": 3
+    },
+    {
+      "mission_id": 33,
+      "start_time_s": 46.25,
+      "end_time_s": 71.25,
+      "duration_s": 25.0,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.999967841713096
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 2.778967133246297e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.758484772450642,
+      "maximum_independent_evidence": 0.9399124383926392,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 34,
+      "start_time_s": 52.400001525878906,
+      "end_time_s": 90.0,
+      "duration_s": 37.599998474121094,
+      "fault_mode": "no_output",
+      "trigger": "direct_no_output",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.999898054929203
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 7.957318463148921e-05
+        }
+      ],
+      "maximum_excitation_ratio": 0.4511012454407208,
+      "maximum_independent_evidence": 0.9145690202713013,
+      "merged_segment_count": 2
+    },
+    {
+      "mission_id": 46,
+      "start_time_s": 82.5,
+      "end_time_s": 83.75,
+      "duration_s": 1.25,
+      "fault_mode": "thrust_loss",
+      "trigger": "persistent_thrust_loss",
+      "suspected_group": "uncertain",
+      "inspection_candidates": [
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.2513193363464512
+        },
+        {
+          "index": 4,
+          "name": "H4",
+          "probability": 0.2188863538023591
+        }
+      ],
+      "maximum_excitation_ratio": 0.12408774802257966,
+      "maximum_independent_evidence": 0.1757332980632782,
+      "merged_segment_count": 1
+    },
+    {
+      "mission_id": 59,
+      "start_time_s": 63.75,
+      "end_time_s": 72.5,
+      "duration_s": 8.75,
+      "fault_mode": "thrust_loss",
+      "trigger": "persistent_thrust_loss",
+      "suspected_group": "vertical",
+      "inspection_candidates": [
+        {
+          "index": 6,
+          "name": "V2",
+          "probability": 0.44733715013707126
+        },
+        {
+          "index": 3,
+          "name": "H3",
+          "probability": 0.18404368099769283
+        }
+      ],
+      "maximum_excitation_ratio": 0.5699259479397794,
+      "maximum_independent_evidence": 0.603395938873291,
+      "merged_segment_count": 1
+    }
+  ]
+}

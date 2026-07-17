@@ -12,3 +12,6 @@ __pycache__/
 # Large generated datasets excluded because GitHub rejects files over 100 MB.
 depth-sensor-fault-detection/depth_fault_detection/data/*.pth
 depth-sensor-fault-detection/depth_fault_detection/results/* - *.pth
+depth-sensor-fault-detection/depth_fault_detection/results/six_dof_multitask*/
+depth-sensor-fault-detection/depth_fault_detection/results/six_dof_domain_randomized*/
+depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry*/

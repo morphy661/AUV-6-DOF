@@ -1,0 +1,55 @@
+{
+  "protocol_id": "six_dof_sensor_fault_stress_v1",
+  "frozen_on": "2026-07-17",
+  "evaluation_type": "hash_locked_one_shot_stress_benchmark",
+  "locked_before_execution": true,
+  "purpose": "Determine which depth, IMU, and DVL diagnoses may be displayed as confirmed and which must remain possible or log-only.",
+  "configuration": {
+    "missions_per_scenario": 3,
+    "duration_s": 18.0,
+    "dt_s": 0.05,
+    "base_seed": 2026081700,
+    "scenario_count": 25,
+    "mission_count": 75
+  },
+  "scenario_categories": {
+    "normal": 2,
+    "strong_direct": 9,
+    "ambiguous": 14
+  },
+  "acceptance_thresholds": {
+    "strong_direct_event_recall_min": 0.95,
+    "strong_direct_event_precision_min": 0.95,
+    "strong_direct_ftc_action_match_min": 0.95,
+    "normal_false_confirmed_missions_max": 0,
+    "normal_false_protective_missions_max": 0,
+    "ambiguous_fault_evidence_observation_rate_min": 0.5,
+    "ambiguous_conflicting_certainty_rate_max": 0.1,
+    "ambiguous_post_recovery_protective_missions_max": 0,
+    "wrong_thruster_target_count_max": 0
+  },
+  "interpretation_rules": {
+    "strong_direct": "A diagnosis may be shown as confirmed only if its frozen per-scenario recall is at least 95 percent.",
+    "ambiguous": "Bias, drift, weak spikes, partial-channel stuck, and intermittent loss remain possible or log-only unless a later independent frozen benchmark validates them.",
+    "brief_unavailability": "The current sample may be certainly unavailable while persistent hardware failure remains an unconfirmed maintenance hypothesis.",
+    "ftc": "Temporary safety fallback during a real brief outage is allowed; protective action persisting after recovery is not allowed.",
+    "thrusters": "Sensor evidence must never select a thruster target."
+  },
+  "scenario_matrix_sha256": "a7f54c075ab5d53e67e6470e8fea76f300d12795592b59dfa0c397e41ec90cb1",
+  "code_sha256": {
+    "math-model/src/sensors/sensor_faults.py": "e0ee1a2041e82b68194566e363477e6de8a2b20aff190244b0fe143a4c1cca1a",
+    "math-model/src/diagnosis/sensor_health_monitor.py": "02179ae852b2d2f892c1d014ea158c50fc4243bd03a6c17c27de5695bb590a5f",
+    "math-model/src/estimation/six_dof_state_estimator.py": "acf83ec94507b47cfa8678ecfe17fac22120a15d38ea6898ddddb2d62a5fe5b2",
+    "math-model/src/ftc/safety_supervisor.py": "dc709ee95344eadf4096b6be9132259803a4dc8dcbdfb81c9f3f2be246378f3e",
+    "math-model/src/environment/six_dof_simulator.py": "6a05c354ea4f157b7a57ca717f854d1c5dc29ede224f1f3b518b3dbf9324059e",
+    "math-model/src/evaluation/sensor_fault_stress_benchmark.py": "28eae7f631bbb5ea41db72e71ef0c7c860cc67c2781090fd0e859926b048ad47",
+    "math-model/examples/evaluate_six_dof_sensor_fault_stress.py": "f1c9e7b2091c55460d97b1a8bdfd213acf6336dab423211a83ec3b40071f0f64"
+  },
+  "output_directory": "math-model/results/six_dof_sensor_fault_stress_v1_20260717",
+  "execution_rules": [
+    "Do not edit hashed files or the scenario matrix after this protocol is written.",
+    "Do not inspect outcomes before all 75 missions finish.",
+    "Do not overwrite or rerun the V1 output directory.",
+    "If V1 exposes a gap, preserve it and create a separately named V2 with new seeds."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "protocol_id": "six_dof_final_blind_20260716_v1",
+  "dataset_path": "depth-sensor-fault-detection\\depth_fault_detection\\data\\simulation_dataset_six_dof_final_blind_20260716.pth",
+  "dataset_bytes": 203393980,
+  "dataset_sha256": "69EA3037A050015E60CECCC4568B5612F9171E92AD5A59CA6E57D3F1D154103D",
+  "mission_count": 65,
+  "window_count": 4659
+}

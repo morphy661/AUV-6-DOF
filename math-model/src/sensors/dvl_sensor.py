@@ -13,6 +13,7 @@ class DVLSensor:
         velocity_noise_std=0.02,
         dropout_prob=0.0,
         seed: Optional[int] = None,
+        dropout_windows=None,
     ):
         self.velocity_noise_std = float(velocity_noise_std)
         self.dropout_prob = float(dropout_prob)
@@ -20,8 +21,30 @@ class DVLSensor:
             raise ValueError("velocity_noise_std must be non-negative")
         if not 0.0 <= self.dropout_prob <= 1.0:
             raise ValueError("dropout_prob must be within [0, 1]")
+        self.dropout_windows = self._validate_dropout_windows(
+            dropout_windows or ()
+        )
         self.seed = seed
         self.rng = np.random.default_rng(seed)
+
+    @staticmethod
+    def _validate_dropout_windows(windows):
+        result = []
+        for window in windows:
+            if len(window) != 2:
+                raise ValueError("each DVL dropout window must be (start, end)")
+            start, end = map(float, window)
+            if (
+                not np.isfinite(start)
+                or not np.isfinite(end)
+                or start < 0.0
+                or end <= start
+            ):
+                raise ValueError(
+                    "DVL dropout windows require finite 0 <= start < end"
+                )
+            result.append((start, end))
+        return tuple(sorted(result))
 
     def reset(self):
         self.rng = np.random.default_rng(self.seed)
@@ -43,9 +66,18 @@ class DVLSensor:
         return velocity.copy()
 
     def read(self, auv_state):
-        if self.rng.random() < self.dropout_prob:
+        time_s = float(getattr(auv_state, "time", 0.0))
+        scheduled_dropout = any(
+            start <= time_s < end
+            for start, end in self.dropout_windows
+        )
+        random_dropout = self.rng.random() < self.dropout_prob
+        if scheduled_dropout or random_dropout:
             return {
                 "valid": False,
+                "dropout_reason": (
+                    "scheduled" if scheduled_dropout else "random"
+                ),
                 "frame": "body",
                 "velocity": np.full(3, np.nan),
                 "vx": np.nan,
@@ -62,6 +94,7 @@ class DVLSensor:
         )
         return {
             "valid": True,
+            "dropout_reason": None,
             "frame": "body",
             "velocity": measured_velocity,
             "vx": float(measured_velocity[0]),

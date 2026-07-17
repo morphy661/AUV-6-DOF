@@ -43,10 +43,15 @@ def _attitude_error_body(current_quaternion, target_quaternion):
 class PoseTarget:
     position_ned: np.ndarray
     euler_rpy: np.ndarray = field(default_factory=lambda: np.zeros(3))
+    guidance_context_id: int = 0
 
     def __post_init__(self):
         self.position_ned = _vector(self.position_ned, 3, "position_ned")
         self.euler_rpy = _vector(self.euler_rpy, 3, "euler_rpy")
+        context_id = int(self.guidance_context_id)
+        if context_id != self.guidance_context_id or context_id < 0:
+            raise ValueError("guidance_context_id must be a non-negative integer")
+        self.guidance_context_id = context_id
 
 
 @dataclass

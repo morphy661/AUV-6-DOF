@@ -7,6 +7,7 @@ import numpy as np
 from sensors.depth_sensor import DepthSensor
 from sensors.dvl_sensor import DVLSensor
 from sensors.imu_sensor import IMUSensor
+from sensors.sensor_faults import SensorFaultInjector
 
 
 class SixDOFSensorSuite:
@@ -17,6 +18,7 @@ class SixDOFSensorSuite:
         depth_sensor: Optional[DepthSensor] = None,
         imu_sensor: Optional[IMUSensor] = None,
         dvl_sensor: Optional[DVLSensor] = None,
+        fault_injector: Optional[SensorFaultInjector] = None,
         seed: Optional[int] = None,
     ):
         seed_sequence = np.random.SeedSequence(seed)
@@ -27,11 +29,13 @@ class SixDOFSensorSuite:
         self.depth_sensor = depth_sensor or DepthSensor(seed=child_seeds[0])
         self.imu_sensor = imu_sensor or IMUSensor(seed=child_seeds[1])
         self.dvl_sensor = dvl_sensor or DVLSensor(seed=child_seeds[2])
+        self.fault_injector = fault_injector or SensorFaultInjector()
 
     def reset(self):
         self.depth_sensor.reset()
         self.imu_sensor.reset()
         self.dvl_sensor.reset()
+        self.fault_injector.reset()
 
     @staticmethod
     def _true_depth(state):
@@ -47,15 +51,15 @@ class SixDOFSensorSuite:
         return float(position[2])
 
     def read(self, state, dt, linear_acceleration_body=None):
-        return {
-            "depth": self.depth_sensor.measure(
-                self._true_depth(state),
-                dt=dt,
+        return self.fault_injector.apply(
+            time_s=float(getattr(state, "time", 0.0)),
+            depth=self.depth_sensor.measure(
+                self._true_depth(state), dt=dt
             ),
-            "imu": self.imu_sensor.read(
+            imu=self.imu_sensor.read(
                 state,
                 linear_acceleration_body=linear_acceleration_body,
                 dt=dt,
             ),
-            "dvl": self.dvl_sensor.read(state),
-        }
+            dvl=self.dvl_sensor.read(state),
+        )
