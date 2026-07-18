@@ -221,6 +221,20 @@ always labelled `possible`, even when the internal probability is high; it is
 maintenance advice and cannot command FTC or isolate a thruster. Use
 `--disable-model` to render the rule/FTC-only view.
 
+The final V4 presentation adds an explicitly offline `36/36 PASS` simulation
+baseline badge while keeping every sensor, thruster, model, estimator, and FTC
+panel tied to the current causal frame. Generate it without overwriting the
+earlier demonstrations with:
+
+```powershell
+D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py `
+  --output-dir results\six_dof_unified_diagnostics_final_v4_20260718
+```
+
+The fixed replay shows V2 ESC packet loss as log-only with no target, followed
+by a real V1 no-output failure and targeted reallocation at 17.55 seconds. See
+`docs/six_dof_unified_diagnostics_final_v4.md`.
+
 `math-model/src/diagnosis/temporal_fault_decision.py` adds a causal
 normal/suspected/confirmed/recovering state machine. Calibrate its thresholds
 on validation missions with:

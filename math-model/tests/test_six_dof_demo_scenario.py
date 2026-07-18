@@ -1,5 +1,6 @@
 """Tests for fixed and reproducible-random demonstration fault schedules."""
 
+import json
 import sys
 from pathlib import Path
 
@@ -11,7 +12,11 @@ for path in (SRC_ROOT, EXAMPLES_ROOT):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from demo_six_dof_unified_diagnostics import build_fault_scenario, run_demo
+from demo_six_dof_unified_diagnostics import (
+    build_fault_scenario,
+    load_acceptance_badge,
+    run_demo,
+)
 
 
 def _manifest(seed, mode="random"):
@@ -85,3 +90,43 @@ def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
         log["ftc_targeted_thruster_name"] == "V1" for log in logs
     )
     assert manifest["thruster_fault"]["thruster_name"] == "V1"
+
+
+def test_offline_acceptance_badge_is_explicit_and_consistent(tmp_path):
+    path = tmp_path / "acceptance.json"
+    path.write_text(json.dumps({
+        "benchmark": "six_dof_unified_acceptance_v4",
+        "protocol_sha256": "abc123",
+        "summary": {
+            "decision": "accepted",
+            "all_acceptance_checks_passed": True,
+            "passed_count": 36,
+            "check_count": 36,
+        },
+    }), encoding="utf-8")
+
+    badge = load_acceptance_badge(path)
+
+    assert badge["scope"] == "offline_simulation_evidence"
+    assert badge["accepted"]
+    assert badge["passed_count"] == badge["check_count"] == 36
+
+
+def test_offline_acceptance_badge_rejects_inconsistent_decision(tmp_path):
+    path = tmp_path / "acceptance.json"
+    path.write_text(json.dumps({
+        "benchmark": "six_dof_unified_acceptance_v4",
+        "summary": {
+            "decision": "not_accepted",
+            "all_acceptance_checks_passed": True,
+            "passed_count": 36,
+            "check_count": 36,
+        },
+    }), encoding="utf-8")
+
+    try:
+        load_acceptance_badge(path)
+    except ValueError as error:
+        assert "decision and pass flag disagree" in str(error)
+    else:
+        raise AssertionError("inconsistent acceptance decision was accepted")

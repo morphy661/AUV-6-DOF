@@ -68,11 +68,20 @@ def _limits(values, padding=0.12, minimum_span=1.0):
 class SixDOFDemoRenderer:
     """Render adapted frames as a 16:9 operator dashboard."""
 
-    def __init__(self, frames: Sequence[Mapping], events=()):
+    def __init__(
+        self,
+        frames: Sequence[Mapping],
+        events=(),
+        *,
+        acceptance_badge: Mapping | None = None,
+    ):
         self.frames = list(frames)
         if not self.frames:
             raise ValueError("frames cannot be empty")
         self.events = list(events)
+        self.acceptance_badge = (
+            None if acceptance_badge is None else dict(acceptance_badge)
+        )
         self.times = np.asarray([frame["time_s"] for frame in self.frames])
         self.positions = _pose_array(self.frames, "position_ned_m")
         self.estimates = _pose_array(self.frames, "estimated_position_ned_m")
@@ -92,9 +101,34 @@ class SixDOFDemoRenderer:
         self.status_axis = self.figure.add_subplot(grid[9:, 10:])
         self.timeline_axis = self.figure.add_subplot(grid[9:, :10])
         self.figure.suptitle(
-            "AUV 6-DOF  |  Unified diagnosis and fault-tolerant control",
+            "AUV 6-DOF  |  Causal diagnosis and fault-tolerant control replay",
             color=FOREGROUND, fontsize=14, x=0.045, ha="left",
         )
+        if self.acceptance_badge is not None:
+            passed = int(self.acceptance_badge["passed_count"])
+            total = int(self.acceptance_badge["check_count"])
+            accepted = bool(self.acceptance_badge["accepted"])
+            badge_color = (
+                TIER_COLORS["normal"]
+                if accepted
+                else TIER_COLORS["confirmed"]
+            )
+            result = "PASS" if accepted else "NOT ACCEPTED"
+            self.figure.text(
+                0.975,
+                0.988,
+                f"OFFLINE V4 BASELINE  {passed}/{total} {result}",
+                color=badge_color,
+                fontsize=8.0,
+                ha="right",
+                va="top",
+                bbox={
+                    "boxstyle": "round,pad=0.32",
+                    "facecolor": PANEL,
+                    "edgecolor": badge_color,
+                    "linewidth": 0.9,
+                },
+            )
 
     def _draw_motion(self, index):
         axis = self.motion_axis
@@ -144,7 +178,7 @@ class SixDOFDemoRenderer:
     def _draw_sensors(self, index):
         axis = self.sensor_axis
         axis.clear()
-        _configure_axis(axis, "Sensor diagnosis")
+        _configure_axis(axis, "Current-frame sensor diagnosis")
         axis.set_xlim(0, 1)
         axis.set_ylim(0, 3)
         axis.axis("off")
@@ -172,7 +206,8 @@ class SixDOFDemoRenderer:
         axis = self.thruster_axis
         axis.clear()
         _configure_axis(
-            axis, "Thrusters: command / ESC evidence / link / diamond model P"
+            axis,
+            "Current-frame thrusters: command / ESC / link / model P",
         )
         cards = self.frames[index]["thrusters"]
         maintenance = self.frames[index].get("maintenance", {})
@@ -213,7 +248,7 @@ class SixDOFDemoRenderer:
     def _draw_status(self, index):
         axis = self.status_axis
         axis.clear()
-        _configure_axis(axis, "FTC, model advice and latest event")
+        _configure_axis(axis, "Current-frame FTC, advice and latest event")
         axis.axis("off")
         frame = self.frames[index]
         ftc = frame["ftc"]
@@ -285,7 +320,7 @@ class SixDOFDemoRenderer:
     def _draw_timeline(self, index):
         axis = self.timeline_axis
         axis.clear()
-        _configure_axis(axis, "Event timeline")
+        _configure_axis(axis, "Causal event timeline")
         tier_value = {"normal": 0, "log_only": 1, "possible": 2, "confirmed": 3}
         values = [tier_value[frame["overall_tier"]] for frame in self.frames]
         axis.step(self.times, values, where="post", color=FTC_COLOR, linewidth=1.8)

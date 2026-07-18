@@ -60,6 +60,12 @@ DEFAULT_TEMPORAL_CONFIG = (
     / "six_dof_hybrid_telemetry_temporal_v2"
     / "temporal_decision_config.json"
 )
+DEFAULT_ACCEPTANCE_SUMMARY = (
+    PROJECT_ROOT
+    / "results"
+    / "six_dof_unified_acceptance_v4_20260717"
+    / "unified_acceptance_v4_summary.json"
+)
 
 
 MISSION_TARGETS = (
@@ -69,6 +75,31 @@ MISSION_TARGETS = (
     (15.0, (0.0, 0.0, 4.0), (0.0, 0.0, 0.0)),
     (20.0, (2.0, -1.0, 2.0), (0.0, 0.0, 0.3)),
 )
+
+
+def load_acceptance_badge(path):
+    """Load an offline V4 badge without mixing it into live diagnosis."""
+
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("benchmark") != "six_dof_unified_acceptance_v4":
+        raise ValueError("acceptance summary is not the unified V4 benchmark")
+    summary = payload.get("summary", {})
+    passed = int(summary.get("passed_count", -1))
+    total = int(summary.get("check_count", -1))
+    accepted = bool(summary.get("all_acceptance_checks_passed", False))
+    if total <= 0 or passed < 0 or passed > total:
+        raise ValueError("invalid unified V4 acceptance counts")
+    expected_decision = "accepted" if accepted else "not_accepted"
+    if summary.get("decision") != expected_decision:
+        raise ValueError("unified V4 decision and pass flag disagree")
+    return {
+        "name": "six_dof_unified_acceptance_v4",
+        "scope": "offline_simulation_evidence",
+        "accepted": accepted,
+        "passed_count": passed,
+        "check_count": total,
+        "protocol_sha256": str(payload.get("protocol_sha256", "")),
+    }
 
 
 def target_provider(time_s, _state):
@@ -305,12 +336,15 @@ def run_demo(
     return logs, frames, events, manifest
 
 
-def save_json(frames, events, summary, manifest, path):
+def save_json(
+    frames, events, summary, manifest, offline_acceptance, path
+):
     path.write_text(json.dumps({
         "demo": "six_dof_unified_diagnostics",
         "diagnostic_contract": (
             "Sensor and thruster tiers use causal onboard fields only; injected truth is excluded."
         ),
+        "offline_acceptance_baseline": offline_acceptance,
         "summary": summary,
         "injection_manifest": manifest,
         "events": events,
@@ -412,6 +446,12 @@ def main():
     parser.add_argument(
         "--model-device", choices=("auto", "cpu", "cuda"), default="auto"
     )
+    parser.add_argument(
+        "--acceptance-summary",
+        type=Path,
+        default=DEFAULT_ACCEPTANCE_SUMMARY,
+    )
+    parser.add_argument("--hide-acceptance-badge", action="store_true")
     parser.add_argument("--fps", type=int, default=12)
     parser.add_argument("--max-video-frames", type=int, default=240)
     parser.add_argument("--skip-video", action="store_true")
@@ -421,6 +461,11 @@ def main():
     )
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
+    acceptance_badge = (
+        None
+        if args.hide_acceptance_badge
+        else load_acceptance_badge(args.acceptance_summary)
+    )
     model_bridge = None
     if not args.disable_model:
         if str(MODEL_ROOT) not in sys.path:
@@ -450,6 +495,7 @@ def main():
         "model_device": (
             None if model_bridge is None else str(model_bridge.device)
         ),
+        "offline_acceptance_baseline": acceptance_badge,
     })
 
     json_path = args.output_dir / "six_dof_unified_diagnostics.json"
@@ -457,10 +503,21 @@ def main():
     image_path = args.output_dir / "six_dof_unified_diagnostics.png"
     esc_image_path = args.output_dir / "six_dof_unified_diagnostics_esc_link.png"
     video_path = args.output_dir / "six_dof_unified_diagnostics.mp4"
-    save_json(frames, events, summary, manifest, json_path)
+    save_json(
+        frames,
+        events,
+        summary,
+        manifest,
+        acceptance_badge,
+        json_path,
+    )
     save_csv(frames, csv_path)
 
-    renderer = SixDOFDemoRenderer(frames, events)
+    renderer = SixDOFDemoRenderer(
+        frames,
+        events,
+        acceptance_badge=acceptance_badge,
+    )
     renderer.save_snapshot(image_path)
     esc_indices = [
         index for index, frame in enumerate(frames)
