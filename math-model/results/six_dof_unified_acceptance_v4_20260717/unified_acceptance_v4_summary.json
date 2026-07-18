@@ -1,0 +1,553 @@
+{
+  "benchmark": "six_dof_unified_acceptance_v4",
+  "evaluation_type": "simulation_evidence_aggregation",
+  "real_sea_trial_claim": false,
+  "independent_blind_test_claim": false,
+  "protocol_path": "C:\\Users\\Administrator\\PycharmProjects\\AUV-Project\\docs\\six_dof_unified_acceptance_protocol_v4.json",
+  "protocol_sha256": "80ed72d688e9118782fc14e3e591847d53158228173985e8384745901fbffff8",
+  "configuration": {
+    "source_names": [
+      "sensor_observer_v3",
+      "esc_telemetry_v2",
+      "thruster_ftc_v2",
+      "unified_random_v3",
+      "final_blind_v2"
+    ],
+    "required_categories": [
+      "source_integrity",
+      "sensor_diagnosis",
+      "esc_telemetry",
+      "thruster_ftc",
+      "unified_operations",
+      "maintenance_model"
+    ],
+    "diagnostic_policy": {
+      "confirmed_sensor_faults": "direct classification and FTC allowed",
+      "complete_thruster_failure": "targeted FTC allowed with trusted ESC telemetry",
+      "weak_or_intermittent_thrust_loss": "record and probability-based maintenance advice only",
+      "exact_weak_fault_location": "non-authoritative Top-2 probability only"
+    }
+  },
+  "evidence_sources": {
+    "sensor_observer_v3": {
+      "path": "math-model/results/six_dof_sensor_fault_observer_v3_20260717/sensor_fault_observer_v3_summary.json",
+      "sha256": "d9a5d6b5fca7e8ce9098d6fe56865dc0ea4c9cd01cf9d80bd7f8941d39b24d2e"
+    },
+    "esc_telemetry_v2": {
+      "path": "math-model/results/six_dof_esc_telemetry_stress_v2_20260717/esc_telemetry_stress_summary.json",
+      "sha256": "ada5d1e31df81f8d8b230afb66706e2cd727fc18062454e06cb01913308373e4"
+    },
+    "thruster_ftc_v2": {
+      "path": "math-model/results/six_dof_thruster_stratified_v2_20260717/thruster_stratified_v2_summary.json",
+      "sha256": "d26bf30da13b7da5ddaad235cd8c292f2c3b607a7976d453a2f9f349272e2611"
+    },
+    "unified_random_v3": {
+      "path": "math-model/results/six_dof_unified_random_batch_v3_20260717/unified_random_batch_v3_summary.json",
+      "sha256": "72bb5a349de8bc2de32649b74321a7655392fcdd0c7dcc6b9a6f4aff7fa76bc8"
+    },
+    "final_blind_v2": {
+      "path": "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_final_blind_v2_20260717/final_blind_summary.json",
+      "sha256": "ae58ae9ffcc5f4f4dcfc39d37a726cc12e5215514ee3d8f7655fbdc62a8bd8c9"
+    }
+  },
+  "summary": {
+    "decision": "accepted",
+    "all_acceptance_checks_passed": true,
+    "check_count": 36,
+    "passed_count": 36,
+    "categories": {
+      "source_integrity": {
+        "check_count": 5,
+        "passed_count": 5,
+        "all_passed": true
+      },
+      "sensor_diagnosis": {
+        "check_count": 7,
+        "passed_count": 7,
+        "all_passed": true
+      },
+      "esc_telemetry": {
+        "check_count": 6,
+        "passed_count": 6,
+        "all_passed": true
+      },
+      "thruster_ftc": {
+        "check_count": 5,
+        "passed_count": 5,
+        "all_passed": true
+      },
+      "unified_operations": {
+        "check_count": 8,
+        "passed_count": 8,
+        "all_passed": true
+      },
+      "maintenance_model": {
+        "check_count": 5,
+        "passed_count": 5,
+        "all_passed": true
+      }
+    },
+    "checks": [
+      {
+        "id": "sensor_source_accepted",
+        "category": "source_integrity",
+        "description": "Sensor observer locked benchmark passed",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.all_acceptance_checks_passed",
+        "observed": true,
+        "operator": "==",
+        "threshold": true,
+        "passed": true
+      },
+      {
+        "id": "esc_source_accepted",
+        "category": "source_integrity",
+        "description": "ESC telemetry locked benchmark passed",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.all_acceptance_checks_passed",
+        "observed": true,
+        "operator": "==",
+        "threshold": true,
+        "passed": true
+      },
+      {
+        "id": "thruster_source_accepted",
+        "category": "source_integrity",
+        "description": "Thruster FTC locked benchmark passed",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.all_acceptance_checks_passed",
+        "observed": true,
+        "operator": "==",
+        "threshold": true,
+        "passed": true
+      },
+      {
+        "id": "random_source_accepted",
+        "category": "source_integrity",
+        "description": "Unified random development batch passed",
+        "source": "unified_random_v3",
+        "value_path": "summary.all_acceptance_checks_passed",
+        "observed": true,
+        "operator": "==",
+        "threshold": true,
+        "passed": true
+      },
+      {
+        "id": "blind_source_accepted",
+        "category": "source_integrity",
+        "description": "Frozen simulated blind maintenance checks passed",
+        "source": "final_blind_v2",
+        "value_path": "acceptance.all_passed",
+        "observed": true,
+        "operator": "==",
+        "threshold": true,
+        "passed": true
+      },
+      {
+        "id": "sensor_strong_recall",
+        "category": "sensor_diagnosis",
+        "description": "Strong depth/IMU/DVL fault recall",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.strong_direct_event_recall",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "sensor_strong_precision",
+        "category": "sensor_diagnosis",
+        "description": "Strong depth/IMU/DVL fault precision",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.strong_direct_event_precision",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "sensor_ftc_match",
+        "category": "sensor_diagnosis",
+        "description": "Confirmed sensor fault FTC action match",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.strong_direct_ftc_action_match_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "sensor_normal_false_confirmation",
+        "category": "sensor_diagnosis",
+        "description": "No confirmed fault in normal sensor missions",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.normal_false_confirmed_missions",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "sensor_normal_false_protection",
+        "category": "sensor_diagnosis",
+        "description": "No protective action in normal sensor missions",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.normal_false_protective_missions",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "sensor_ambiguous_operator_record",
+        "category": "sensor_diagnosis",
+        "description": "Required ambiguous sensor faults reach operator possible tier",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.required_operator_possible_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "sensor_wrong_thruster_target",
+        "category": "sensor_diagnosis",
+        "description": "Sensor faults never create a thruster target",
+        "source": "sensor_observer_v3",
+        "value_path": "summary.wrong_thruster_target_count",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "esc_false_target_rate",
+        "category": "esc_telemetry",
+        "description": "Invalid or benign ESC telemetry never isolates a thruster",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.overall_false_target_rate",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "esc_packet_loss_logged",
+        "category": "esc_telemetry",
+        "description": "Packet loss is always recorded",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.by_event.continuous_packet_loss.communication_log_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 1.0,
+        "passed": true
+      },
+      {
+        "id": "esc_freeze_logged",
+        "category": "esc_telemetry",
+        "description": "Communication freeze is always recorded",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.by_event.communication_freeze.communication_log_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 1.0,
+        "passed": true
+      },
+      {
+        "id": "esc_real_failure_recall",
+        "category": "esc_telemetry",
+        "description": "Fresh ESC telemetry preserves complete-failure targeting",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.real_fault_target_recall",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "esc_real_failure_wrong_target",
+        "category": "esc_telemetry",
+        "description": "Complete-failure targeting has no wrong thruster",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.real_fault_wrong_target_rate",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "esc_real_failure_delay",
+        "category": "esc_telemetry",
+        "description": "Median complete-failure FTC delay remains within one second",
+        "source": "esc_telemetry_v2",
+        "value_path": "summary.strategy_metrics.freshness_guarded_default.real_fault_median_target_delay_s",
+        "observed": 0.550000000000118,
+        "operator": "<=",
+        "threshold": 1.0,
+        "passed": true
+      },
+      {
+        "id": "thruster_complete_failure_recall",
+        "category": "thruster_ftc",
+        "description": "All six complete thruster failures are targeted",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.strategy_metrics.deployed_default.target_recall",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "thruster_sensor_stress_recall",
+        "category": "thruster_ftc",
+        "description": "Complete-failure targeting survives sensor stress",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.strategy_metrics.deployed_default.sensor_stress_target_recall",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "thruster_wrong_target_rate",
+        "category": "thruster_ftc",
+        "description": "No wrong target in stratified failure missions",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.strategy_metrics.deployed_default.wrong_target_mission_rate",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "thruster_healthy_false_target",
+        "category": "thruster_ftc",
+        "description": "No target in healthy stratified missions",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.strategy_metrics.deployed_default.healthy_false_target_rate",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "thruster_vertical_delay",
+        "category": "thruster_ftc",
+        "description": "Vertical complete-failure median FTC delay remains within one second",
+        "source": "thruster_ftc_v2",
+        "value_path": "summary.strategy_metrics.deployed_default.vertical_median_target_delay_s",
+        "observed": 0.5500000000001144,
+        "operator": "<=",
+        "threshold": 1.0,
+        "passed": true
+      },
+      {
+        "id": "unified_weak_spike_not_overpromoted",
+        "category": "unified_operations",
+        "description": "Short recoverable sensor spikes are not overpromoted",
+        "source": "unified_random_v3",
+        "value_path": "summary.sensor.weak_spike_overpromotion_rate",
+        "observed": 0,
+        "operator": "<=",
+        "threshold": 0.05,
+        "passed": true
+      },
+      {
+        "id": "unified_ambiguous_record_rate",
+        "category": "unified_operations",
+        "description": "Ambiguous sensor anomalies are recorded",
+        "source": "unified_random_v3",
+        "value_path": "summary.sensor.ambiguous_record_rate",
+        "observed": 0.9333333333333333,
+        "operator": ">=",
+        "threshold": 0.9,
+        "passed": true
+      },
+      {
+        "id": "unified_sensor_ftc_match",
+        "category": "unified_operations",
+        "description": "Sensor FTC actions remain correct in random missions",
+        "source": "unified_random_v3",
+        "value_path": "summary.sensor.sensor_ftc_action_match_rate",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "unified_no_output_target_recall",
+        "category": "unified_operations",
+        "description": "Complete thruster failure is targeted in random missions",
+        "source": "unified_random_v3",
+        "value_path": "summary.thruster_ftc.no_output_target_recall",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "unified_safe_ftc_behavior",
+        "category": "unified_operations",
+        "description": "FTC behavior follows the confirmed-versus-advisory boundary",
+        "source": "unified_random_v3",
+        "value_path": "summary.thruster_ftc.safe_ftc_behavior_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "unified_weak_loss_not_isolated",
+        "category": "unified_operations",
+        "description": "Weak thrust loss is not force-isolated",
+        "source": "unified_random_v3",
+        "value_path": "summary.thruster_ftc.thrust_loss_wrong_isolation_rate",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "unified_no_premature_model_advice",
+        "category": "unified_operations",
+        "description": "Context gate suppresses premature model advice",
+        "source": "unified_random_v3",
+        "value_path": "summary.model_advice.pre_thruster_advisory_mission_rate",
+        "observed": 0,
+        "operator": "<=",
+        "threshold": 0.05,
+        "passed": true
+      },
+      {
+        "id": "unified_model_top2",
+        "category": "unified_operations",
+        "description": "Model Top-2 location remains useful as maintenance advice",
+        "source": "unified_random_v3",
+        "value_path": "summary.model_advice.peak_top2_location_accuracy",
+        "observed": 0.8666666666666667,
+        "operator": ">=",
+        "threshold": 0.65,
+        "passed": true
+      },
+      {
+        "id": "maintenance_raw_health_recall",
+        "category": "maintenance_model",
+        "description": "Frozen blind health-event recall",
+        "source": "final_blind_v2",
+        "value_path": "acceptance.checks.raw_health_event_recall.value",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "maintenance_no_output_ticket_recall",
+        "category": "maintenance_model",
+        "description": "Complete-failure maintenance ticket recall",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.no_output_ticket_recall",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "maintenance_false_tickets",
+        "category": "maintenance_model",
+        "description": "No false formal maintenance tickets",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.false_maintenance_tickets",
+        "observed": 0,
+        "operator": "==",
+        "threshold": 0,
+        "passed": true
+      },
+      {
+        "id": "maintenance_ticket_precision",
+        "category": "maintenance_model",
+        "description": "Formal maintenance ticket precision",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.ticket_event_precision",
+        "observed": 1.0,
+        "operator": ">=",
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "id": "maintenance_post_fault_advice",
+        "category": "maintenance_model",
+        "description": "Model supplies post-fault advisory information",
+        "source": "unified_random_v3",
+        "value_path": "summary.model_advice.post_fault_advisory_rate",
+        "observed": 1,
+        "operator": ">=",
+        "threshold": 0.8,
+        "passed": true
+      }
+    ],
+    "informational_metrics": [
+      {
+        "id": "weak_loss_top2_random",
+        "description": "Weak thrust-loss Top-2 location accuracy in unified random missions",
+        "source": "unified_random_v3",
+        "value_path": "summary.model_advice.thrust_loss_peak_top2_location_accuracy",
+        "observed": 0.5555555555555556,
+        "gating": false
+      },
+      {
+        "id": "weak_loss_ticket_recall",
+        "description": "Weak thrust-loss formal maintenance ticket recall",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.thrust_loss_ticket_recall",
+        "observed": 0.06666666666666667,
+        "gating": false
+      },
+      {
+        "id": "blind_temporal_mode_macro_f1",
+        "description": "Frozen blind temporal fault-mode macro F1",
+        "source": "final_blind_v2",
+        "value_path": "temporal.classification.mode_macro_f1",
+        "observed": 0.834989149545995,
+        "gating": false
+      },
+      {
+        "id": "blind_temporal_location_macro_f1",
+        "description": "Frozen blind temporal exact-location macro F1",
+        "source": "final_blind_v2",
+        "value_path": "temporal.classification.location_macro_f1",
+        "observed": 0.5808177326156122,
+        "gating": false
+      },
+      {
+        "id": "blind_normal_window_false_alarm",
+        "description": "Raw temporal normal-window advisory false-alarm rate before maintenance policy",
+        "source": "final_blind_v2",
+        "value_path": "temporal.operations.normal_window_false_alarm_rate",
+        "observed": 0.29193109700815956,
+        "gating": false
+      },
+      {
+        "id": "ticket_top2_location_hit",
+        "description": "Formal ticket Top-2 probable-location hit rate",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.ticket_top2_location_hit_rate",
+        "observed": 0.96875,
+        "gating": false
+      },
+      {
+        "id": "ticket_median_delay",
+        "description": "Formal maintenance ticket median delay in seconds",
+        "source": "final_blind_v2",
+        "value_path": "maintenance_tickets.median_ticket_detection_delay_s",
+        "observed": 4.92500114440918,
+        "gating": false
+      }
+    ],
+    "diagnostic_policy": {
+      "confirmed_sensor_faults": "direct classification and FTC allowed",
+      "complete_thruster_failure": "targeted FTC allowed with trusted ESC telemetry",
+      "weak_or_intermittent_thrust_loss": "record and probability-based maintenance advice only",
+      "exact_weak_fault_location": "non-authoritative Top-2 probability only"
+    }
+  }
+}

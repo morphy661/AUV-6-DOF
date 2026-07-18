@@ -152,6 +152,30 @@ spikes must remain background logs. A new 75-mission one-shot run passed all
 thruster-target leakage. See `docs/six_dof_sensor_fault_observer_results_v3.md`
 and `math-model/results/six_dof_sensor_fault_observer_v3_20260717`.
 
+## Unified V4 acceptance
+
+The current deployment-oriented simulation evidence is aggregated by one
+protocol instead of adding another parallel sensor, ESC, thruster, or model
+runner:
+
+```powershell
+cd math-model
+D:\Anaconda_envs\envs\auv_gpu\python.exe examples\evaluate_six_dof_unified_acceptance_v4.py
+```
+
+The locked protocol is `docs/six_dof_unified_acceptance_protocol_v4.json`.
+It verifies the hashes and internal acceptance status of the sensor-observer
+V3, ESC-telemetry V2, stratified thruster-FTC V2, unified-random V3, and final
+blind V2 artifacts, then applies one explicit 36-check acceptance matrix. The
+frozen result passed all 36 checks and is stored under
+`math-model/results/six_dof_unified_acceptance_v4_20260717`.
+
+This is a simulation evidence aggregation, not a new independent blind test
+or a real-sea claim. Confirmed sensor faults and complete thruster failures are
+safety-gating cases. Weak or intermittent thrust loss remains non-gating:
+it is retained as a probability-based maintenance clue, and exact thruster
+location is not treated as an automatic FTC fact.
+
 ## Unified six-DOF diagnosis video
 
 Generate the deterministic end-to-end demonstration with the configured AUV
