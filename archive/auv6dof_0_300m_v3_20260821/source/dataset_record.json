@@ -1,0 +1,18 @@
+{
+  "repository_relative_path": "depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth",
+  "included_in_archive": false,
+  "reason": "Large reproducible dataset; excluded from Git archive.",
+  "size_bytes": 813858561,
+  "sha256": "209517014A9E9AA192EFEB92633FA7EEB1DF7382F58ECA899ECD1A4749549398",
+  "missions": 260,
+  "windows": 18633,
+  "window_shape": [
+    100,
+    109
+  ],
+  "mission_split": {
+    "train": 182,
+    "validation": 39,
+    "test": 39
+  }
+}

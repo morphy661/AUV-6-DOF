@@ -1,0 +1,13 @@
+{
+  "minimum_excitation_ratio": 0.15,
+  "minimum_thrust_loss_motion_evidence": 0.2,
+  "minimum_no_output_local_anomaly": 0.5,
+  "ticket_confirmation_s": 0.0,
+  "thrust_loss_pending_confirmation_s": 8.0,
+  "thrust_loss_recovery_cancel_s": 3.75,
+  "thrust_loss_recurrence_window_s": 30.0,
+  "thrust_loss_recurrence_count": 2,
+  "ticket_recovery_s": 1.25,
+  "merge_gap_s": 30.0,
+  "evidence_tail_steps": 20
+}

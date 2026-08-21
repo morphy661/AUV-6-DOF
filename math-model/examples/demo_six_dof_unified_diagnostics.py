@@ -31,6 +31,7 @@ from actuators.esc_telemetry_faults import (
     THRUSTER_NAMES,
 )
 from environment.six_dof_simulator import SixDOFSimulator
+from environment.six_dof_dynamics import SixDOFState
 from ftc.safety_supervisor import (
     FTCSafetySupervisor,
     build_rule_based_ftc_evidence,
@@ -52,12 +53,15 @@ from simple_control.six_dof_controller import PoseTarget
 
 
 DEFAULT_CHECKPOINT = (
-    MODEL_ROOT / "results" / "six_dof_hybrid_telemetry" / "best_model.pth"
+    MODEL_ROOT
+    / "results"
+    / "six_dof_hybrid_telemetry_0_300m_focus_v3"
+    / "best_model.pth"
 )
 DEFAULT_TEMPORAL_CONFIG = (
     MODEL_ROOT
     / "results"
-    / "six_dof_hybrid_telemetry_temporal_v2"
+    / "six_dof_hybrid_telemetry_0_300m_focus_v3_temporal"
     / "temporal_decision_config.json"
 )
 DEFAULT_ACCEPTANCE_SUMMARY = (
@@ -69,11 +73,11 @@ DEFAULT_ACCEPTANCE_SUMMARY = (
 
 
 MISSION_TARGETS = (
-    (0.0, (0.0, 0.0, 1.5), (0.0, 0.0, 0.0)),
-    (4.0, (4.0, 1.0, 2.0), (0.0, 0.0, 0.6)),
-    (9.0, (-2.0, 3.0, 2.5), (0.0, 0.0, -0.6)),
-    (15.0, (0.0, 0.0, 4.0), (0.0, 0.0, 0.0)),
-    (20.0, (2.0, -1.0, 2.0), (0.0, 0.0, 0.3)),
+    (0.0, (0.0, 0.0, 200.0), (0.0, 0.0, 0.0)),
+    (4.0, (4.0, 1.0, 200.5), (0.0, 0.0, 0.6)),
+    (9.0, (-2.0, 3.0, 201.0), (0.0, 0.0, -0.6)),
+    (15.0, (0.0, 0.0, 202.5), (0.0, 0.0, 0.0)),
+    (20.0, (2.0, -1.0, 200.5), (0.0, 0.0, 0.3)),
 )
 
 
@@ -325,6 +329,9 @@ def run_demo(
             manifest["esc_telemetry_events"], supervisor.config
         ),
     )
+    simulator.reset(SixDOFState(
+        position_ned=np.asarray(MISSION_TARGETS[0][1], dtype=float),
+    ))
     logs = simulator.run(
         duration, dt, target_provider,
         disturbance_provider=disturbance_provider,
@@ -451,7 +458,13 @@ def main():
         type=Path,
         default=DEFAULT_ACCEPTANCE_SUMMARY,
     )
-    parser.add_argument("--hide-acceptance-badge", action="store_true")
+    badge_group = parser.add_mutually_exclusive_group()
+    badge_group.add_argument("--show-acceptance-badge", action="store_true")
+    badge_group.add_argument(
+        "--hide-acceptance-badge",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     parser.add_argument("--fps", type=int, default=12)
     parser.add_argument("--max-video-frames", type=int, default=240)
     parser.add_argument("--skip-video", action="store_true")
@@ -462,9 +475,9 @@ def main():
     args = parser.parse_args()
     args.output_dir.mkdir(parents=True, exist_ok=True)
     acceptance_badge = (
-        None
-        if args.hide_acceptance_badge
-        else load_acceptance_badge(args.acceptance_summary)
+        load_acceptance_badge(args.acceptance_summary)
+        if args.show_acceptance_badge and not args.hide_acceptance_badge
+        else None
     )
     model_bridge = None
     if not args.disable_model:
@@ -495,12 +508,21 @@ def main():
         "model_device": (
             None if model_bridge is None else str(model_bridge.device)
         ),
+        "model_checkpoint": (
+            None if model_bridge is None else str(args.checkpoint)
+        ),
+        "model_temporal_config": (
+            None if model_bridge is None else str(args.temporal_config)
+        ),
         "offline_acceptance_baseline": acceptance_badge,
     })
 
     json_path = args.output_dir / "six_dof_unified_diagnostics.json"
     csv_path = args.output_dir / "six_dof_unified_diagnostics.csv"
     image_path = args.output_dir / "six_dof_unified_diagnostics.png"
+    detail_image_path = (
+        args.output_dir / "six_dof_unified_diagnostics_detail.png"
+    )
     esc_image_path = args.output_dir / "six_dof_unified_diagnostics_esc_link.png"
     video_path = args.output_dir / "six_dof_unified_diagnostics.mp4"
     save_json(
@@ -516,25 +538,38 @@ def main():
     renderer = SixDOFDemoRenderer(
         frames,
         events,
+        injection_manifest=manifest,
+        view_mode="summary",
         acceptance_badge=acceptance_badge,
     )
     renderer.save_snapshot(image_path)
-    esc_indices = [
-        index for index, frame in enumerate(frames)
-        if frame["ftc"]["untrusted_esc_channels"]
-    ]
-    if esc_indices:
-        renderer.save_snapshot(esc_image_path, index=esc_indices[0])
     if not args.skip_video:
         renderer.save_video(
             video_path, fps=args.fps, max_frames=args.max_video_frames
         )
     renderer.close()
 
+    detail_renderer = SixDOFDemoRenderer(
+        frames,
+        events,
+        injection_manifest=manifest,
+        view_mode="technical",
+        acceptance_badge=acceptance_badge,
+    )
+    detail_renderer.save_snapshot(detail_image_path)
+    esc_indices = [
+        index for index, frame in enumerate(frames)
+        if frame["ftc"]["untrusted_esc_channels"]
+    ]
+    if esc_indices:
+        detail_renderer.save_snapshot(esc_image_path, index=esc_indices[0])
+    detail_renderer.close()
+
     print(json.dumps(summary, indent=2))
     print(f"JSON: {json_path}")
     print(f"CSV: {csv_path}")
     print(f"Image: {image_path}")
+    print(f"Technical detail image: {detail_image_path}")
     if esc_indices:
         print(f"ESC image: {esc_image_path}")
     if not args.skip_video:

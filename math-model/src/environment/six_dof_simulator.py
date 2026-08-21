@@ -246,6 +246,7 @@ class SixDOFSimulator:
             ),
             "target_position_ned": target.position_ned.copy(),
             "target_euler_rpy": target.euler_rpy.copy(),
+            "target_velocity_ned": target.linear_velocity_ned.copy(),
             "guidance_context_id": target.guidance_context_id,
             "position_error_ned": control.position_error_ned.copy(),
             "attitude_error_body": control.attitude_error_body.copy(),

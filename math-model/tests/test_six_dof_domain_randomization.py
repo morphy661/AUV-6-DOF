@@ -13,15 +13,90 @@ for path in (EXAMPLES_ROOT, SRC_ROOT):
         sys.path.insert(0, str(path))
 
 from generate_six_dof_fault_dataset import (
+    DEPTH_BAND_PROBABILITIES,
+    DEPTH_BANDS_M,
+    _depth_band_index_for_mission,
+    _mission_schedule,
     _randomized_dynamics,
     _randomized_thrusters,
     _split_counts,
     _split_for_repetition,
+    _target_provider,
     fixed_split_indices,
 )
 
 
 class SixDOFDomainRandomizationTests(unittest.TestCase):
+    def test_depth_bands_follow_zero_to_300m_focused_mix(self):
+        split_bands = {name: [] for name in ("train", "validation", "test")}
+        for scenario_index in range(13):
+            for repetition in range(20):
+                split = _split_for_repetition(repetition, 20)
+                split_bands[split].append(_depth_band_index_for_mission(
+                    scenario_index,
+                    repetition,
+                    20,
+                ))
+
+        expected_counts = {
+            "train": [45, 64, 55, 18],
+            "validation": [10, 13, 12, 4],
+            "test": [10, 13, 12, 4],
+        }
+        for split, bands in split_bands.items():
+            counts = np.bincount(bands, minlength=len(DEPTH_BANDS_M))
+            self.assertEqual(counts.tolist(), expected_counts[split])
+            self.assertAlmostEqual(
+                float(np.mean(np.asarray(bands) < 3)),
+                0.90,
+                delta=0.015,
+            )
+
+        np.testing.assert_allclose(
+            DEPTH_BAND_PROBABILITIES,
+            [0.25, 0.35, 0.30, 0.10],
+        )
+
+    def test_mission_schedule_stays_inside_selected_depth_band(self):
+        for band_index, (depth_low, depth_high) in enumerate(DEPTH_BANDS_M):
+            plan = _mission_schedule(
+                duration=90.0,
+                rng=np.random.default_rng(100 + band_index),
+                depth_band_index=band_index,
+            )
+            depths = np.array([item[1][2] for item in plan.waypoints])
+
+            self.assertTrue(np.all(depths >= depth_low))
+            self.assertTrue(np.all(depths <= depth_high))
+            self.assertGreaterEqual(plan.cruise_speed_mps, 1.2)
+            self.assertLessEqual(plan.cruise_speed_mps, 1.5)
+            self.assertGreaterEqual(plan.vertical_speed_mps, 0.15)
+            self.assertLessEqual(plan.vertical_speed_mps, 0.35)
+
+    def test_smooth_target_respects_horizontal_and_vertical_speed_limits(self):
+        plan = _mission_schedule(
+            duration=90.0,
+            rng=np.random.default_rng(44),
+            depth_band_index=2,
+        )
+        provider = _target_provider(plan)
+        sample_times = np.linspace(0.0, 90.0, 9001)
+        positions = np.array([
+            provider(time_s, None).position_ned
+            for time_s in sample_times
+        ])
+        velocities = np.diff(positions, axis=0) / np.diff(sample_times)[:, None]
+
+        horizontal_speeds = np.linalg.norm(velocities[:, :2], axis=1)
+        self.assertLessEqual(
+            float(np.max(horizontal_speeds)),
+            plan.cruise_speed_mps + 1e-3,
+        )
+        self.assertLessEqual(
+            float(np.max(np.abs(velocities[:, 2]))),
+            plan.vertical_speed_mps + 1e-3,
+        )
+
     def test_twenty_missions_give_fourteen_three_three_split(self):
         self.assertEqual(
             _split_counts(20),
@@ -32,7 +107,7 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
         self.assertEqual(splits.count("validation"), 3)
         self.assertEqual(splits.count("test"), 3)
 
-    def test_held_out_mass_scale_is_outside_training_range(self):
+    def test_independent_splits_share_broad_deployment_range(self):
         train_dynamics, _ = _randomized_dynamics(
             np.random.default_rng(1), "train"
         )
@@ -40,11 +115,13 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
             np.random.default_rng(1), "test"
         )
 
-        self.assertGreaterEqual(train_dynamics.config.mass, 45.0)
-        self.assertLessEqual(train_dynamics.config.mass, 55.0)
-        self.assertTrue(
-            test_dynamics.config.mass <= 45.0
-            or test_dynamics.config.mass >= 55.0
+        self.assertGreaterEqual(train_dynamics.config.mass, 41.0)
+        self.assertLessEqual(train_dynamics.config.mass, 59.0)
+        self.assertGreaterEqual(test_dynamics.config.mass, 41.0)
+        self.assertLessEqual(test_dynamics.config.mass, 59.0)
+        self.assertEqual(
+            train_dynamics.config.mass,
+            test_dynamics.config.mass,
         )
         self.assertGreater(
             np.min(np.linalg.eigvalsh(test_dynamics.mass_matrix)), 0.0

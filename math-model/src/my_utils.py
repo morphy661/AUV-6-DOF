@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import textwrap
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -989,24 +990,24 @@ def plot_ftc_diagnosis_response(
                 )
 
     # =========================================================
-    # Text box: compact mission report using diagnosis codes
+    # Text box: thesis-readable mission report
     # =========================================================
-    diagnosis_code, evidence_code, recovery_code = get_diagnosis_evidence_recovery_codes(
-        display_ai_diagnosis,
-        display_ai_action
-    )
+    if (
+        fault_time is not None
+        and ai_intervention_time is not None
+        and ai_intervention_time >= fault_time
+    ):
+        confirmation_delay = f"{ai_intervention_time - fault_time:.1f} s"
+    else:
+        confirmation_delay = "Not confirmed"
 
-    # If final diagnosis is normal, avoid showing an old transient reason.
-    if str(display_ai_diagnosis).upper() in ["NO_FAULT", "NORMAL"]:
-        final_reason = "All residuals are within normal thresholds."
-
+    wrapped_action = "\n".join(textwrap.wrap(display_ai_action, width=36))
     info_text = (
         f"[Mission Report]\n"
         f"True Fault: {display_true_fault_name}\n"
         f"Final Diagnosis: {display_ai_diagnosis}\n"
-        f"Diagnosis Code: {diagnosis_code}\n"
-        f"Evidence Code: {evidence_code}\n"
-        f"Recovery Code: {recovery_code}"
+        f"FTC Action:\n{wrapped_action}\n"
+        f"Confirmation Delay: {confirmation_delay}"
     )
 
     axes[0].text(

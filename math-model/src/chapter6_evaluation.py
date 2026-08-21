@@ -482,15 +482,14 @@ def plot_detection_timing(summary, path):
 def plot_success_rates(summary, path):
     labels = [row["fault_type"].replace("THRUSTER_", "").replace("NOISE_INCREASE", "NOISE") for row in summary]
     x = np.arange(len(summary))
-    width = 0.22
+    width = 0.25
     fig, ax = plt.subplots(figsize=(12, 5.8))
     series = [
         ("Correct diagnosis", "diagnosis_success_rate_pct", "#2878B5"),
-        ("Correct recovery", "recovery_action_accuracy_pct", "#D95F02"),
-        ("Safe state", "safe_state_rate_pct", "#3A923A"),
-        ("Overall success", "mission_success_rate_pct", "#6F4E9C"),
+        ("Correct recovery action", "recovery_action_accuracy_pct", "#D95F02"),
+        ("Fixed-horizon safe state", "safe_state_rate_pct", "#3A923A"),
     ]
-    offsets = np.array([-1.5, -0.5, 0.5, 1.5]) * width
+    offsets = np.array([-1.0, 0.0, 1.0]) * width
     for offset, (label, key, color) in zip(offsets, series):
         values = [np.nan if row[key] is None else row[key] for row in summary]
         ax.bar(x + offset, values, width, label=label, color=color)
@@ -498,9 +497,9 @@ def plot_success_rates(summary, path):
     ax.set_ylim(0, 105)
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=25, ha="right")
-    ax.set_title("Diagnosis and fault-tolerant recovery outcomes")
+    ax.set_title("Diagnosis, recovery action, and fixed-horizon observations")
     ax.grid(axis="y", alpha=0.25)
-    ax.legend(ncol=2, loc="lower center")
+    ax.legend(ncol=3, loc="lower center")
     fig.tight_layout()
     fig.savefig(path, dpi=300)
     plt.close(fig)

@@ -29,6 +29,49 @@ GRID = "#294256"
 TARGET = "#d8e060"
 ESTIMATE = "#4db5ff"
 FTC_COLOR = "#b28cff"
+TRUTH_COLOR = "#ff8a65"
+
+
+def active_injected_truth(manifest, time_s):
+    """Return display-only injected events active at ``time_s``.
+
+    The returned truth is presentation/evaluation metadata.  It is deliberately
+    kept outside adapted diagnosis frames so it cannot become FTC or model
+    evidence.
+    """
+
+    if not manifest:
+        return []
+    active = []
+    for event in manifest.get("sensor_events", ()):
+        if event["start_time_s"] <= time_s <= event["end_time_s"]:
+            active.append({
+                "kind": "sensor",
+                "source": str(event["sensor"]).upper(),
+                "mode": str(event["mode"]),
+                "start_time_s": float(event["start_time_s"]),
+                "end_time_s": float(event["end_time_s"]),
+                "magnitude": float(event.get("magnitude", 0.0)),
+            })
+    for event in manifest.get("esc_telemetry_events", ()):
+        if event["start_time_s"] <= time_s <= event["end_time_s"]:
+            active.append({
+                "kind": "esc_link",
+                "source": f"{event['thruster_name']} ESC",
+                "mode": str(event["mode"]),
+                "start_time_s": float(event["start_time_s"]),
+                "end_time_s": float(event["end_time_s"]),
+            })
+    fault = manifest.get("thruster_fault")
+    if fault and time_s >= float(fault["start_time_s"]):
+        active.append({
+            "kind": "thruster",
+            "source": str(fault["thruster_name"]),
+            "mode": str(fault["mode"]),
+            "start_time_s": float(fault["start_time_s"]),
+            "end_time_s": None,
+        })
+    return active
 
 
 def _configure_axis(axis, title=None):
@@ -73,12 +116,20 @@ class SixDOFDemoRenderer:
         frames: Sequence[Mapping],
         events=(),
         *,
+        injection_manifest: Mapping | None = None,
+        view_mode: str = "summary",
         acceptance_badge: Mapping | None = None,
     ):
         self.frames = list(frames)
         if not self.frames:
             raise ValueError("frames cannot be empty")
+        if view_mode not in {"summary", "technical"}:
+            raise ValueError("view_mode must be summary or technical")
         self.events = list(events)
+        self.injection_manifest = (
+            {} if injection_manifest is None else dict(injection_manifest)
+        )
+        self.view_mode = view_mode
         self.acceptance_badge = (
             None if acceptance_badge is None else dict(acceptance_badge)
         )
@@ -90,7 +141,7 @@ class SixDOFDemoRenderer:
         self.spatial_low, self.spatial_high = _limits(combined)
         self.figure = plt.figure(figsize=(12.8, 7.2), facecolor=BACKGROUND)
         grid = self.figure.add_gridspec(
-            12, 16, left=0.045, right=0.975, bottom=0.07, top=0.93,
+            12, 16, left=0.070, right=0.975, bottom=0.07, top=0.93,
             hspace=1.15, wspace=1.0,
         )
         self.motion_axis = self.figure.add_subplot(
@@ -142,7 +193,11 @@ class SixDOFDemoRenderer:
         axis.plot(
             self.positions[: index + 1, 0], self.positions[: index + 1, 1],
             self.positions[: index + 1, 2], color=FOREGROUND, linewidth=2.0,
-            label="Vehicle",
+            label=(
+                "Simulation truth"
+                if self.view_mode == "summary"
+                else "Vehicle"
+            ),
         )
         axis.plot(
             self.estimates[: index + 1, 0], self.estimates[: index + 1, 1],
@@ -173,6 +228,170 @@ class SixDOFDemoRenderer:
                 *np.rad2deg(rpy)
             ),
             transform=axis.transAxes, color=FOREGROUND, fontsize=9,
+        )
+
+    def _truth_text(self, index):
+        active = active_injected_truth(
+            self.injection_manifest, float(self.times[index])
+        )
+        if not active:
+            return active, "NORMAL | no active injected anomaly"
+        labels = [
+            (
+                f"{item['source']}: {item['mode'].replace('_', ' ').upper()} "
+                f"@ {item['start_time_s']:.2f} s"
+            )
+            for item in active
+        ]
+        return active, " | ".join(labels)
+
+    @staticmethod
+    def _primary_diagnosis(frame):
+        ftc = frame["ftc"]
+        target = ftc.get("target_thruster")
+        if target:
+            return (
+                f"{target}: PHYSICAL FAULT CONFIRMED",
+                TIER_COLORS["confirmed"],
+            )
+        untrusted = tuple(ftc.get("untrusted_esc_channels", ()))
+        if untrusted:
+            return (
+                f"{', '.join(untrusted)} ESC: LINK ANOMALY / LOG ONLY",
+                TIER_COLORS["log_only"],
+            )
+        tier_rank = {
+            "normal": 0, "log_only": 1, "possible": 2, "confirmed": 3,
+        }
+        sensor_name, sensor_card = max(
+            frame["sensors"].items(),
+            key=lambda item: tier_rank.get(item[1]["tier"], 0),
+        )
+        tier = sensor_card["tier"]
+        if tier != "normal":
+            return (
+                f"{sensor_name.upper()}: {tier.replace('_', ' ').upper()}",
+                TIER_COLORS[tier],
+            )
+        return "NORMAL | no actionable fault", TIER_COLORS["normal"]
+
+    def _comparison_text(self, index, active):
+        frame = self.frames[index]
+        if not active:
+            if frame["overall_tier"] == "normal":
+                return "NO ACTIVE INJECTION", TIER_COLORS["normal"]
+            return "POST-EVENT MONITORING", TIER_COLORS["log_only"]
+        event = active[-1]
+        if event["kind"] == "thruster":
+            if frame["ftc"].get("target_thruster") == event["source"]:
+                detected = [
+                    float(candidate["time_s"])
+                    for candidate in self.frames
+                    if candidate["ftc"].get("target_thruster")
+                    == event["source"]
+                ]
+                delay = min(detected) - float(event["start_time_s"])
+                return (
+                    f"MATCH / CORRECT | confirmation delay {delay:.2f} s",
+                    TIER_COLORS["normal"],
+                )
+            return "PENDING | collecting causal evidence", TIER_COLORS["possible"]
+        if event["kind"] == "esc_link":
+            thruster = event["source"].split()[0]
+            untrusted = frame["ftc"].get("untrusted_esc_channels", ())
+            if thruster in untrusted and not frame["ftc"].get("target_thruster"):
+                return (
+                    "MATCH / CORRECT | link only, no physical isolation",
+                    TIER_COLORS["normal"],
+                )
+            return "PENDING | checking link state", TIER_COLORS["possible"]
+        sensor = str(event["source"]).lower()
+        tier = frame["sensors"][sensor]["tier"]
+        if tier != "normal":
+            return (
+                f"OBSERVED | response tier {tier.replace('_', ' ')}",
+                TIER_COLORS.get(tier, MUTED),
+            )
+        return "MONITORING | no decision yet", TIER_COLORS["possible"]
+
+    def _draw_summary_scenario(self, index):
+        axis = self.sensor_axis
+        axis.clear()
+        _configure_axis(axis, "Scenario")
+        axis.axis("off")
+        frame = self.frames[index]
+        depth = float(frame["pose"]["position_ned_m"][2])
+        target_depth = float(frame["pose"]["target_position_ned_m"][2])
+        initial_depth = float(self.positions[0, 2])
+        mode = str(
+            self.injection_manifest.get("injection_mode", "unspecified")
+        ).upper()
+        lines = (
+            f"{initial_depth:.0f} m local-depth replay",
+            f"Mission time   {self.times[index]:05.2f} / {self.times[-1]:.2f} s",
+            f"Depth          {depth:7.2f} m   | target {target_depth:7.2f} m",
+            f"Injection      {mode}   | environmental disturbance ON",
+            "Simulation truth is display-only; diagnosis remains causal.",
+        )
+        for row, line in enumerate(lines):
+            axis.text(
+                0.02, 0.88 - 0.18 * row, line,
+                color=FOREGROUND if row < 4 else MUTED,
+                fontsize=9.4 if row == 0 else 8.3,
+                fontweight="bold" if row == 0 else "normal",
+                transform=axis.transAxes, va="top",
+            )
+
+    def _draw_summary_comparison(self, index):
+        axis = self.thruster_axis
+        axis.clear()
+        _configure_axis(axis, "Injected truth vs system output")
+        axis.axis("off")
+        active, truth_text = self._truth_text(index)
+        diagnosis_text, diagnosis_color = self._primary_diagnosis(
+            self.frames[index]
+        )
+        comparison_text, comparison_color = self._comparison_text(
+            index, active
+        )
+        rows = (
+            ("GROUND TRUTH", truth_text, TRUTH_COLOR, 0.88),
+            ("DIAGNOSIS", diagnosis_text, diagnosis_color, 0.55),
+            ("COMPARISON", comparison_text, comparison_color, 0.22),
+        )
+        for label, value, color, y in rows:
+            axis.text(
+                0.02, y, label, color=MUTED, fontsize=7.8,
+                transform=axis.transAxes, va="top",
+            )
+            axis.text(
+                0.02, y - 0.12, value, color=color, fontsize=8.8,
+                fontweight="bold", transform=axis.transAxes, va="top",
+            )
+
+    def _draw_summary_ftc(self, index):
+        axis = self.status_axis
+        axis.clear()
+        _configure_axis(axis, "Fault-tolerant control")
+        axis.axis("off")
+        frame = self.frames[index]
+        ftc = frame["ftc"]
+        color = TIER_COLORS[ftc["tier"]]
+        target = ftc.get("target_thruster") or "none"
+        axis.text(0.02, 0.82, "Action", color=MUTED, fontsize=8,
+                  transform=axis.transAxes)
+        axis.text(
+            0.20, 0.82, ftc["action"].replace("_", " ").upper(),
+            color=color, fontsize=9.5, fontweight="bold",
+            transform=axis.transAxes,
+        )
+        axis.text(0.02, 0.50, "Target", color=MUTED, fontsize=8,
+                  transform=axis.transAxes)
+        axis.text(0.20, 0.50, target, color=FOREGROUND, fontsize=9.5,
+                  fontweight="bold", transform=axis.transAxes)
+        axis.text(
+            0.02, 0.18, "Rule FTC is authoritative; model output is advisory only.",
+            color=MUTED, fontsize=7.8, transform=axis.transAxes,
         )
 
     def _draw_sensors(self, index):
@@ -317,6 +536,61 @@ class SixDOFDemoRenderer:
                 color=event_color, fontsize=7.5, va="top",
             )
 
+    def _truth_intervals(self):
+        intervals = []
+        for event in self.injection_manifest.get("sensor_events", ()):
+            intervals.append((
+                float(event["start_time_s"]),
+                float(event["end_time_s"]),
+                str(event["sensor"]).upper(),
+            ))
+        for event in self.injection_manifest.get("esc_telemetry_events", ()):
+            intervals.append((
+                float(event["start_time_s"]),
+                float(event["end_time_s"]),
+                f"{event['thruster_name']} link",
+            ))
+        fault = self.injection_manifest.get("thruster_fault")
+        if fault:
+            intervals.append((
+                float(fault["start_time_s"]),
+                float(self.times[-1]),
+                f"{fault['thruster_name']} {str(fault['mode']).replace('_', ' ')}",
+            ))
+        return intervals
+
+    def _draw_summary_timeline(self, index):
+        axis = self.timeline_axis
+        axis.clear()
+        _configure_axis(axis, "Injected truth strip and causal diagnosis tier")
+        tier_value = {"normal": 0, "log_only": 1, "possible": 2, "confirmed": 3}
+        values = [tier_value[frame["overall_tier"]] for frame in self.frames]
+        axis.step(self.times, values, where="post", color=FTC_COLOR, linewidth=1.8)
+        for start, end, label in self._truth_intervals():
+            width = max(end - start, 0.03)
+            axis.broken_barh(
+                [(start, width)], (-0.86, 0.42),
+                facecolors=TRUTH_COLOR, alpha=0.75,
+            )
+            rotation = 90 if width < 0.6 else 0
+            x = start + width / 2.0
+            axis.text(
+                x, -0.65, label, color=FOREGROUND, fontsize=6.1,
+                ha="center", va="center", rotation=rotation,
+            )
+        axis.axvline(self.times[index], color=FOREGROUND, linewidth=1.3)
+        axis.set_xlim(self.times[0], self.times[-1])
+        axis.set_ylim(-1.0, 3.2)
+        axis.set_yticks((0, 1, 2, 3), ("normal", "log", "possible", "confirmed"))
+        axis.set_xlabel("Mission time (s)  |  orange strip = injected truth",
+                        color=MUTED, fontsize=8)
+        axis.grid(color=GRID, alpha=0.45, linewidth=0.6)
+        axis.text(
+            0.99, 0.92, f"t = {self.times[index]:05.2f} s",
+            transform=axis.transAxes, ha="right", va="top",
+            color=FOREGROUND, fontsize=10,
+        )
+
     def _draw_timeline(self, index):
         axis = self.timeline_axis
         axis.clear()
@@ -345,10 +619,16 @@ class SixDOFDemoRenderer:
 
     def draw(self, index):
         self._draw_motion(index)
-        self._draw_sensors(index)
-        self._draw_thrusters(index)
-        self._draw_status(index)
-        self._draw_timeline(index)
+        if self.view_mode == "summary":
+            self._draw_summary_scenario(index)
+            self._draw_summary_comparison(index)
+            self._draw_summary_ftc(index)
+            self._draw_summary_timeline(index)
+        else:
+            self._draw_sensors(index)
+            self._draw_thrusters(index)
+            self._draw_status(index)
+            self._draw_timeline(index)
         return []
 
     @staticmethod

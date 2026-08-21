@@ -24,6 +24,15 @@ def _clip_by_axis(values, limits):
     return np.clip(values, -limits, limits)
 
 
+def _clip_linear_velocity(values, axis_limits, horizontal_speed_limit):
+    """Apply per-axis limits and a true horizontal-vector speed limit."""
+    clipped = _clip_by_axis(values, axis_limits)
+    horizontal_norm = np.linalg.norm(clipped[:2])
+    if horizontal_norm > horizontal_speed_limit:
+        clipped[:2] *= horizontal_speed_limit / horizontal_norm
+    return clipped
+
+
 def _attitude_error_body(current_quaternion, target_quaternion):
     """Return the shortest body-frame rotation vector to the target."""
     current_conjugate = np.asarray(current_quaternion, dtype=float).copy()
@@ -44,10 +53,18 @@ class PoseTarget:
     position_ned: np.ndarray
     euler_rpy: np.ndarray = field(default_factory=lambda: np.zeros(3))
     guidance_context_id: int = 0
+    linear_velocity_ned: np.ndarray = field(
+        default_factory=lambda: np.zeros(3)
+    )
 
     def __post_init__(self):
         self.position_ned = _vector(self.position_ned, 3, "position_ned")
         self.euler_rpy = _vector(self.euler_rpy, 3, "euler_rpy")
+        self.linear_velocity_ned = _vector(
+            self.linear_velocity_ned,
+            3,
+            "linear_velocity_ned",
+        )
         context_id = int(self.guidance_context_id)
         if context_id != self.guidance_context_id or context_id < 0:
             raise ValueError("guidance_context_id must be a non-negative integer")
@@ -65,20 +82,27 @@ class SixDOFControllerConfig:
     velocity_kp: np.ndarray = field(
         default_factory=lambda: np.array([65.0, 75.0, 85.0])
     )
+    linear_damping_feedforward: np.ndarray = field(
+        default_factory=lambda: 0.65 * np.array([15.0, 30.0, 35.0])
+    )
+    quadratic_damping_feedforward: np.ndarray = field(
+        default_factory=lambda: 0.65 * np.array([8.0, 18.0, 22.0])
+    )
     attitude_kp: np.ndarray = field(
-        default_factory=lambda: np.array([2.0, 2.0, 1.8])
+        default_factory=lambda: np.array([2.0, 3.0, 1.8])
     )
     attitude_ki: np.ndarray = field(
         default_factory=lambda: np.array([0.02, 0.02, 0.015])
     )
     angular_velocity_kp: np.ndarray = field(
-        default_factory=lambda: np.array([14.0, 18.0, 18.0])
+        default_factory=lambda: np.array([14.0, 30.0, 18.0])
     )
     max_velocity_ned: np.ndarray = field(
-        default_factory=lambda: np.array([1.0, 1.0, 0.65])
+        default_factory=lambda: np.array([1.5, 1.5, 0.35])
     )
+    max_horizontal_speed: float = 1.5
     max_angular_velocity: np.ndarray = field(
-        default_factory=lambda: np.array([0.5, 0.5, 0.65])
+        default_factory=lambda: np.array([0.5, 0.7, 0.65])
     )
     position_integral_limit: np.ndarray = field(
         default_factory=lambda: np.array([5.0, 5.0, 4.0])
@@ -88,10 +112,13 @@ class SixDOFControllerConfig:
     )
 
     def __post_init__(self):
+        self.max_horizontal_speed = float(self.max_horizontal_speed)
         vector_fields = (
             "position_kp",
             "position_ki",
             "velocity_kp",
+            "linear_damping_feedforward",
+            "quadratic_damping_feedforward",
             "attitude_kp",
             "attitude_ki",
             "angular_velocity_kp",
@@ -107,6 +134,11 @@ class SixDOFControllerConfig:
             setattr(self, name, value)
         if np.any(self.max_velocity_ned <= 0):
             raise ValueError("max_velocity_ned must be positive")
+        if (
+            not np.isfinite(self.max_horizontal_speed)
+            or self.max_horizontal_speed <= 0
+        ):
+            raise ValueError("max_horizontal_speed must be finite and positive")
         if np.any(self.max_angular_velocity <= 0):
             raise ValueError("max_angular_velocity must be positive")
 
@@ -143,16 +175,28 @@ class CascadedSixDOFController:
             self.position_error_integral + position_error * dt,
             cfg.position_integral_limit,
         )
-        desired_velocity_ned = _clip_by_axis(
-            cfg.position_kp * position_error
+        desired_velocity_ned = _clip_linear_velocity(
+            target.linear_velocity_ned
+            + cfg.position_kp * position_error
             + cfg.position_ki * self.position_error_integral,
             cfg.max_velocity_ned,
+            cfg.max_horizontal_speed,
         )
 
         current_velocity_ned = state.rotation_nb @ state.body_velocity[:3]
         velocity_error_ned = desired_velocity_ned - current_velocity_ned
-        desired_force_ned = cfg.velocity_kp * velocity_error_ned
-        desired_force_body = state.rotation_nb.T @ desired_force_ned
+        feedback_force_ned = cfg.velocity_kp * velocity_error_ned
+        desired_velocity_body = state.rotation_nb.T @ desired_velocity_ned
+        damping_feedforward_body = (
+            cfg.linear_damping_feedforward * desired_velocity_body
+            + cfg.quadratic_damping_feedforward
+            * np.abs(desired_velocity_body)
+            * desired_velocity_body
+        )
+        desired_force_body = (
+            state.rotation_nb.T @ feedback_force_ned
+            + damping_feedforward_body
+        )
 
         target_quaternion = euler_to_quaternion(*target.euler_rpy)
         attitude_error = _attitude_error_body(

@@ -1,0 +1,10 @@
+{
+  "enter_fault_probability": 0.75,
+  "no_output_confirmation_s": 0.0,
+  "thrust_loss_confirmation_s": 1.25,
+  "exit_normal_probability": 0.6,
+  "recovery_confirmation_s": 2.5,
+  "probability_time_constant_s": 0.0,
+  "location_probability_threshold": 0.0,
+  "location_confirmation_s": 0.0
+}
