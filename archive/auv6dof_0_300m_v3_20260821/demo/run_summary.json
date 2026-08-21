@@ -1,0 +1,336 @@
+{
+  "demo": "six_dof_unified_diagnostics",
+  "diagnostic_contract": "Sensor and thruster tiers use causal onboard fields only; injected truth is excluded.",
+  "summary": {
+    "duration_s": 22.000000000000178,
+    "frame_count": 440,
+    "event_count": 30,
+    "overall_tier_frame_counts": {
+      "normal": 50,
+      "log_only": 71,
+      "possible": 220,
+      "confirmed": 99
+    },
+    "confirmed_sensors": [
+      "imu"
+    ],
+    "possible_sensors": [
+      "dvl",
+      "imu"
+    ],
+    "targeted_thrusters": [
+      "V1"
+    ],
+    "model_candidate_thrusters": [
+      "H3",
+      "V1"
+    ],
+    "esc_communication_anomaly_thrusters": [
+      "V2"
+    ],
+    "esc_communication_anomaly_frame_count": 21,
+    "model_advisory_frame_count": 4,
+    "ftc_actions": [
+      "log_only",
+      "normal_control",
+      "safe_hold_or_abort",
+      "targeted_reallocation"
+    ],
+    "injection_mode": "fixed",
+    "injection_seed": 20260717,
+    "injected_thruster": "V1",
+    "injected_thruster_mode": "no_output",
+    "model_enabled": true,
+    "model_device": "cuda",
+    "model_checkpoint": "../model/best_model.pth",
+    "model_temporal_config": "../policy/temporal_decision_config.json",
+    "offline_acceptance_baseline": null
+  },
+  "injection_manifest": {
+    "injection_mode": "fixed",
+    "seed": 20260717,
+    "sensor_events": [
+      {
+        "event_id": "depth_weak_spike",
+        "sensor": "depth",
+        "mode": "spike",
+        "start_time_s": 3.0,
+        "end_time_s": 3.5,
+        "channels": [],
+        "magnitude": 0.3
+      },
+      {
+        "event_id": "dvl_bias",
+        "sensor": "dvl",
+        "mode": "bias",
+        "start_time_s": 5.0,
+        "end_time_s": 11.0,
+        "channels": [
+          0
+        ],
+        "magnitude": 0.3
+      },
+      {
+        "event_id": "imu_dropout_1",
+        "sensor": "imu",
+        "mode": "unavailable",
+        "start_time_s": 12.0,
+        "end_time_s": 12.15,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "event_id": "imu_dropout_2",
+        "sensor": "imu",
+        "mode": "unavailable",
+        "start_time_s": 13.0,
+        "end_time_s": 13.15,
+        "channels": [],
+        "magnitude": 0.0
+      },
+      {
+        "event_id": "imu_dropout_3",
+        "sensor": "imu",
+        "mode": "unavailable",
+        "start_time_s": 14.0,
+        "end_time_s": 14.15,
+        "channels": [],
+        "magnitude": 0.0
+      }
+    ],
+    "esc_telemetry_events": [
+      {
+        "event_id": "v2_esc_packet_loss",
+        "thruster_name": "V2",
+        "mode": "continuous_packet_loss",
+        "start_time_s": 15.35,
+        "end_time_s": 16.35
+      }
+    ],
+    "thruster_fault": {
+      "thruster_name": "V1",
+      "mode": "no_output",
+      "start_time_s": 17.0,
+      "thrust_efficiency": 0.45
+    }
+  },
+  "events": [
+    {
+      "time_s": 2.549999999999999,
+      "category": "sensor",
+      "source": "depth",
+      "level": "log_only",
+      "message": "DEPTH: possible weak spike or bias (log_only)"
+    },
+    {
+      "time_s": 4.099999999999993,
+      "category": "sensor",
+      "source": "imu",
+      "level": "log_only",
+      "message": "IMU: possible weak spike or bias (log_only)"
+    },
+    {
+      "time_s": 5.04999999999999,
+      "category": "sensor",
+      "source": "dvl",
+      "level": "log_only",
+      "message": "DVL: possible weak spike or bias (log_only)"
+    },
+    {
+      "time_s": 5.599999999999988,
+      "category": "sensor",
+      "source": "dvl",
+      "level": "possible",
+      "message": "DVL: possible bias or drift (possible)"
+    },
+    {
+      "time_s": 6.149999999999986,
+      "category": "sensor",
+      "source": "depth",
+      "level": "normal",
+      "message": "DEPTH returned to normal"
+    },
+    {
+      "time_s": 7.149999999999983,
+      "category": "sensor",
+      "source": "imu",
+      "level": "normal",
+      "message": "IMU returned to normal"
+    },
+    {
+      "time_s": 9.099999999999994,
+      "category": "sensor",
+      "source": "imu",
+      "level": "log_only",
+      "message": "IMU: possible weak spike or bias (log_only)"
+    },
+    {
+      "time_s": 11.000000000000021,
+      "category": "sensor",
+      "source": "dvl",
+      "level": "log_only",
+      "message": "DVL: possible weak spike or bias (log_only)"
+    },
+    {
+      "time_s": 11.500000000000028,
+      "category": "sensor",
+      "source": "dvl",
+      "level": "possible",
+      "message": "DVL: possible bias or drift (possible)"
+    },
+    {
+      "time_s": 12.000000000000036,
+      "category": "sensor",
+      "source": "imu",
+      "level": "confirmed",
+      "message": "IMU: unavailable (confirmed)"
+    },
+    {
+      "time_s": 12.000000000000036,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "confirmed",
+      "message": "FTC: safe hold or abort"
+    },
+    {
+      "time_s": 12.150000000000038,
+      "category": "sensor",
+      "source": "imu",
+      "level": "normal",
+      "message": "IMU returned to normal"
+    },
+    {
+      "time_s": 12.150000000000038,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "normal",
+      "message": "FTC: normal control"
+    },
+    {
+      "time_s": 13.00000000000005,
+      "category": "sensor",
+      "source": "imu",
+      "level": "confirmed",
+      "message": "IMU: unavailable (confirmed)"
+    },
+    {
+      "time_s": 13.00000000000005,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "confirmed",
+      "message": "FTC: safe hold or abort"
+    },
+    {
+      "time_s": 13.150000000000052,
+      "category": "sensor",
+      "source": "imu",
+      "level": "possible",
+      "message": "IMU: possible intermittent unavailability (possible)"
+    },
+    {
+      "time_s": 13.150000000000052,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "normal",
+      "message": "FTC: normal control"
+    },
+    {
+      "time_s": 14.000000000000064,
+      "category": "sensor",
+      "source": "imu",
+      "level": "confirmed",
+      "message": "IMU: unavailable (confirmed)"
+    },
+    {
+      "time_s": 14.000000000000064,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "confirmed",
+      "message": "FTC: safe hold or abort"
+    },
+    {
+      "time_s": 14.150000000000066,
+      "category": "sensor",
+      "source": "imu",
+      "level": "possible",
+      "message": "IMU: possible intermittent unavailability (possible)"
+    },
+    {
+      "time_s": 14.150000000000066,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "normal",
+      "message": "FTC: normal control"
+    },
+    {
+      "time_s": 14.950000000000077,
+      "category": "sensor",
+      "source": "dvl",
+      "level": "normal",
+      "message": "DVL returned to normal"
+    },
+    {
+      "time_s": 15.350000000000083,
+      "category": "thruster",
+      "source": "V2",
+      "level": "log_only",
+      "message": "V2: ESC telemetry unavailable (log_only)"
+    },
+    {
+      "time_s": 16.400000000000098,
+      "category": "thruster",
+      "source": "V2",
+      "level": "normal",
+      "message": "V2 evidence cleared"
+    },
+    {
+      "time_s": 17.050000000000107,
+      "category": "thruster",
+      "source": "V1",
+      "level": "possible",
+      "message": "V1: no-output evidence (possible)"
+    },
+    {
+      "time_s": 17.550000000000114,
+      "category": "thruster",
+      "source": "V1",
+      "level": "confirmed",
+      "message": "V1: targeted / isolated (confirmed)"
+    },
+    {
+      "time_s": 17.550000000000114,
+      "category": "ftc",
+      "source": "supervisor",
+      "level": "confirmed",
+      "message": "FTC: targeted reallocation -> V1"
+    },
+    {
+      "time_s": 19.850000000000147,
+      "category": "maintenance",
+      "source": "bilstm_attention",
+      "level": "possible",
+      "message": "Model advice: possible no output / vertical group"
+    },
+    {
+      "time_s": 20.05000000000015,
+      "category": "maintenance",
+      "source": "bilstm_attention",
+      "level": "normal",
+      "message": "Model maintenance advice returned to normal"
+    },
+    {
+      "time_s": 22.000000000000178,
+      "category": "sensor",
+      "source": "depth",
+      "level": "log_only",
+      "message": "DEPTH: possible weak spike or bias (log_only)"
+    }
+  ],
+  "raw_replay_source": {
+    "repository_relative_path": "math-model/results/six_dof_unified_diagnostics_200m_presentation_v1_20260808/six_dof_unified_diagnostics.json",
+    "size_bytes": 3412860,
+    "sha256": "3511D737196676CE0424027CE5A232B7144BFE34EF1258BD3B3A92F1FD142A4F",
+    "included_in_archive": false,
+    "reason": "Full frame history is reproducible and omitted to avoid duplication."
+  }
+}

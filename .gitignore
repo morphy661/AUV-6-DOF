@@ -1,6 +1,7 @@
 .idea/
 .vscode/
 .venv/
+.pytest_cache/
 __pycache__/
 *.pyc
 *.pyo
@@ -15,3 +16,7 @@ depth-sensor-fault-detection/depth_fault_detection/results/* - *.pth
 depth-sensor-fault-detection/depth_fault_detection/results/six_dof_multitask*/
 depth-sensor-fault-detection/depth_fault_detection/results/six_dof_domain_randomized*/
 depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry*/
+
+# Reproducible raw runs; curated evidence is kept under archive/.
+math-model/results/six_dof_unified_diagnostics_0_300m_focus_v3_*/
+math-model/results/six_dof_unified_diagnostics_200m_presentation_v1_*/

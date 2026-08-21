@@ -1,0 +1,27 @@
+branch: main
+head: 4867c2ce41095c87cace45ac55d32e30b8f4a159
+upstream: auv6dof/main
+
+Working tree at archive time:
+ M .gitignore
+ M README.md
+ M depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py
+ M math-model/examples/demo_six_dof_unified_diagnostics.py
+ M math-model/examples/generate_six_dof_fault_dataset.py
+ M math-model/results/six_dof_unified_diagnostics_demo/six_dof_unified_diagnostics.json
+ M math-model/results/six_dof_unified_diagnostics_demo/six_dof_unified_diagnostics.mp4
+ M math-model/src/actuators/thruster_array.py
+ M math-model/src/chapter6_evaluation.py
+ M math-model/src/environment/six_dof_simulator.py
+ M math-model/src/my_utils.py
+ M math-model/src/presentation/six_dof_demo_renderer.py
+ M math-model/src/simple_control/six_dof_controller.py
+ D math-model/src/test_thruster_motor_model.py
+ D math-model/src/utils/teset.py
+ M math-model/tests/test_six_dof_control.py
+ M math-model/tests/test_six_dof_demo_scenario.py
+ M math-model/tests/test_six_dof_domain_randomization.py
+?? archive/
+?? docs/six_dof_0_300m_focus_v3_results.md
+?? math-model/results/six_dof_unified_diagnostics_0_300m_focus_v3_20260805/
+?? math-model/results/six_dof_unified_diagnostics_200m_presentation_v1_20260808/

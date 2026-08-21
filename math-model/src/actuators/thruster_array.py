@@ -205,13 +205,13 @@ def default_six_thruster_array(
     length=1.2,
     width=0.6,
     horizontal_force_limit=40.0,
-    vertical_force_limit=35.0,
+    vertical_force_limit=40.0,
 ):
     """Return a KYUBIC-style four-horizontal/two-vertical AUV layout.
 
-    The actively allocated axes are X, Y, Z, and N (surge, sway, heave, yaw).
-    Roll and pitch remain part of the six-DOF dynamics but are stabilised by
-    hydrostatic restoring moments instead of direct control allocation.
+    The actively allocated axes are X, Y, Z, M, and N (surge, sway, heave,
+    pitch, yaw).  Differential V1/V2 thrust controls pitch.  Roll remains
+    passively stabilised by hydrostatic restoring moments.
     """
     half_length = float(length) / 2.0
     half_width = float(width) / 2.0
@@ -263,5 +263,5 @@ def default_six_thruster_array(
 
     return ThrusterArray(
         thrusters,
-        wrench_weights=np.array([1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
+        wrench_weights=np.array([1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
     )

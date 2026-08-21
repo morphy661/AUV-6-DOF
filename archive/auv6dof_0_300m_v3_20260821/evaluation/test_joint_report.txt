@@ -1,0 +1,19 @@
+                precision    recall  f1-score   support
+
+        Normal     0.8911    0.8739    0.8824      1348
+  H1 No Output     0.9839    0.9839    0.9839       124
+  H2 No Output     1.0000    1.0000    1.0000       140
+  H3 No Output     1.0000    1.0000    1.0000        99
+  H4 No Output     1.0000    1.0000    1.0000       133
+  V1 No Output     1.0000    0.9823    0.9911       113
+  V2 No Output     1.0000    0.9921    0.9960       127
+H1 Thrust Loss     0.7168    0.6585    0.6864       123
+H2 Thrust Loss     0.6480    0.9431    0.7682       123
+H3 Thrust Loss     0.3830    0.2857    0.3273       126
+H4 Thrust Loss     0.6476    0.5763    0.6099       118
+V1 Thrust Loss     0.5859    0.5421    0.5631       107
+V2 Thrust Loss     0.4966    0.6606    0.5669       109
+
+      accuracy                         0.8387      2790
+     macro avg     0.7964    0.8076    0.7981      2790
+  weighted avg     0.8403    0.8387    0.8373      2790

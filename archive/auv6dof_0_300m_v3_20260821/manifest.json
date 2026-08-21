@@ -1,0 +1,179 @@
+{
+  "archive_id": "auv6dof_0_300m_v3_20260821",
+  "created_at_jst": "2026-08-21T17:56:44+09:00",
+  "status": "stage_freeze_not_locked_acceptance",
+  "project": "AUV 6-DOF",
+  "base_git_commit": "4867c2ce41095c87cace45ac55d32e30b8f4a159",
+  "source_branch": "main",
+  "source_upstream": "auv6dof/main",
+  "dataset": {
+    "repository_relative_path": "depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth",
+    "included_in_archive": false,
+    "reason": "Large reproducible dataset; excluded from Git archive.",
+    "size_bytes": 813858561,
+    "sha256": "209517014A9E9AA192EFEB92633FA7EEB1DF7382F58ECA899ECD1A4749549398",
+    "missions": 260,
+    "windows": 18633,
+    "window_shape": [
+      100,
+      109
+    ],
+    "mission_split": {
+      "train": 182,
+      "validation": 39,
+      "test": 39
+    }
+  },
+  "included_files": [
+    {
+      "path": "demo/detail.png",
+      "size_bytes": 314287,
+      "sha256": "A98CC978A6B019F9198242655864BCA16864C59E85B1E2514CFC05FDE1D05184",
+      "purpose": "representative_presentation_evidence"
+    },
+    {
+      "path": "demo/overview.png",
+      "size_bytes": 311276,
+      "sha256": "0790EEEAC1D6E0088A3124EFF51A3220B8D5858310150CA77367B7D84578A852",
+      "purpose": "representative_presentation_evidence"
+    },
+    {
+      "path": "demo/presentation_200m.mp4",
+      "size_bytes": 921400,
+      "sha256": "9471BE3D1B2C19027882F7E8713F3D2CF08D467A8CF70E8C7DE9F016022098F6",
+      "purpose": "representative_presentation_evidence"
+    },
+    {
+      "path": "demo/run_summary.json",
+      "size_bytes": 9031,
+      "sha256": "53DAB7D1B3912F2F1C162C3E51E4431258F81B89F462B983633DF483026D08D0",
+      "purpose": "representative_presentation_evidence"
+    },
+    {
+      "path": "demo/timeseries.csv",
+      "size_bytes": 148341,
+      "sha256": "8B982BDEAD36568FAEF7439DCD5E17F4CEA315B4E56B6EE4E0D080BEFD8A6993",
+      "purpose": "representative_presentation_evidence"
+    },
+    {
+      "path": "evaluation/results_summary.md",
+      "size_bytes": 3523,
+      "sha256": "023CAC2D286260915EE265AE591630EA09A9A14B807D5DC65591C80EB0E5795D",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_joint_confusion.npy",
+      "size_bytes": 1480,
+      "sha256": "14B1E12D85C2388C52070B771D9A61C5088221F5562950E589C6007EDC1A7657",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_joint_report.txt",
+      "size_bytes": 973,
+      "sha256": "D21FB124EA69FD8832A0213B4D3F01DD0EE3DA2F8691E575390024A4EF01E92D",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_location_confusion.npy",
+      "size_bytes": 520,
+      "sha256": "AECCB1DCE7416DA68B99C64AA5CB9970E2504519C32ED6F7DBC3F20ABD9658D9",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_location_report.txt",
+      "size_bytes": 609,
+      "sha256": "0A1C946B5D7EF20280CF9660864F74B62CBEF4A8CDAD8625C77D202B4AAF5776",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_mode_confusion.npy",
+      "size_bytes": 200,
+      "sha256": "B47F87FB2153D14265031381C48D45E6B80C8F2BF6B140AA56576416130DAFA5",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_mode_report.txt",
+      "size_bytes": 389,
+      "sha256": "B7ABFA684FD12CDBF600B6C4203E669F87CF45DDC3E261EE86C07AE30E4A3E42",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/test_summary.json",
+      "size_bytes": 3039,
+      "sha256": "390F338D56D4B4E84E94425C4061A1E6855E841C3DA052F6A9234BB5C4BC8F74",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "evaluation/training_history.csv",
+      "size_bytes": 2687,
+      "sha256": "650ABFE4FA82000F6BFBDD1FAC2CB1B0AF5C5498278CB4E84E9428CE0B188983",
+      "purpose": "independent_test_evidence"
+    },
+    {
+      "path": "model/best_model.pth",
+      "size_bytes": 3661026,
+      "sha256": "26C88C14F4E8D5E9C93ACD7383A50EC78244CD5B150D9208C6953173D843D667",
+      "purpose": "deployable_model"
+    },
+    {
+      "path": "model/mean.npy",
+      "size_bytes": 1000,
+      "sha256": "46C942E1433183B2B401651503CDF14589EED341799DD0BB7ED7E46D590701AD",
+      "purpose": "deployable_model"
+    },
+    {
+      "path": "model/std.npy",
+      "size_bytes": 1000,
+      "sha256": "7CADEF0A8B5EE5D3BD115DA528B30953351B4519EC65F117E67478D78E6B55FF",
+      "purpose": "deployable_model"
+    },
+    {
+      "path": "policy/maintenance_event_log.json",
+      "size_bytes": 618459,
+      "sha256": "0EE1F062BAC9293A336CFD5611B96C40701C41CDCBD46192387BF653829797B7",
+      "purpose": "temporal_and_maintenance_policy"
+    },
+    {
+      "path": "policy/maintenance_ticket_config.json",
+      "size_bytes": 417,
+      "sha256": "1CC5689CD15EC5F83058FA817E5699182DFC7983AF7B47F016C90EB827A23EB3",
+      "purpose": "temporal_and_maintenance_policy"
+    },
+    {
+      "path": "policy/temporal_decision_config.json",
+      "size_bytes": 300,
+      "sha256": "0F5380921B7526F03D32D916BEE459D959F6DEB8CD69E459DFE3388B46BD07BA",
+      "purpose": "temporal_and_maintenance_policy"
+    },
+    {
+      "path": "policy/temporal_decision_summary.json",
+      "size_bytes": 30790,
+      "sha256": "48ED11615A11BD1E1C06413D3A71EBA3082473090E59164E87F794A87D0B38EE",
+      "purpose": "temporal_and_maintenance_policy"
+    },
+    {
+      "path": "README.md",
+      "size_bytes": 3644,
+      "sha256": "D3D84A4087A03285AD6819C2372CD73EA98889869B732F934DDF393C03146DE1",
+      "purpose": "archive_documentation"
+    },
+    {
+      "path": "source/dataset_record.json",
+      "size_bytes": 545,
+      "sha256": "74C4F13F21CE9C5607E44BC5698F280E0F3E4BB41C96E1542520355506E1FD31",
+      "purpose": "reproducibility_and_provenance"
+    },
+    {
+      "path": "source/git_state.txt",
+      "size_bytes": 1274,
+      "sha256": "554A1925493D6C015507DAED9F3DBEAE344F9D338C4FE0154E4733E06C38BF1F",
+      "purpose": "reproducibility_and_provenance"
+    },
+    {
+      "path": "source/working_tree_code_changes.patch",
+      "size_bytes": 88990,
+      "sha256": "17D5864D80EE166A3BBA6E156AC74F3E30A32519C4A22CE11D468E32333B6733",
+      "purpose": "reproducibility_and_provenance"
+    }
+  ]
+}

@@ -1,0 +1,2085 @@
+diff --git a/.gitignore b/.gitignore
+index 47ceecd..4504902 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,6 +1,7 @@
+ .idea/
+ .vscode/
+ .venv/
++.pytest_cache/
+ __pycache__/
+ *.pyc
+ *.pyo
+diff --git a/README.md b/README.md
+index 568e318..a73ec98 100644
+--- a/README.md
++++ b/README.md
+@@ -1,335 +1,161 @@
+-# AUV Project
+-
+-This repository contains the related AUV modeling, simulation, and depth sensor fault detection work.
+-
+-## Project Structure
+-
+-- `math-model/` - AUV mathematical model, simulation utilities, sensor/fault modules, and demo scripts.
+-- `depth-sensor-fault-detection/` - Depth sensor fault detection model training, inference, and generated model outputs.
+-
+-## Six-thruster 6-DOF model
+-
+-The default actuator layout follows the KYUBIC/Tuna-Sand2 architecture:
+-
+-- four horizontal thrusters (`H1`-`H4`) actively control surge, sway, and yaw;
+-- two vertical thrusters (`V1`-`V2`) actively control heave;
+-- the vehicle dynamics retain all six degrees of freedom;
+-- roll and pitch are passively stabilised by hydrostatic restoring moments.
++# AUV 6-DOF
++
++This repository contains the current six-degree-of-freedom AUV simulator,
++causal fault diagnosis, fault-tolerant control (FTC), and the supporting
++BiLSTM-attention maintenance model.
++
++## Current configuration
++
++- State: 3D NED position, scalar-first quaternion attitude, and body-frame
++  linear/angular velocity.
++- Actuation: six thrusters in the order `H1, H2, H3, H4, V1, V2`.
++- Control: `H1-H4` control surge, sway, and yaw; `V1-V2` control heave and
++  pitch; roll is passively stabilised.
++- Primary simulation range: 0-300 m, with 1.2-1.5 m/s horizontal cruise and
++  0.15-0.35 m/s vertical motion.
++- Deep-stress range: 300-500 m, limited to 10% of generated missions.
++- Nominal simulated thrust limit: 40 N per thruster, with training-time domain
++  randomisation.
++
++The 500 m value is a simulation envelope, not a hardware depth certification.
++Vehicle pressure-hull, seals, penetrators, sensors, batteries, and thrusters
++must all be independently rated before a real deployment.
++
++## Repository layout
++
++```text
++math-model/
++  examples/        runnable simulation, dataset, benchmark, and video commands
++  src/             dynamics, control, sensors, diagnosis, FTC, and rendering
++  tests/           automated regression suite
++  results/         selected frozen evidence and generated demo outputs
++depth-sensor-fault-detection/depth_fault_detection/
++  data/            generated datasets (not stored in Git)
++  results/         checkpoints, calibration, and evaluation artifacts
++docs/              locked protocols, final reports, and historical evidence
++```
+ 
+-Thruster commands, forces, currents, efficiencies, and fault modes therefore
+-use six-element arrays in the order `H1, H2, H3, H4, V1, V2`.
++## Environment and regression test
+ 
+-The complete single-thruster validation covers 13 scenarios: one nominal run
+-plus no-output and thrust-loss faults for each of the six thrusters. Run it with:
++The configured interpreter on the development machine is:
+ 
+-```powershell
+-cd math-model
+-python examples/demo_six_dof_fault_coverage.py
++```text
++D:\Anaconda_envs\envs\auv_gpu\python.exe
+ ```
+ 
+-It produces a summary table, a six-axis residual table, per-scenario source
+-logs, and a comparison figure under `math-model/results/six_dof_fault_coverage/`.
+-
+-An oracle FTC benchmark can then compare the baseline with instantaneous,
+-perfectly known thruster-effectiveness reallocation:
++Run the complete test suite from `math-model`:
+ 
+ ```powershell
+-python examples/demo_six_dof_ideal_ftc.py
++cd C:\Users\Administrator\PycharmProjects\AUV-Project\math-model
++D:\Anaconda_envs\envs\auv_gpu\python.exe -m pytest tests
+ ```
+ 
+-This benchmark is a control-performance upper bound, not a deployable fault
+-diagnoser: the rule-based or learned detector must supply the health estimate.
+-
+-`math-model/src/ftc/safety_supervisor.py` provides the deployable safety gate
+-between health evidence and the allocator. It never reads injected fault labels,
+-actual thrust, or true effectiveness. Compensated thrust loss is log-only;
+-targeted reallocation requires persistent per-thruster current-and-RPM dropout
+-under sufficient command excitation. Uncertain faults can request degraded
+-operation, mission abort, or controlled ascent only after independent control
+-stress persists. The oracle FTC remains available solely as an upper bound.
+-
+-## Six-DOF sensor health and FTC guard
+-
+-The synchronized depth, IMU, and DVL interface now supports deterministic
+-`unavailable`, `stuck`, and `spike` fault schedules. Injected fault truth is
+-kept in a simulation-only field; the online monitor classifies each sensor
+-from measured values, validity flags, controller motion demand, and independent
+-onboard evidence. Its per-step output includes the fault type, confidence,
+-trust level, confirmation state, and recommended response.
+-
+-The FTC supervisor consumes only the observable health summary:
+-
+-- a one-sample spike is rejected and logged without guessing a thruster;
+-- confirmed depth or DVL loss requests degraded navigation;
+-- confirmed IMU loss or stuck attitude data requests safe hold or abort;
+-- a specific thruster is isolated only when independent ESC current and RPM
+-  evidence directly confirms no output.
+-
+-These outputs are stored in every six-DOF simulation log together with pose,
+-thruster telemetry, and FTC decisions. The unified MP4 dashboard now shows the
+-3D trajectory and attitude, live three-tier sensor diagnosis, six-thruster ESC
+-evidence, estimator state, FTC actions, and the event timeline from the same
+-causal log stream.
+-
+-When a synchronized sensor suite is present, the controller now uses the
+-previous causal depth/IMU/DVL state estimate by default. Spikes are rejected,
+-depth or DVL loss activates dead reckoning, and IMU loss holds the last
+-attitude while the FTC requests a safe response. Simulator truth remains in
+-separate evaluation fields and can be selected explicitly only by setting
+-`use_sensor_feedback=False`. The lightweight estimator establishes the causal
+-closed-loop interface; it is not yet a calibrated production INS/EKF. See
+-`docs/six_dof_sensor_fault_and_video_roadmap.md` for the staged integration.
+-
+-Run the independent development matrix for normal, unavailable, stuck, and
+-spike behavior across depth, IMU, and DVL with:
++## Run the current diagnosis and FTC video
+ 
+ ```powershell
+-python math-model/examples/evaluate_six_dof_sensor_faults.py --strict
++cd C:\Users\Administrator\PycharmProjects\AUV-Project\math-model
++D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py
+ ```
+ 
+-The current 50-mission development run achieved 100% event precision, event
+-recall, FTC action matching, and sensor-health recovery, with no normal-mission
+-protective action and no thruster-location guess. Absolute trajectory recovery
+-was 73.33%, because persistent IMU/DVL outages can leave an unobservable
+-horizontal dead-reckoning offset. The estimator therefore keeps navigation
+-degraded until an external horizontal position fix is supplied. These are
+-development results, not a frozen blind-test or real-sea accuracy claim. See
+-`docs/six_dof_sensor_fault_benchmark_results.md` for the full breakdown.
+-
+-## Leakage-safe six-DOF diagnosis data
+-
+-The next-generation diagnosis path uses 109 raw inference-time observable
+-features (218 after first differences): depth, DVL, IMU, six commanded forces,
+-ESC current/RPM/voltage/temperature telemetry, allocator saturation flags,
+-commanded body wrench, six local thruster-health scores, and six projected
+-command-to-motion loss scores. Simulator truth such as actual thrust,
+-effectiveness, and fault state is isolated in the label path and cannot enter
+-the feature vector.
+-
+-`math-model/src/utils/six_dof_dataset_builder.py` creates causal windows that
+-never cross mission boundaries and provides scenario-stratified mission splits.
+-Generate the first six-thruster dataset with:
++The default output is:
+ 
+-```powershell
+-python math-model/examples/generate_six_dof_fault_dataset.py
++```text
++math-model/results/six_dof_unified_diagnostics_demo/
+ ```
+ 
+-The default generator creates 20 missions per scenario, uses five-second
+-windows, randomizes vehicle/sensor/actuator parameters, and reserves fixed
+-held-out seeds with out-of-domain physical parameters for the test split.
+-
+-The current hybrid-telemetry ablation and pressure-test results are documented
+-in `docs/six_dof_hybrid_telemetry_results.md`.
+-
+-The depth/IMU/DVL diagnostic boundary was also evaluated in a hash-locked
+-75-mission sensor stress benchmark. Strong unavailability, full-channel stuck,
+-and strong spike faults achieved 100% event recall and precision with zero
+-normal false confirmations. Weak spikes, bias, drift, and partial-channel
+-faults remain possible/log-only diagnoses; brief unavailability separates the
+-certain current-sample state from the uncertain hardware root cause. The
+-immutable protocol and results are documented in
+-`docs/six_dof_sensor_fault_stress_results_v1.md` and preserved under
+-`math-model/results/six_dof_sensor_fault_stress_v1_20260717`.
+-
+-The follow-up causal observation layer adds log-only weak-jump evidence,
+-multi-second bias/drift consistency residuals, per-channel partial-stuck
+-tracking, recovery rebaselining, and repeated-unavailability grouping. It is
+-strictly separated from FTC and cannot confirm a hardware failure or select a
+-thruster. The frozen 75-mission V2 retained 100% strong-fault recall/precision,
+-zero normal operator prompts, 100% coverage of policy-required possible
+-scenarios, and zero FTC leakage. V2 remains formally failed because one real
+-depth-drift mission was displayed as possible although the frozen protocol had
+-required all depth drift to stay log-only. The unmodified outcome and revised
+-policy rationale are documented in
+-`docs/six_dof_sensor_fault_observer_results_v2.md`.
+-
+-V3 kept the detector unchanged and froze a corrected three-tier presentation
+-policy: nine ambiguous scenarios require a possible message, depth/DVL slow
+-drift may be possible or log-only depending on evidence, and single weak
+-spikes must remain background logs. A new 75-mission one-shot run passed all
+-13 checks: 100% strong-fault recall/precision, zero normal operator prompts,
+-100% required-possible coverage, zero weak-spike overpromotion, and no FTC or
+-thruster-target leakage. See `docs/six_dof_sensor_fault_observer_results_v3.md`
+-and `math-model/results/six_dof_sensor_fault_observer_v3_20260717`.
+-
+-## Unified V4 acceptance
+-
+-The current deployment-oriented simulation evidence is aggregated by one
+-protocol instead of adding another parallel sensor, ESC, thruster, or model
+-runner:
++It contains the MP4 dashboard, a static image, causal JSON, and a flat CSV.
++The fixed scenario is the reproducible default. A seeded random injection run
++is available with:
+ 
+ ```powershell
+-cd math-model
+-D:\Anaconda_envs\envs\auv_gpu\python.exe examples\evaluate_six_dof_unified_acceptance_v4.py
++D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py `
++  --injection-mode random --seed 20260718 `
++  --output-dir results\six_dof_unified_diagnostics_random_seed_20260718
+ ```
+ 
+-The locked protocol is `docs/six_dof_unified_acceptance_protocol_v4.json`.
+-It verifies the hashes and internal acceptance status of the sensor-observer
+-V3, ESC-telemetry V2, stratified thruster-FTC V2, unified-random V3, and final
+-blind V2 artifacts, then applies one explicit 36-check acceptance matrix. The
+-frozen result passed all 36 checks and is stored under
+-`math-model/results/six_dof_unified_acceptance_v4_20260717`.
++The online dashboard does not read injected truth. Strong directly observable
++sensor failures and complete thruster no-output faults can be confirmed;
++ambiguous sensor behavior and weak/intermittent thrust loss remain possible
++maintenance hypotheses. Only the rule-based safety supervisor can command FTC.
+ 
+-This is a simulation evidence aggregation, not a new independent blind test
+-or a real-sea claim. Confirmed sensor faults and complete thruster failures are
+-safety-gating cases. Weak or intermittent thrust loss remains non-gating:
+-it is retained as a probability-based maintenance clue, and exact thruster
+-location is not treated as an automatic FTC fact.
++The default demo now loads the `0_300m_focus_v3` checkpoint and its independently
++calibrated temporal configuration, and the fixed presentation mission runs near
++200 m depth. The frozen V4 `36/36` badge belongs to the older baseline, so it is
++hidden by default; add `--show-acceptance-badge` only when intentionally
++presenting that historical evidence.
+ 
+-## Unified six-DOF diagnosis video
++The frozen V4 demonstration and its explanation are retained at:
+ 
+-Generate the deterministic end-to-end demonstration with the configured AUV
+-environment:
++- `math-model/results/six_dof_unified_diagnostics_final_v4_20260718/`
++- `docs/six_dof_unified_diagnostics_final_v4.md`
+ 
+-```powershell
+-cd math-model
+-D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py
+-```
++## Generate 0-300 m focused training data and retrain
+ 
+-The fixed schedule is the default because it gives a reproducible regression
+-story. A seed-reproducible randomized demonstration is also available:
++Generate the new leakage-safe dataset:
+ 
+ ```powershell
+-D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py `
+-  --injection-mode random --seed 20260718 `
+-  --output-dir results\six_dof_unified_diagnostics_random_seed_20260718
++cd C:\Users\Administrator\PycharmProjects\AUV-Project\math-model
++D:\Anaconda_envs\envs\auv_gpu\python.exe examples\generate_six_dof_fault_dataset.py
+ ```
+ 
+-Random mode changes the weak/ambiguous/intermittent sensor assignments,
+-ambiguous mode, event timing, failed thruster, actuator fault mode, and thrust
+-loss severity. The exact truth schedule is written only to the offline
+-`injection_manifest`; online diagnosis never reads it. Full vehicle-parameter
+-domain randomization remains in the dataset and stress generators rather than
+-the presentation demo.
+-
+-The renderer accepts a system `ffmpeg`, `FFMPEG_PATH`, or the binary supplied
+-by `imageio-ffmpeg` (`python -m pip install imageio-ffmpeg`). It writes a
+-1280x720 MP4, a static dashboard image, causal per-frame JSON, and a flat CSV
+-under `math-model/results/six_dof_unified_diagnostics_demo/`.
+-
+-The demonstration sequences a weak depth spike (background log), DVL bias
+-(possible diagnosis), repeated IMU loss (certain sample unavailability plus
+-possible intermittent root cause), and a V1 no-output fault. V1 is shown as a
+-candidate only from observable ESC evidence and is marked confirmed only after
+-the FTC supervisor performs targeted reallocation. Injected sensor truth,
+-actual thrust, true effectiveness, and simulator fault labels are excluded from
+-the diagnostic adapter. See `docs/six_dof_unified_diagnostics_demo.md`.
+-
+-The frozen BiLSTM-Attention checkpoint now runs causally on 50-sample windows
+-and adds fault-mode probability plus Top-2 inspection candidates. Its output is
+-always labelled `possible`, even when the internal probability is high; it is
+-maintenance advice and cannot command FTC or isolate a thruster. Use
+-`--disable-model` to render the rule/FTC-only view.
+-
+-The final V4 presentation adds an explicitly offline `36/36 PASS` simulation
+-baseline badge while keeping every sensor, thruster, model, estimator, and FTC
+-panel tied to the current causal frame. Generate it without overwriting the
+-earlier demonstrations with:
++The default output is:
+ 
+-```powershell
+-D:\Anaconda_envs\envs\auv_gpu\python.exe examples\demo_six_dof_unified_diagnostics.py `
+-  --output-dir results\six_dof_unified_diagnostics_final_v4_20260718
++```text
++depth-sensor-fault-detection/depth_fault_detection/data/
++simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth
+ ```
+ 
+-The fixed replay shows V2 ESC packet loss as log-only with no target, followed
+-by a real V1 no-output failure and targeted reallocation at 17.55 seconds. See
+-`docs/six_dof_unified_diagnostics_final_v4.md`.
+-
+-`math-model/src/diagnosis/temporal_fault_decision.py` adds a causal
+-normal/suspected/confirmed/recovering state machine. Calibrate its thresholds
+-on validation missions with:
++Then retrain the multi-task BiLSTM-attention model by supplying that dataset to
++the trainer:
+ 
+ ```powershell
+-python depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py
++cd C:\Users\Administrator\PycharmProjects\AUV-Project
++D:\Anaconda_envs\envs\auv_gpu\python.exe `
++  depth-sensor-fault-detection\depth_fault_detection\train_six_dof_multitask.py `
++  --dataset depth-sensor-fault-detection\depth_fault_detection\data\simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth `
++  --results-dir depth-sensor-fault-detection\depth_fault_detection\results\six_dof_hybrid_telemetry_0_300m_focus_v3
+ ```
+ 
+-Evaluate recovered short-current and turbulence pulses with no injected
+-thruster fault:
++The existing `six_dof_hybrid_telemetry` checkpoint and frozen V4 evidence were
++trained/evaluated before the new depth-weighted mission update. They remain a
++historical baseline and must not be presented as validated deep-sea performance.
+ 
+-```powershell
+-python depth-sensor-fault-detection/depth_fault_detection/evaluate_six_dof_transient_recovery.py --strict
+-```
++The primary accuracy test uses independent mission seeds drawn from the same
++broad randomized deployment domain as training. Compound parameter ranges that
++are entirely outside training are treated as a separate OOD stress test, not as
++the main accuracy score.
+ 
+-The transient benchmark permits raw health observations but fails if the
+-vehicle does not recover, a formal maintenance ticket is opened, or the FTC
+-supervisor requests reallocation, isolation, abort, or controlled ascent.
++## Current validation and historical evidence
+ 
+-Find the discrete no-intervention boundary for 1/2/4-second weak, medium, and
+-strong multi-axis disturbances plus scheduled DVL loss:
++The deployment-oriented simulation acceptance aggregator is:
+ 
+ ```powershell
+-python depth-sensor-fault-detection/depth_fault_detection/evaluate_six_dof_safety_boundary.py
++cd C:\Users\Administrator\PycharmProjects\AUV-Project\math-model
++D:\Anaconda_envs\envs\auv_gpu\python.exe examples\evaluate_six_dof_unified_acceptance_v4.py
+ ```
+ 
+-The boundary report separates recovered log-only cases, false maintenance
+-tickets, FTC interventions, and genuinely unrecovered missions instead of
+-assuming every strong disturbance should pass without a protective action.
+-The FTC supervisor uses separate critical timers: 2 seconds when critical
+-control stress is corroborated by thruster-fault evidence, and 5 seconds for
+-stress alone. A clearly decaying stress-only excursion receives another
+-recovery interval; direct ESC current/RPM no-output isolation remains at
+-0.5 seconds.
+-
+-`math-model/src/diagnosis/maintenance_health_decision.py` converts the
+-temporal output into four operational levels: normal, transient observation,
+-persistent degradation, and critical fault. Persistent but compensated thrust
+-loss and uncertain anomalies are retained in the raw health log. The separate
+-`maintenance_ticket_policy.py` opens a formal inspection ticket only when the
+-diagnosis has sufficient command excitation and independent motion or local
+-ESC evidence. Direct no-output evidence uses the fast path. Thrust-loss
+-evidence stays pending until it accumulates 8 qualified seconds inside one
+-stable guidance context. Target/waypoint transitions split pending evidence,
+-unstable-context windows do not confirm a ticket, and recovered recurrences
+-remain intermittent advisories instead of becoming formal tickets. A 3.75
+-second recovery still closes the pending episode while preserving its
+-observation. Location is advisory and reported as a
+-horizontal/vertical/uncertain group plus Top-2 inspection candidates. Short
+-same-mode ticket segments are merged into one incident. The calibration
+-command selects both layers on validation missions and writes raw events,
+-pending observations, advisories, and formal tickets to
+-`maintenance_event_log.json` beside the temporal summary.
+-
+-The detector and decision policy were then locked in the one-shot protocol
+-`docs/six_dof_final_blind_protocol.json` before generating 65 new OOD missions.
+-That V1 audit retained 60/60 fault missions in the raw log and opened 30/30
+-no-output tickets, but failed its strict zero-false-ticket criterion because
+-one normal mission produced a recurrent thrust-loss ticket. The failed result
+-is preserved under `results/six_dof_final_blind_20260716`.
+-
+-The context-aware revision was frozen separately in
+-`docs/six_dof_final_blind_protocol_v2.json` and evaluated once with a new seed
+-namespace. V2 again logged 60/60 fault missions and opened 30/30 no-output
+-tickets, while reducing formal false maintenance tickets to 0 and passing all
+-three predeclared acceptance checks. Compensated thrust loss remains log-first:
+-2/30 missions opened a formal ticket, while the remaining evidence stayed in
+-the raw log or observation records. The immutable V2 result is under
+-`results/six_dof_final_blind_v2_20260717`.
+-
+-The post-V2 presentation layer in `maintenance_log_policy.py` does not change
+-the detector, tickets, or FTC. It retains every raw event, merges separated
+-same-mode episodes only within the same guidance context and a five-second
+-gap, then grades them as background trace, collapsed observation, maintenance
+-advisory, or safety alert. A retrospective replay reproduced the archived V2
+-metrics before applying this layer: 109 raw events became 102 grouped events
+-(28 traces, 42 observations, 2 maintenance advisories, and 30 safety alerts).
+-Only the final 32 require operator attention, with zero false attention events;
+-the replay is a presentation audit, not a new blind-test claim.
+-
+-Train the multi-task BiLSTM-attention detector after generation with:
++Its locked historical baseline passed 36/36 checks. It aggregates existing
++sensor-observer, ESC-telemetry, thruster-FTC, random-batch, and blind-test
++artifacts; it is not a new independent sea trial.
+ 
+-```powershell
+-python depth-sensor-fault-detection/depth_fault_detection/train_six_dof_multitask.py
+-```
++Key documents:
+ 
+-The shared temporal encoder has separate attention pooling and heads for three
+-fault modes and six thruster locations. The location head is trained only on
+-fault windows; normal/fault gating supplies the seventh `none` state. Exact
+-six-way location and the derived 13-class label are retained for research
+-comparison, but they are no longer deployment acceptance criteria.
++- `docs/six_dof_0_300m_focus_v3_results.md` - current dataset, model, depth,
++  and maintenance metrics.
++- `docs/six_dof_unified_acceptance_protocol_v4.json` - locked acceptance rules.
++- `docs/six_dof_hybrid_telemetry_results.md` - model and temporal-policy results.
++- `docs/six_dof_sensor_fault_observer_results_v3.md` - three-tier sensor output.
++- `docs/six_dof_esc_telemetry_stress_results_v2.md` - ESC evidence limits.
++- `docs/code_subtraction_audit_v1.md` - why the remaining runtime layers stay
++  separate and which historical runners are archival.
+ 
+-The staged research plan and readiness gates are documented in
+-`docs/six_dof_diagnosis_optimization_strategy.md`.
++Older protocol/result files under `docs/` are retained only for traceability.
++They are not alternative current entry points.
+ 
+-## Notes
++## Repository hygiene
+ 
+-The generated dataset `depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset.pth` is not tracked because it is larger than GitHub's normal 100 MB file limit.
++Generated `.pth` datasets are intentionally excluded from Git because they are
++large and reproducible from the generators. Python caches, Pytest caches, IDE
++metadata, and local plots/videos should not be committed. Keep only the current
++working checkpoint, locked acceptance evidence, and presentation output needed
++for the research record.
+diff --git a/depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py b/depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py
+index a899344..fdcd39a 100644
+--- a/depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py
++++ b/depth-sensor-fault-detection/depth_fault_detection/calibrate_six_dof_temporal_decision.py
+@@ -459,8 +459,8 @@ def main():
+             "temporal thresholds preserve causal raw health observations; "
+             "formal ticket thresholds are selected on validation missions "
+             "for severe no-output recall and maintenance precision; exact "
+-            "thruster location is not an optimization target; held-out OOD "
+-            "missions are evaluated only after selection"
++            "thruster location is not an optimization target; independent "
++            "test missions are evaluated only after selection"
+         ),
+         "maintenance_policy": {
+             "normal": "no health event",
+diff --git a/math-model/examples/demo_six_dof_unified_diagnostics.py b/math-model/examples/demo_six_dof_unified_diagnostics.py
+index 0987c7f..32f0a34 100644
+--- a/math-model/examples/demo_six_dof_unified_diagnostics.py
++++ b/math-model/examples/demo_six_dof_unified_diagnostics.py
+@@ -31,6 +31,7 @@ from actuators.esc_telemetry_faults import (
+     THRUSTER_NAMES,
+ )
+ from environment.six_dof_simulator import SixDOFSimulator
++from environment.six_dof_dynamics import SixDOFState
+ from ftc.safety_supervisor import (
+     FTCSafetySupervisor,
+     build_rule_based_ftc_evidence,
+@@ -52,12 +53,15 @@ from simple_control.six_dof_controller import PoseTarget
+ 
+ 
+ DEFAULT_CHECKPOINT = (
+-    MODEL_ROOT / "results" / "six_dof_hybrid_telemetry" / "best_model.pth"
++    MODEL_ROOT
++    / "results"
++    / "six_dof_hybrid_telemetry_0_300m_focus_v3"
++    / "best_model.pth"
+ )
+ DEFAULT_TEMPORAL_CONFIG = (
+     MODEL_ROOT
+     / "results"
+-    / "six_dof_hybrid_telemetry_temporal_v2"
++    / "six_dof_hybrid_telemetry_0_300m_focus_v3_temporal"
+     / "temporal_decision_config.json"
+ )
+ DEFAULT_ACCEPTANCE_SUMMARY = (
+@@ -69,11 +73,11 @@ DEFAULT_ACCEPTANCE_SUMMARY = (
+ 
+ 
+ MISSION_TARGETS = (
+-    (0.0, (0.0, 0.0, 1.5), (0.0, 0.0, 0.0)),
+-    (4.0, (4.0, 1.0, 2.0), (0.0, 0.0, 0.6)),
+-    (9.0, (-2.0, 3.0, 2.5), (0.0, 0.0, -0.6)),
+-    (15.0, (0.0, 0.0, 4.0), (0.0, 0.0, 0.0)),
+-    (20.0, (2.0, -1.0, 2.0), (0.0, 0.0, 0.3)),
++    (0.0, (0.0, 0.0, 200.0), (0.0, 0.0, 0.0)),
++    (4.0, (4.0, 1.0, 200.5), (0.0, 0.0, 0.6)),
++    (9.0, (-2.0, 3.0, 201.0), (0.0, 0.0, -0.6)),
++    (15.0, (0.0, 0.0, 202.5), (0.0, 0.0, 0.0)),
++    (20.0, (2.0, -1.0, 200.5), (0.0, 0.0, 0.3)),
+ )
+ 
+ 
+@@ -325,6 +329,9 @@ def run_demo(
+             manifest["esc_telemetry_events"], supervisor.config
+         ),
+     )
++    simulator.reset(SixDOFState(
++        position_ned=np.asarray(MISSION_TARGETS[0][1], dtype=float),
++    ))
+     logs = simulator.run(
+         duration, dt, target_provider,
+         disturbance_provider=disturbance_provider,
+@@ -451,7 +458,13 @@ def main():
+         type=Path,
+         default=DEFAULT_ACCEPTANCE_SUMMARY,
+     )
+-    parser.add_argument("--hide-acceptance-badge", action="store_true")
++    badge_group = parser.add_mutually_exclusive_group()
++    badge_group.add_argument("--show-acceptance-badge", action="store_true")
++    badge_group.add_argument(
++        "--hide-acceptance-badge",
++        action="store_true",
++        help=argparse.SUPPRESS,
++    )
+     parser.add_argument("--fps", type=int, default=12)
+     parser.add_argument("--max-video-frames", type=int, default=240)
+     parser.add_argument("--skip-video", action="store_true")
+@@ -462,9 +475,9 @@ def main():
+     args = parser.parse_args()
+     args.output_dir.mkdir(parents=True, exist_ok=True)
+     acceptance_badge = (
+-        None
+-        if args.hide_acceptance_badge
+-        else load_acceptance_badge(args.acceptance_summary)
++        load_acceptance_badge(args.acceptance_summary)
++        if args.show_acceptance_badge and not args.hide_acceptance_badge
++        else None
+     )
+     model_bridge = None
+     if not args.disable_model:
+@@ -495,12 +508,21 @@ def main():
+         "model_device": (
+             None if model_bridge is None else str(model_bridge.device)
+         ),
++        "model_checkpoint": (
++            None if model_bridge is None else str(args.checkpoint)
++        ),
++        "model_temporal_config": (
++            None if model_bridge is None else str(args.temporal_config)
++        ),
+         "offline_acceptance_baseline": acceptance_badge,
+     })
+ 
+     json_path = args.output_dir / "six_dof_unified_diagnostics.json"
+     csv_path = args.output_dir / "six_dof_unified_diagnostics.csv"
+     image_path = args.output_dir / "six_dof_unified_diagnostics.png"
++    detail_image_path = (
++        args.output_dir / "six_dof_unified_diagnostics_detail.png"
++    )
+     esc_image_path = args.output_dir / "six_dof_unified_diagnostics_esc_link.png"
+     video_path = args.output_dir / "six_dof_unified_diagnostics.mp4"
+     save_json(
+@@ -516,25 +538,38 @@ def main():
+     renderer = SixDOFDemoRenderer(
+         frames,
+         events,
++        injection_manifest=manifest,
++        view_mode="summary",
+         acceptance_badge=acceptance_badge,
+     )
+     renderer.save_snapshot(image_path)
+-    esc_indices = [
+-        index for index, frame in enumerate(frames)
+-        if frame["ftc"]["untrusted_esc_channels"]
+-    ]
+-    if esc_indices:
+-        renderer.save_snapshot(esc_image_path, index=esc_indices[0])
+     if not args.skip_video:
+         renderer.save_video(
+             video_path, fps=args.fps, max_frames=args.max_video_frames
+         )
+     renderer.close()
+ 
++    detail_renderer = SixDOFDemoRenderer(
++        frames,
++        events,
++        injection_manifest=manifest,
++        view_mode="technical",
++        acceptance_badge=acceptance_badge,
++    )
++    detail_renderer.save_snapshot(detail_image_path)
++    esc_indices = [
++        index for index, frame in enumerate(frames)
++        if frame["ftc"]["untrusted_esc_channels"]
++    ]
++    if esc_indices:
++        detail_renderer.save_snapshot(esc_image_path, index=esc_indices[0])
++    detail_renderer.close()
++
+     print(json.dumps(summary, indent=2))
+     print(f"JSON: {json_path}")
+     print(f"CSV: {csv_path}")
+     print(f"Image: {image_path}")
++    print(f"Technical detail image: {detail_image_path}")
+     if esc_indices:
+         print(f"ESC image: {esc_image_path}")
+     if not args.skip_video:
+diff --git a/math-model/examples/generate_six_dof_fault_dataset.py b/math-model/examples/generate_six_dof_fault_dataset.py
+index 6510db0..8f625f2 100644
+--- a/math-model/examples/generate_six_dof_fault_dataset.py
++++ b/math-model/examples/generate_six_dof_fault_dataset.py
+@@ -3,6 +3,7 @@
+ import argparse
+ import json
+ import sys
++from dataclasses import dataclass
+ from pathlib import Path
+ 
+ import numpy as np
+@@ -22,7 +23,11 @@ from actuators.six_dof_thruster_faults import (
+ )
+ from actuators.thruster_array import default_six_thruster_array
+ from config.six_dof_config import SixDOFConfig
+-from environment.six_dof_dynamics import SixDOFDynamics
++from environment.six_dof_dynamics import (
++    SixDOFDynamics,
++    SixDOFState,
++    euler_to_quaternion,
++)
+ from environment.six_dof_simulator import SixDOFSimulator
+ from sensors.depth_sensor import DepthSensor
+ from sensors.dvl_sensor import DVLSensor
+@@ -38,6 +43,58 @@ from utils.six_dof_feature_extractor import (
+ )
+ 
+ 
++DEPTH_BANDS_M = (
++    (0.0, 50.0),
++    (50.0, 150.0),
++    (150.0, 300.0),
++    (300.0, 500.0),
++)
++DEPTH_BAND_PROBABILITIES = np.array([0.25, 0.35, 0.30, 0.10])
++# A deterministic 20-mission cycle matching the probabilities above.  The
++# interleaving avoids long runs in one band while keeping every split close to
++# the requested distribution.
++DEPTH_BAND_WEIGHTED_CYCLE = (
++    1, 2, 0, 1, 3, 2, 1, 0, 2, 1,
++    0, 2, 1, 3, 0, 2, 1, 0, 2, 1,
++)
++CRUISE_SPEEDS_MPS = np.array([1.2, 1.35, 1.5])
++CRUISE_SPEED_PROBABILITIES = np.array([0.30, 0.40, 0.30])
++VERTICAL_SPEED_RANGE_MPS = (0.15, 0.35)
++
++
++@dataclass(frozen=True)
++class MissionPlan:
++    """A depth-stratified local mission with continuous position targets."""
++
++    waypoints: tuple
++    initial_position_ned: np.ndarray
++    initial_euler_rpy: np.ndarray
++    depth_band_index: int
++    depth_band_m: tuple
++    cruise_speed_mps: float
++    vertical_speed_mps: float
++    ramp_duration_s: float
++
++    def to_metadata(self):
++        return {
++            "profile": "depth_weighted_local_smooth_v2",
++            "depth_band_index": self.depth_band_index,
++            "depth_band_m": list(self.depth_band_m),
++            "initial_position_ned_m": self.initial_position_ned.tolist(),
++            "cruise_speed_mps": self.cruise_speed_mps,
++            "vertical_speed_mps": self.vertical_speed_mps,
++            "ramp_duration_s": self.ramp_duration_s,
++            "waypoints": [
++                {
++                    "time_s": float(time_s),
++                    "position_ned_m": position.tolist(),
++                    "euler_rpy_rad": attitude.tolist(),
++                }
++                for time_s, position, attitude in self.waypoints
++            ],
++        }
++
++
+ def scenario_definitions():
+     definitions = [("Normal", None, None)]
+     for thruster_name in THRUSTER_NAMES:
+@@ -79,53 +136,39 @@ def _split_for_repetition(repetition, missions_per_scenario):
+     return "test"
+ 
+ 
+-def _edge_scale(rng, lower_outer, lower_inner, upper_inner, upper_outer):
+-    """Sample outside the in-domain interval for a held-out OOD test."""
+-    if rng.random() < 0.5:
+-        return rng.uniform(lower_outer, lower_inner)
+-    return rng.uniform(upper_inner, upper_outer)
+-
+-
+-def _scale(rng, split, in_domain, held_out):
+-    if split != "test":
+-        return rng.uniform(*in_domain)
+-    return _edge_scale(rng, *held_out)
+-
+-
+ def _randomized_dynamics(rng, split):
+-    mass_scale = _scale(rng, split, (0.90, 1.10), (0.82, 0.90, 1.10, 1.18))
++    """Sample a broad deployment domain for every leakage-safe split."""
++    del split
++    mass_scale = rng.uniform(0.82, 1.18)
+     inertia_scale = np.array([
+-        _scale(rng, split, (0.82, 1.18), (0.70, 0.82, 1.18, 1.30))
++        rng.uniform(0.70, 1.30)
+         for _ in range(3)
+     ])
+     added_mass_scale = np.array([
+-        _scale(rng, split, (0.80, 1.20), (0.65, 0.80, 1.20, 1.35))
++        rng.uniform(0.65, 1.35)
+         for _ in range(6)
+     ])
+     linear_damping_scale = np.array([
+-        _scale(rng, split, (0.75, 1.25), (0.60, 0.75, 1.25, 1.40))
++        rng.uniform(0.60, 1.40)
+         for _ in range(6)
+     ])
+     quadratic_damping_scale = np.array([
+-        _scale(rng, split, (0.75, 1.25), (0.60, 0.75, 1.25, 1.40))
++        rng.uniform(0.60, 1.40)
+         for _ in range(6)
+     ])
+     mass = 50.0 * mass_scale
+     weight = mass * 9.81
+-    buoyancy_ratio = rng.uniform(
+-        0.995 if split != "test" else 0.990,
+-        1.005 if split != "test" else 1.010,
+-    )
+-    xy_offset = 0.010 if split != "test" else 0.018
++    buoyancy_ratio = rng.uniform(0.990, 1.010)
++    xy_offset = 0.018
+     cg = np.array([
+         rng.uniform(-xy_offset, xy_offset),
+         rng.uniform(-xy_offset, xy_offset),
+-        rng.uniform(0.015, 0.030 if split != "test" else 0.035),
++        rng.uniform(0.015, 0.035),
+     ])
+     cb = np.array([
+         rng.uniform(-xy_offset, xy_offset),
+         rng.uniform(-xy_offset, xy_offset),
+-        rng.uniform(-0.030 if split != "test" else -0.035, -0.015),
++        rng.uniform(-0.035, -0.015),
+     ])
+     config = SixDOFConfig(
+         mass=mass,
+@@ -161,16 +204,11 @@ def _randomized_dynamics(rng, split):
+ 
+ 
+ def _randomized_thrusters(rng, split):
+-    if split == "test":
+-        length = rng.uniform(1.00, 1.40)
+-        width = rng.uniform(0.48, 0.72)
+-        horizontal_limit = rng.uniform(34.0, 46.0)
+-        vertical_limit = rng.uniform(29.0, 41.0)
+-    else:
+-        length = rng.uniform(1.10, 1.30)
+-        width = rng.uniform(0.54, 0.66)
+-        horizontal_limit = rng.uniform(37.0, 43.0)
+-        vertical_limit = rng.uniform(32.0, 38.0)
++    del split
++    length = rng.uniform(1.00, 1.40)
++    width = rng.uniform(0.48, 0.72)
++    horizontal_limit = rng.uniform(34.0, 46.0)
++    vertical_limit = rng.uniform(34.0, 46.0)
+     array = default_six_thruster_array(
+         length=length,
+         width=width,
+@@ -185,48 +223,181 @@ def _randomized_thrusters(rng, split):
+     }
+ 
+ 
+-def _mission_schedule(duration, rng):
+-    times = np.array([0.0, 0.25, 0.50, 0.75]) * duration
+-    positions = [
+-        np.array([0.0, 0.0, rng.uniform(1.5, 2.5)]),
+-        np.array([
+-            rng.uniform(3.5, 7.0),
+-            rng.uniform(-2.5, 2.5),
+-            rng.uniform(1.5, 3.5),
+-        ]),
+-        np.array([
+-            rng.uniform(2.0, 7.0),
+-            rng.uniform(2.5, 6.0) * rng.choice([-1.0, 1.0]),
+-            rng.uniform(2.0, 4.0),
+-        ]),
+-        np.array([
+-            rng.uniform(-1.0, 3.0),
+-            rng.uniform(-4.0, 4.0),
+-            rng.uniform(1.0, 3.0),
+-        ]),
+-    ]
+-    attitudes = [
+-        np.array([0.0, 0.0, rng.uniform(-0.2, 0.2)]),
+-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
+-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
+-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
++def _depth_band_index_for_mission(
++    scenario_index,
++    repetition,
++    missions_per_scenario,
++):
++    """Apply the 0--300 m focused depth mix independently to every split."""
++    counts = _split_counts(missions_per_scenario)
++    split = _split_for_repetition(repetition, missions_per_scenario)
++    if split == "train":
++        local_index = repetition
++    elif split == "validation":
++        local_index = repetition - counts["train"]
++    else:
++        local_index = repetition - counts["train"] - counts["validation"]
++    split_index = int(scenario_index) * counts[split] + local_index
++    return DEPTH_BAND_WEIGHTED_CYCLE[
++        split_index % len(DEPTH_BAND_WEIGHTED_CYCLE)
+     ]
+-    return list(zip(times, positions, attitudes))
+ 
+ 
+-def _target_provider(schedule):
++def _mission_schedule(duration, rng, depth_band_index=None):
++    """Build a local mission, with 300--500 m reserved for sparse stress runs."""
++    duration = float(duration)
++    if not np.isfinite(duration) or duration <= 0.0:
++        raise ValueError("duration must be finite and positive")
++    if depth_band_index is None:
++        depth_band_index = int(rng.choice(
++            len(DEPTH_BANDS_M),
++            p=DEPTH_BAND_PROBABILITIES,
++        ))
++    depth_band_index = int(depth_band_index)
++    if depth_band_index not in range(len(DEPTH_BANDS_M)):
++        raise ValueError("depth_band_index is outside the configured bands")
++
++    depth_low, depth_high = DEPTH_BANDS_M[depth_band_index]
++    depth_margin = min(5.0, 0.05 * (depth_high - depth_low))
++    working_low = depth_low + depth_margin
++    working_high = depth_high - depth_margin
++    initial_depth = rng.uniform(working_low, working_high)
++    cruise_speed = float(rng.choice(
++        CRUISE_SPEEDS_MPS,
++        p=CRUISE_SPEED_PROBABILITIES,
++    ))
++    vertical_speed = float(rng.uniform(*VERTICAL_SPEED_RANGE_MPS))
++
++    turn_duration = min(5.0, 0.08 * duration)
++    cruise_duration = (duration - 3.0 * turn_duration) / 4.0
++    ramp_duration = min(4.0, 0.25 * cruise_duration)
++    effective_travel_time = cruise_duration - ramp_duration
++    headings = [float(rng.uniform(-np.pi, np.pi))]
++    for _ in range(3):
++        headings.append(headings[-1] + float(rng.uniform(-0.55, 0.55)))
++    initial_position = np.array([0.0, 0.0, initial_depth])
++    waypoints = [(0.0, initial_position.copy(), np.array([
++        0.0, 0.0, headings[0],
++    ]))]
++
++    first_vertical_direction = float(rng.choice((-1.0, 1.0)))
++    vertical_directions = (
++        first_vertical_direction,
++        0.0,
++        -first_vertical_direction,
++        float(rng.choice((-1.0, 0.0, 1.0))),
++    )
++    current_time = 0.0
++    current_position = initial_position.copy()
++    for segment_index, vertical_direction in enumerate(vertical_directions):
++        heading = headings[segment_index]
++        horizontal_distance = cruise_speed * effective_travel_time
++        depth_delta = (
++            vertical_direction * vertical_speed * effective_travel_time
++        )
++        next_depth = np.clip(
++            current_position[2] + depth_delta,
++            working_low,
++            working_high,
++        )
++        next_position = current_position + np.array([
++            horizontal_distance * np.cos(heading),
++            horizontal_distance * np.sin(heading),
++            next_depth - current_position[2],
++        ])
++        current_time += cruise_duration
++        waypoints.append((
++            current_time,
++            next_position.copy(),
++            np.array([0.0, 0.0, heading]),
++        ))
++        current_position = next_position
++        if segment_index < len(vertical_directions) - 1:
++            current_time += turn_duration
++            waypoints.append((
++                current_time,
++                current_position.copy(),
++                np.array([0.0, 0.0, headings[segment_index + 1]]),
++            ))
++
++    waypoints = tuple(waypoints)
++    return MissionPlan(
++        waypoints=waypoints,
++        initial_position_ned=initial_position,
++        initial_euler_rpy=waypoints[0][2].copy(),
++        depth_band_index=depth_band_index,
++        depth_band_m=(depth_low, depth_high),
++        cruise_speed_mps=cruise_speed,
++        vertical_speed_mps=vertical_speed,
++        ramp_duration_s=ramp_duration,
++    )
++
++
++def _trapezoidal_profile(elapsed_s, duration_s, ramp_duration_s):
++    """Return normalized distance and its rate for a trapezoidal profile."""
++    duration_s = float(duration_s)
++    elapsed_s = float(np.clip(elapsed_s, 0.0, duration_s))
++    ramp = float(np.clip(ramp_duration_s, 0.0, 0.5 * duration_s))
++    if ramp <= 1e-12:
++        return elapsed_s / duration_s, 1.0 / duration_s
++    total_distance_scale = duration_s - ramp
++    if elapsed_s < ramp:
++        distance_scale = 0.5 * elapsed_s * elapsed_s / ramp
++        rate_scale = elapsed_s / ramp
++    elif elapsed_s <= duration_s - ramp:
++        distance_scale = 0.5 * ramp + elapsed_s - ramp
++        rate_scale = 1.0
++    else:
++        remaining = duration_s - elapsed_s
++        distance_scale = total_distance_scale - 0.5 * remaining * remaining / ramp
++        rate_scale = remaining / ramp
++    return (
++        float(distance_scale / total_distance_scale),
++        float(rate_scale / total_distance_scale),
++    )
++
++
++def _target_provider(plan):
++    schedule = plan.waypoints
++
+     def provider(time_s, _state):
+-        selected_index = 0
+-        for index, candidate in enumerate(schedule):
+-            if time_s >= candidate[0]:
+-                selected_index = index
+-            else:
+-                break
+-        selected = schedule[selected_index]
++        if time_s <= schedule[0][0]:
++            segment_index = 0
++            progress = 0.0
++            progress_rate = 0.0
++        elif time_s >= schedule[-1][0]:
++            segment_index = len(schedule) - 2
++            progress = 1.0
++            progress_rate = 0.0
++        else:
++            segment_index = 0
++            for index in range(len(schedule) - 1):
++                if schedule[index][0] <= time_s < schedule[index + 1][0]:
++                    segment_index = index
++                    break
++            start_time = schedule[segment_index][0]
++            end_time = schedule[segment_index + 1][0]
++            progress, progress_rate = _trapezoidal_profile(
++                time_s - start_time,
++                end_time - start_time,
++                plan.ramp_duration_s,
++            )
++
++        start = schedule[segment_index]
++        end = schedule[segment_index + 1]
++        position = (1.0 - progress) * start[1] + progress * end[1]
++        linear_velocity_ned = progress_rate * (end[1] - start[1])
++        attitude = (1.0 - progress) * start[2] + progress * end[2]
++        yaw_delta = np.arctan2(
++            np.sin(end[2][2] - start[2][2]),
++            np.cos(end[2][2] - start[2][2]),
++        )
++        attitude[2] = start[2][2] + progress * yaw_delta
+         return PoseTarget(
+-            selected[1],
+-            selected[2],
+-            guidance_context_id=selected_index,
++            position,
++            attitude,
++            guidance_context_id=segment_index,
++            linear_velocity_ned=linear_velocity_ned,
+         )
+ 
+     return provider
+@@ -250,7 +421,15 @@ def _disturbance_provider(rng):
+     }
+ 
+ 
+-def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
++def run_mission(
++    thruster_name,
++    fault_mode,
++    duration,
++    dt,
++    seed,
++    split="train",
++    depth_band_index=None,
++):
+     rng = np.random.default_rng(seed)
+     dynamics, dynamics_metadata = _randomized_dynamics(rng, split)
+     thruster_array, thruster_metadata = _randomized_thrusters(rng, split)
+@@ -267,22 +446,13 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
+             ),
+         )
+ 
+-    if split == "test":
+-        depth_noise = rng.uniform(0.08, 0.12)
+-        dvl_noise = rng.uniform(0.05, 0.08)
+-        dvl_dropout = rng.uniform(0.03, 0.06)
+-        current_noise = rng.uniform(0.08, 0.14)
+-        rpm_noise = rng.uniform(35.0, 70.0)
+-        voltage_noise = rng.uniform(0.08, 0.15)
+-        temperature_noise = rng.uniform(0.20, 0.50)
+-    else:
+-        depth_noise = rng.uniform(0.02, 0.08)
+-        dvl_noise = rng.uniform(0.01, 0.05)
+-        dvl_dropout = rng.uniform(0.0, 0.03)
+-        current_noise = rng.uniform(0.02, 0.08)
+-        rpm_noise = rng.uniform(10.0, 35.0)
+-        voltage_noise = rng.uniform(0.02, 0.08)
+-        temperature_noise = rng.uniform(0.05, 0.25)
++    depth_noise = rng.uniform(0.02, 0.12)
++    dvl_noise = rng.uniform(0.01, 0.08)
++    dvl_dropout = rng.uniform(0.0, 0.06)
++    current_noise = rng.uniform(0.02, 0.14)
++    rpm_noise = rng.uniform(10.0, 70.0)
++    voltage_noise = rng.uniform(0.02, 0.15)
++    temperature_noise = rng.uniform(0.05, 0.50)
+     sensor_suite = SixDOFSensorSuite(
+         depth_sensor=DepthSensor(
+             noise_std=depth_noise,
+@@ -327,15 +497,24 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
+         actuator_bank=actuator_bank,
+         sensor_suite=sensor_suite,
+     )
++    mission_plan = _mission_schedule(
++        duration,
++        rng,
++        depth_band_index=depth_band_index,
++    )
++    simulator.reset(SixDOFState(
++        position_ned=mission_plan.initial_position_ned,
++        quaternion_nb=euler_to_quaternion(*mission_plan.initial_euler_rpy),
++    ))
+     logs = simulator.run(
+         duration=duration,
+         dt=dt,
+-        target_provider=_target_provider(_mission_schedule(duration, rng)),
++        target_provider=_target_provider(mission_plan),
+         disturbance_provider=disturbance_provider,
+     )
+     metadata = {
+         "split": split,
+-        "domain": "held_out_ood" if split == "test" else "in_domain",
++        "domain": "independent_broad_deployment_domain",
+         "dynamics": dynamics_metadata,
+         "thrusters": thruster_metadata,
+         "sensors": {
+@@ -348,6 +527,7 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
+             "temperature_noise_std_c": temperature_noise,
+         },
+         "disturbance": disturbance_metadata,
++        "mission": mission_plan.to_metadata(),
+         "fault_start_time_s": None if fault is None else fault.start_time,
+         "thrust_efficiency": (
+             None if fault is None else fault.thrust_efficiency
+@@ -392,6 +572,11 @@ def generate_dataset(
+                 dt=dt,
+                 seed=mission_seed,
+                 split=split,
++                depth_band_index=_depth_band_index_for_mission(
++                    scenario_index,
++                    repetition,
++                    missions_per_scenario,
++                ),
+             )
+             chunk = build_six_dof_sequence_dataset(
+                 {mission_id: logs},
+@@ -469,12 +654,15 @@ def _torch_payload(dataset, splits, mission_metadata):
+             torch.from_numpy(value) if isinstance(value, np.ndarray) else value
+         )
+     payload.update({
+-        "dataset_version": "six_dof_hybrid_telemetry_v3",
++        "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3",
+         "label_format": "multitask_mode_and_location_with_joint_baseline",
+         "split_policy": (
+-            "fixed mission seeds; in-domain train/validation; "
+-            "held-out OOD test"
++            "fixed mission seeds; 90% mission focus at 0-300 m and 10% "
++            "deep-stress coverage at 300-500 m; broad randomized deployment "
++            "domain with disjoint train/validation/test mission seeds"
+         ),
++        "depth_bands_m": [list(band) for band in DEPTH_BANDS_M],
++        "depth_band_probabilities": DEPTH_BAND_PROBABILITIES.tolist(),
+         "mode_names": FAULT_MODE_NAMES,
+         "location_names": FAULT_LOCATION_NAMES,
+         "joint_names": JOINT_FAULT_NAMES,
+@@ -504,7 +692,7 @@ def main():
+             / "depth-sensor-fault-detection"
+             / "depth_fault_detection"
+             / "data"
+-            / "simulation_dataset_six_dof_hybrid_telemetry.pth"
++            / "simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth"
+         ),
+     )
+     args = parser.parse_args()
+@@ -543,7 +731,21 @@ def main():
+             name: int(len(np.unique(dataset["mission_ids"][indices])))
+             for name, indices in splits.items()
+         },
+-        "test_domain": "held_out_ood",
++        "split_depth_band_missions": {
++            split: {
++                f"{low:g}-{high:g}m": sum(
++                    1
++                    for metadata in mission_metadata.values()
++                    if metadata["split"] == split
++                    and metadata["parameters"]["mission"][
++                        "depth_band_index"
++                    ] == band_index
++                )
++                for band_index, (low, high) in enumerate(DEPTH_BANDS_M)
++            }
++            for split in ("train", "validation", "test")
++        },
++        "test_domain": "independent_broad_deployment_domain",
+         "output": str(args.output),
+     }
+     print(json.dumps(summary, indent=2))
+diff --git a/math-model/src/actuators/thruster_array.py b/math-model/src/actuators/thruster_array.py
+index 1681dee..af21fcd 100644
+--- a/math-model/src/actuators/thruster_array.py
++++ b/math-model/src/actuators/thruster_array.py
+@@ -205,13 +205,13 @@ def default_six_thruster_array(
+     length=1.2,
+     width=0.6,
+     horizontal_force_limit=40.0,
+-    vertical_force_limit=35.0,
++    vertical_force_limit=40.0,
+ ):
+     """Return a KYUBIC-style four-horizontal/two-vertical AUV layout.
+ 
+-    The actively allocated axes are X, Y, Z, and N (surge, sway, heave, yaw).
+-    Roll and pitch remain part of the six-DOF dynamics but are stabilised by
+-    hydrostatic restoring moments instead of direct control allocation.
++    The actively allocated axes are X, Y, Z, M, and N (surge, sway, heave,
++    pitch, yaw).  Differential V1/V2 thrust controls pitch.  Roll remains
++    passively stabilised by hydrostatic restoring moments.
+     """
+     half_length = float(length) / 2.0
+     half_width = float(width) / 2.0
+@@ -263,5 +263,5 @@ def default_six_thruster_array(
+ 
+     return ThrusterArray(
+         thrusters,
+-        wrench_weights=np.array([1.0, 1.0, 1.0, 0.0, 0.0, 1.0]),
++        wrench_weights=np.array([1.0, 1.0, 1.0, 0.0, 1.0, 1.0]),
+     )
+diff --git a/math-model/src/chapter6_evaluation.py b/math-model/src/chapter6_evaluation.py
+index c4b89d4..52d1240 100644
+--- a/math-model/src/chapter6_evaluation.py
++++ b/math-model/src/chapter6_evaluation.py
+@@ -482,15 +482,14 @@ def plot_detection_timing(summary, path):
+ def plot_success_rates(summary, path):
+     labels = [row["fault_type"].replace("THRUSTER_", "").replace("NOISE_INCREASE", "NOISE") for row in summary]
+     x = np.arange(len(summary))
+-    width = 0.22
++    width = 0.25
+     fig, ax = plt.subplots(figsize=(12, 5.8))
+     series = [
+         ("Correct diagnosis", "diagnosis_success_rate_pct", "#2878B5"),
+-        ("Correct recovery", "recovery_action_accuracy_pct", "#D95F02"),
+-        ("Safe state", "safe_state_rate_pct", "#3A923A"),
+-        ("Overall success", "mission_success_rate_pct", "#6F4E9C"),
++        ("Correct recovery action", "recovery_action_accuracy_pct", "#D95F02"),
++        ("Fixed-horizon safe state", "safe_state_rate_pct", "#3A923A"),
+     ]
+-    offsets = np.array([-1.5, -0.5, 0.5, 1.5]) * width
++    offsets = np.array([-1.0, 0.0, 1.0]) * width
+     for offset, (label, key, color) in zip(offsets, series):
+         values = [np.nan if row[key] is None else row[key] for row in summary]
+         ax.bar(x + offset, values, width, label=label, color=color)
+@@ -498,9 +497,9 @@ def plot_success_rates(summary, path):
+     ax.set_ylim(0, 105)
+     ax.set_xticks(x)
+     ax.set_xticklabels(labels, rotation=25, ha="right")
+-    ax.set_title("Diagnosis and fault-tolerant recovery outcomes")
++    ax.set_title("Diagnosis, recovery action, and fixed-horizon observations")
+     ax.grid(axis="y", alpha=0.25)
+-    ax.legend(ncol=2, loc="lower center")
++    ax.legend(ncol=3, loc="lower center")
+     fig.tight_layout()
+     fig.savefig(path, dpi=300)
+     plt.close(fig)
+diff --git a/math-model/src/environment/six_dof_simulator.py b/math-model/src/environment/six_dof_simulator.py
+index 957f452..6156a88 100644
+--- a/math-model/src/environment/six_dof_simulator.py
++++ b/math-model/src/environment/six_dof_simulator.py
+@@ -246,6 +246,7 @@ class SixDOFSimulator:
+             ),
+             "target_position_ned": target.position_ned.copy(),
+             "target_euler_rpy": target.euler_rpy.copy(),
++            "target_velocity_ned": target.linear_velocity_ned.copy(),
+             "guidance_context_id": target.guidance_context_id,
+             "position_error_ned": control.position_error_ned.copy(),
+             "attitude_error_body": control.attitude_error_body.copy(),
+diff --git a/math-model/src/my_utils.py b/math-model/src/my_utils.py
+index fa5e633..1e8bb51 100644
+--- a/math-model/src/my_utils.py
++++ b/math-model/src/my_utils.py
+@@ -1,5 +1,6 @@
+ import os
+ from pathlib import Path
++import textwrap
+ import torch
+ import numpy as np
+ import matplotlib.pyplot as plt
+@@ -989,24 +990,24 @@ def plot_ftc_diagnosis_response(
+                 )
+ 
+     # =========================================================
+-    # Text box: compact mission report using diagnosis codes
++    # Text box: thesis-readable mission report
+     # =========================================================
+-    diagnosis_code, evidence_code, recovery_code = get_diagnosis_evidence_recovery_codes(
+-        display_ai_diagnosis,
+-        display_ai_action
+-    )
+-
+-    # If final diagnosis is normal, avoid showing an old transient reason.
+-    if str(display_ai_diagnosis).upper() in ["NO_FAULT", "NORMAL"]:
+-        final_reason = "All residuals are within normal thresholds."
++    if (
++        fault_time is not None
++        and ai_intervention_time is not None
++        and ai_intervention_time >= fault_time
++    ):
++        confirmation_delay = f"{ai_intervention_time - fault_time:.1f} s"
++    else:
++        confirmation_delay = "Not confirmed"
+ 
++    wrapped_action = "\n".join(textwrap.wrap(display_ai_action, width=36))
+     info_text = (
+         f"[Mission Report]\n"
+         f"True Fault: {display_true_fault_name}\n"
+         f"Final Diagnosis: {display_ai_diagnosis}\n"
+-        f"Diagnosis Code: {diagnosis_code}\n"
+-        f"Evidence Code: {evidence_code}\n"
+-        f"Recovery Code: {recovery_code}"
++        f"FTC Action:\n{wrapped_action}\n"
++        f"Confirmation Delay: {confirmation_delay}"
+     )
+ 
+     axes[0].text(
+diff --git a/math-model/src/presentation/six_dof_demo_renderer.py b/math-model/src/presentation/six_dof_demo_renderer.py
+index 313a765..4e66b71 100644
+--- a/math-model/src/presentation/six_dof_demo_renderer.py
++++ b/math-model/src/presentation/six_dof_demo_renderer.py
+@@ -29,6 +29,49 @@ GRID = "#294256"
+ TARGET = "#d8e060"
+ ESTIMATE = "#4db5ff"
+ FTC_COLOR = "#b28cff"
++TRUTH_COLOR = "#ff8a65"
++
++
++def active_injected_truth(manifest, time_s):
++    """Return display-only injected events active at ``time_s``.
++
++    The returned truth is presentation/evaluation metadata.  It is deliberately
++    kept outside adapted diagnosis frames so it cannot become FTC or model
++    evidence.
++    """
++
++    if not manifest:
++        return []
++    active = []
++    for event in manifest.get("sensor_events", ()):
++        if event["start_time_s"] <= time_s <= event["end_time_s"]:
++            active.append({
++                "kind": "sensor",
++                "source": str(event["sensor"]).upper(),
++                "mode": str(event["mode"]),
++                "start_time_s": float(event["start_time_s"]),
++                "end_time_s": float(event["end_time_s"]),
++                "magnitude": float(event.get("magnitude", 0.0)),
++            })
++    for event in manifest.get("esc_telemetry_events", ()):
++        if event["start_time_s"] <= time_s <= event["end_time_s"]:
++            active.append({
++                "kind": "esc_link",
++                "source": f"{event['thruster_name']} ESC",
++                "mode": str(event["mode"]),
++                "start_time_s": float(event["start_time_s"]),
++                "end_time_s": float(event["end_time_s"]),
++            })
++    fault = manifest.get("thruster_fault")
++    if fault and time_s >= float(fault["start_time_s"]):
++        active.append({
++            "kind": "thruster",
++            "source": str(fault["thruster_name"]),
++            "mode": str(fault["mode"]),
++            "start_time_s": float(fault["start_time_s"]),
++            "end_time_s": None,
++        })
++    return active
+ 
+ 
+ def _configure_axis(axis, title=None):
+@@ -73,12 +116,20 @@ class SixDOFDemoRenderer:
+         frames: Sequence[Mapping],
+         events=(),
+         *,
++        injection_manifest: Mapping | None = None,
++        view_mode: str = "summary",
+         acceptance_badge: Mapping | None = None,
+     ):
+         self.frames = list(frames)
+         if not self.frames:
+             raise ValueError("frames cannot be empty")
++        if view_mode not in {"summary", "technical"}:
++            raise ValueError("view_mode must be summary or technical")
+         self.events = list(events)
++        self.injection_manifest = (
++            {} if injection_manifest is None else dict(injection_manifest)
++        )
++        self.view_mode = view_mode
+         self.acceptance_badge = (
+             None if acceptance_badge is None else dict(acceptance_badge)
+         )
+@@ -90,7 +141,7 @@ class SixDOFDemoRenderer:
+         self.spatial_low, self.spatial_high = _limits(combined)
+         self.figure = plt.figure(figsize=(12.8, 7.2), facecolor=BACKGROUND)
+         grid = self.figure.add_gridspec(
+-            12, 16, left=0.045, right=0.975, bottom=0.07, top=0.93,
++            12, 16, left=0.070, right=0.975, bottom=0.07, top=0.93,
+             hspace=1.15, wspace=1.0,
+         )
+         self.motion_axis = self.figure.add_subplot(
+@@ -142,7 +193,11 @@ class SixDOFDemoRenderer:
+         axis.plot(
+             self.positions[: index + 1, 0], self.positions[: index + 1, 1],
+             self.positions[: index + 1, 2], color=FOREGROUND, linewidth=2.0,
+-            label="Vehicle",
++            label=(
++                "Simulation truth"
++                if self.view_mode == "summary"
++                else "Vehicle"
++            ),
+         )
+         axis.plot(
+             self.estimates[: index + 1, 0], self.estimates[: index + 1, 1],
+@@ -175,6 +230,170 @@ class SixDOFDemoRenderer:
+             transform=axis.transAxes, color=FOREGROUND, fontsize=9,
+         )
+ 
++    def _truth_text(self, index):
++        active = active_injected_truth(
++            self.injection_manifest, float(self.times[index])
++        )
++        if not active:
++            return active, "NORMAL | no active injected anomaly"
++        labels = [
++            (
++                f"{item['source']}: {item['mode'].replace('_', ' ').upper()} "
++                f"@ {item['start_time_s']:.2f} s"
++            )
++            for item in active
++        ]
++        return active, " | ".join(labels)
++
++    @staticmethod
++    def _primary_diagnosis(frame):
++        ftc = frame["ftc"]
++        target = ftc.get("target_thruster")
++        if target:
++            return (
++                f"{target}: PHYSICAL FAULT CONFIRMED",
++                TIER_COLORS["confirmed"],
++            )
++        untrusted = tuple(ftc.get("untrusted_esc_channels", ()))
++        if untrusted:
++            return (
++                f"{', '.join(untrusted)} ESC: LINK ANOMALY / LOG ONLY",
++                TIER_COLORS["log_only"],
++            )
++        tier_rank = {
++            "normal": 0, "log_only": 1, "possible": 2, "confirmed": 3,
++        }
++        sensor_name, sensor_card = max(
++            frame["sensors"].items(),
++            key=lambda item: tier_rank.get(item[1]["tier"], 0),
++        )
++        tier = sensor_card["tier"]
++        if tier != "normal":
++            return (
++                f"{sensor_name.upper()}: {tier.replace('_', ' ').upper()}",
++                TIER_COLORS[tier],
++            )
++        return "NORMAL | no actionable fault", TIER_COLORS["normal"]
++
++    def _comparison_text(self, index, active):
++        frame = self.frames[index]
++        if not active:
++            if frame["overall_tier"] == "normal":
++                return "NO ACTIVE INJECTION", TIER_COLORS["normal"]
++            return "POST-EVENT MONITORING", TIER_COLORS["log_only"]
++        event = active[-1]
++        if event["kind"] == "thruster":
++            if frame["ftc"].get("target_thruster") == event["source"]:
++                detected = [
++                    float(candidate["time_s"])
++                    for candidate in self.frames
++                    if candidate["ftc"].get("target_thruster")
++                    == event["source"]
++                ]
++                delay = min(detected) - float(event["start_time_s"])
++                return (
++                    f"MATCH / CORRECT | confirmation delay {delay:.2f} s",
++                    TIER_COLORS["normal"],
++                )
++            return "PENDING | collecting causal evidence", TIER_COLORS["possible"]
++        if event["kind"] == "esc_link":
++            thruster = event["source"].split()[0]
++            untrusted = frame["ftc"].get("untrusted_esc_channels", ())
++            if thruster in untrusted and not frame["ftc"].get("target_thruster"):
++                return (
++                    "MATCH / CORRECT | link only, no physical isolation",
++                    TIER_COLORS["normal"],
++                )
++            return "PENDING | checking link state", TIER_COLORS["possible"]
++        sensor = str(event["source"]).lower()
++        tier = frame["sensors"][sensor]["tier"]
++        if tier != "normal":
++            return (
++                f"OBSERVED | response tier {tier.replace('_', ' ')}",
++                TIER_COLORS.get(tier, MUTED),
++            )
++        return "MONITORING | no decision yet", TIER_COLORS["possible"]
++
++    def _draw_summary_scenario(self, index):
++        axis = self.sensor_axis
++        axis.clear()
++        _configure_axis(axis, "Scenario")
++        axis.axis("off")
++        frame = self.frames[index]
++        depth = float(frame["pose"]["position_ned_m"][2])
++        target_depth = float(frame["pose"]["target_position_ned_m"][2])
++        initial_depth = float(self.positions[0, 2])
++        mode = str(
++            self.injection_manifest.get("injection_mode", "unspecified")
++        ).upper()
++        lines = (
++            f"{initial_depth:.0f} m local-depth replay",
++            f"Mission time   {self.times[index]:05.2f} / {self.times[-1]:.2f} s",
++            f"Depth          {depth:7.2f} m   | target {target_depth:7.2f} m",
++            f"Injection      {mode}   | environmental disturbance ON",
++            "Simulation truth is display-only; diagnosis remains causal.",
++        )
++        for row, line in enumerate(lines):
++            axis.text(
++                0.02, 0.88 - 0.18 * row, line,
++                color=FOREGROUND if row < 4 else MUTED,
++                fontsize=9.4 if row == 0 else 8.3,
++                fontweight="bold" if row == 0 else "normal",
++                transform=axis.transAxes, va="top",
++            )
++
++    def _draw_summary_comparison(self, index):
++        axis = self.thruster_axis
++        axis.clear()
++        _configure_axis(axis, "Injected truth vs system output")
++        axis.axis("off")
++        active, truth_text = self._truth_text(index)
++        diagnosis_text, diagnosis_color = self._primary_diagnosis(
++            self.frames[index]
++        )
++        comparison_text, comparison_color = self._comparison_text(
++            index, active
++        )
++        rows = (
++            ("GROUND TRUTH", truth_text, TRUTH_COLOR, 0.88),
++            ("DIAGNOSIS", diagnosis_text, diagnosis_color, 0.55),
++            ("COMPARISON", comparison_text, comparison_color, 0.22),
++        )
++        for label, value, color, y in rows:
++            axis.text(
++                0.02, y, label, color=MUTED, fontsize=7.8,
++                transform=axis.transAxes, va="top",
++            )
++            axis.text(
++                0.02, y - 0.12, value, color=color, fontsize=8.8,
++                fontweight="bold", transform=axis.transAxes, va="top",
++            )
++
++    def _draw_summary_ftc(self, index):
++        axis = self.status_axis
++        axis.clear()
++        _configure_axis(axis, "Fault-tolerant control")
++        axis.axis("off")
++        frame = self.frames[index]
++        ftc = frame["ftc"]
++        color = TIER_COLORS[ftc["tier"]]
++        target = ftc.get("target_thruster") or "none"
++        axis.text(0.02, 0.82, "Action", color=MUTED, fontsize=8,
++                  transform=axis.transAxes)
++        axis.text(
++            0.20, 0.82, ftc["action"].replace("_", " ").upper(),
++            color=color, fontsize=9.5, fontweight="bold",
++            transform=axis.transAxes,
++        )
++        axis.text(0.02, 0.50, "Target", color=MUTED, fontsize=8,
++                  transform=axis.transAxes)
++        axis.text(0.20, 0.50, target, color=FOREGROUND, fontsize=9.5,
++                  fontweight="bold", transform=axis.transAxes)
++        axis.text(
++            0.02, 0.18, "Rule FTC is authoritative; model output is advisory only.",
++            color=MUTED, fontsize=7.8, transform=axis.transAxes,
++        )
++
+     def _draw_sensors(self, index):
+         axis = self.sensor_axis
+         axis.clear()
+@@ -317,6 +536,61 @@ class SixDOFDemoRenderer:
+                 color=event_color, fontsize=7.5, va="top",
+             )
+ 
++    def _truth_intervals(self):
++        intervals = []
++        for event in self.injection_manifest.get("sensor_events", ()):
++            intervals.append((
++                float(event["start_time_s"]),
++                float(event["end_time_s"]),
++                str(event["sensor"]).upper(),
++            ))
++        for event in self.injection_manifest.get("esc_telemetry_events", ()):
++            intervals.append((
++                float(event["start_time_s"]),
++                float(event["end_time_s"]),
++                f"{event['thruster_name']} link",
++            ))
++        fault = self.injection_manifest.get("thruster_fault")
++        if fault:
++            intervals.append((
++                float(fault["start_time_s"]),
++                float(self.times[-1]),
++                f"{fault['thruster_name']} {str(fault['mode']).replace('_', ' ')}",
++            ))
++        return intervals
++
++    def _draw_summary_timeline(self, index):
++        axis = self.timeline_axis
++        axis.clear()
++        _configure_axis(axis, "Injected truth strip and causal diagnosis tier")
++        tier_value = {"normal": 0, "log_only": 1, "possible": 2, "confirmed": 3}
++        values = [tier_value[frame["overall_tier"]] for frame in self.frames]
++        axis.step(self.times, values, where="post", color=FTC_COLOR, linewidth=1.8)
++        for start, end, label in self._truth_intervals():
++            width = max(end - start, 0.03)
++            axis.broken_barh(
++                [(start, width)], (-0.86, 0.42),
++                facecolors=TRUTH_COLOR, alpha=0.75,
++            )
++            rotation = 90 if width < 0.6 else 0
++            x = start + width / 2.0
++            axis.text(
++                x, -0.65, label, color=FOREGROUND, fontsize=6.1,
++                ha="center", va="center", rotation=rotation,
++            )
++        axis.axvline(self.times[index], color=FOREGROUND, linewidth=1.3)
++        axis.set_xlim(self.times[0], self.times[-1])
++        axis.set_ylim(-1.0, 3.2)
++        axis.set_yticks((0, 1, 2, 3), ("normal", "log", "possible", "confirmed"))
++        axis.set_xlabel("Mission time (s)  |  orange strip = injected truth",
++                        color=MUTED, fontsize=8)
++        axis.grid(color=GRID, alpha=0.45, linewidth=0.6)
++        axis.text(
++            0.99, 0.92, f"t = {self.times[index]:05.2f} s",
++            transform=axis.transAxes, ha="right", va="top",
++            color=FOREGROUND, fontsize=10,
++        )
++
+     def _draw_timeline(self, index):
+         axis = self.timeline_axis
+         axis.clear()
+@@ -345,10 +619,16 @@ class SixDOFDemoRenderer:
+ 
+     def draw(self, index):
+         self._draw_motion(index)
+-        self._draw_sensors(index)
+-        self._draw_thrusters(index)
+-        self._draw_status(index)
+-        self._draw_timeline(index)
++        if self.view_mode == "summary":
++            self._draw_summary_scenario(index)
++            self._draw_summary_comparison(index)
++            self._draw_summary_ftc(index)
++            self._draw_summary_timeline(index)
++        else:
++            self._draw_sensors(index)
++            self._draw_thrusters(index)
++            self._draw_status(index)
++            self._draw_timeline(index)
+         return []
+ 
+     @staticmethod
+diff --git a/math-model/src/simple_control/six_dof_controller.py b/math-model/src/simple_control/six_dof_controller.py
+index df4388d..a9d76f2 100644
+--- a/math-model/src/simple_control/six_dof_controller.py
++++ b/math-model/src/simple_control/six_dof_controller.py
+@@ -24,6 +24,15 @@ def _clip_by_axis(values, limits):
+     return np.clip(values, -limits, limits)
+ 
+ 
++def _clip_linear_velocity(values, axis_limits, horizontal_speed_limit):
++    """Apply per-axis limits and a true horizontal-vector speed limit."""
++    clipped = _clip_by_axis(values, axis_limits)
++    horizontal_norm = np.linalg.norm(clipped[:2])
++    if horizontal_norm > horizontal_speed_limit:
++        clipped[:2] *= horizontal_speed_limit / horizontal_norm
++    return clipped
++
++
+ def _attitude_error_body(current_quaternion, target_quaternion):
+     """Return the shortest body-frame rotation vector to the target."""
+     current_conjugate = np.asarray(current_quaternion, dtype=float).copy()
+@@ -44,10 +53,18 @@ class PoseTarget:
+     position_ned: np.ndarray
+     euler_rpy: np.ndarray = field(default_factory=lambda: np.zeros(3))
+     guidance_context_id: int = 0
++    linear_velocity_ned: np.ndarray = field(
++        default_factory=lambda: np.zeros(3)
++    )
+ 
+     def __post_init__(self):
+         self.position_ned = _vector(self.position_ned, 3, "position_ned")
+         self.euler_rpy = _vector(self.euler_rpy, 3, "euler_rpy")
++        self.linear_velocity_ned = _vector(
++            self.linear_velocity_ned,
++            3,
++            "linear_velocity_ned",
++        )
+         context_id = int(self.guidance_context_id)
+         if context_id != self.guidance_context_id or context_id < 0:
+             raise ValueError("guidance_context_id must be a non-negative integer")
+@@ -65,20 +82,27 @@ class SixDOFControllerConfig:
+     velocity_kp: np.ndarray = field(
+         default_factory=lambda: np.array([65.0, 75.0, 85.0])
+     )
++    linear_damping_feedforward: np.ndarray = field(
++        default_factory=lambda: 0.65 * np.array([15.0, 30.0, 35.0])
++    )
++    quadratic_damping_feedforward: np.ndarray = field(
++        default_factory=lambda: 0.65 * np.array([8.0, 18.0, 22.0])
++    )
+     attitude_kp: np.ndarray = field(
+-        default_factory=lambda: np.array([2.0, 2.0, 1.8])
++        default_factory=lambda: np.array([2.0, 3.0, 1.8])
+     )
+     attitude_ki: np.ndarray = field(
+         default_factory=lambda: np.array([0.02, 0.02, 0.015])
+     )
+     angular_velocity_kp: np.ndarray = field(
+-        default_factory=lambda: np.array([14.0, 18.0, 18.0])
++        default_factory=lambda: np.array([14.0, 30.0, 18.0])
+     )
+     max_velocity_ned: np.ndarray = field(
+-        default_factory=lambda: np.array([1.0, 1.0, 0.65])
++        default_factory=lambda: np.array([1.5, 1.5, 0.35])
+     )
++    max_horizontal_speed: float = 1.5
+     max_angular_velocity: np.ndarray = field(
+-        default_factory=lambda: np.array([0.5, 0.5, 0.65])
++        default_factory=lambda: np.array([0.5, 0.7, 0.65])
+     )
+     position_integral_limit: np.ndarray = field(
+         default_factory=lambda: np.array([5.0, 5.0, 4.0])
+@@ -88,10 +112,13 @@ class SixDOFControllerConfig:
+     )
+ 
+     def __post_init__(self):
++        self.max_horizontal_speed = float(self.max_horizontal_speed)
+         vector_fields = (
+             "position_kp",
+             "position_ki",
+             "velocity_kp",
++            "linear_damping_feedforward",
++            "quadratic_damping_feedforward",
+             "attitude_kp",
+             "attitude_ki",
+             "angular_velocity_kp",
+@@ -107,6 +134,11 @@ class SixDOFControllerConfig:
+             setattr(self, name, value)
+         if np.any(self.max_velocity_ned <= 0):
+             raise ValueError("max_velocity_ned must be positive")
++        if (
++            not np.isfinite(self.max_horizontal_speed)
++            or self.max_horizontal_speed <= 0
++        ):
++            raise ValueError("max_horizontal_speed must be finite and positive")
+         if np.any(self.max_angular_velocity <= 0):
+             raise ValueError("max_angular_velocity must be positive")
+ 
+@@ -143,16 +175,28 @@ class CascadedSixDOFController:
+             self.position_error_integral + position_error * dt,
+             cfg.position_integral_limit,
+         )
+-        desired_velocity_ned = _clip_by_axis(
+-            cfg.position_kp * position_error
++        desired_velocity_ned = _clip_linear_velocity(
++            target.linear_velocity_ned
++            + cfg.position_kp * position_error
+             + cfg.position_ki * self.position_error_integral,
+             cfg.max_velocity_ned,
++            cfg.max_horizontal_speed,
+         )
+ 
+         current_velocity_ned = state.rotation_nb @ state.body_velocity[:3]
+         velocity_error_ned = desired_velocity_ned - current_velocity_ned
+-        desired_force_ned = cfg.velocity_kp * velocity_error_ned
+-        desired_force_body = state.rotation_nb.T @ desired_force_ned
++        feedback_force_ned = cfg.velocity_kp * velocity_error_ned
++        desired_velocity_body = state.rotation_nb.T @ desired_velocity_ned
++        damping_feedforward_body = (
++            cfg.linear_damping_feedforward * desired_velocity_body
++            + cfg.quadratic_damping_feedforward
++            * np.abs(desired_velocity_body)
++            * desired_velocity_body
++        )
++        desired_force_body = (
++            state.rotation_nb.T @ feedback_force_ned
++            + damping_feedforward_body
++        )
+ 
+         target_quaternion = euler_to_quaternion(*target.euler_rpy)
+         attitude_error = _attitude_error_body(
+diff --git a/math-model/src/test_thruster_motor_model.py b/math-model/src/test_thruster_motor_model.py
+deleted file mode 100644
+index 0b94827..0000000
+--- a/math-model/src/test_thruster_motor_model.py
++++ /dev/null
+@@ -1,31 +0,0 @@
+-from actuators.thruster_motor_model import ThrusterMotorModel, ThrusterFaultMode
+-
+-
+-def main():
+-    model = ThrusterMotorModel()
+-
+-    cmd = 0.8
+-
+-    for mode in [
+-        ThrusterFaultMode.NORMAL,
+-        ThrusterFaultMode.ENTANGLED,
+-        ThrusterFaultMode.NO_OUTPUT,
+-        ThrusterFaultMode.THRUST_LOSS,
+-        ThrusterFaultMode.SHORT_CIRCUIT,
+-    ]:
+-        state = model.simulate(cmd, mode)
+-
+-        print("\nMode:", mode.value)
+-        print("cmd:", state.cmd)
+-        print("expected_current:", state.expected_current)
+-        print("measured_current:", state.measured_current)
+-        print("current_residual:", state.current_residual)
+-        print("expected_omega:", state.expected_omega)
+-        print("measured_omega:", state.measured_omega)
+-        print("expected_thrust:", state.expected_thrust)
+-        print("actual_thrust:", state.actual_thrust)
+-        print("thrust_residual:", state.thrust_residual)
+-
+-
+-if __name__ == "__main__":
+-    main()
+\ No newline at end of file
+diff --git a/math-model/src/utils/teset.py b/math-model/src/utils/teset.py
+deleted file mode 100644
+index 196ab51..0000000
+--- a/math-model/src/utils/teset.py
++++ /dev/null
+@@ -1,4 +0,0 @@
+-from utils.feature_extractor import RAW_FEATURE_DIM, MODEL_INPUT_DIM
+-
+-print("RAW_FEATURE_DIM =", RAW_FEATURE_DIM)
+-print("MODEL_INPUT_DIM =", MODEL_INPUT_DIM)
+\ No newline at end of file
+diff --git a/math-model/tests/test_six_dof_control.py b/math-model/tests/test_six_dof_control.py
+index 78781f7..4a620f8 100644
+--- a/math-model/tests/test_six_dof_control.py
++++ b/math-model/tests/test_six_dof_control.py
+@@ -24,23 +24,23 @@ from simple_control.six_dof_controller import (
+ 
+ 
+ class ThrusterAllocationTests(unittest.TestCase):
+-    def test_default_layout_has_six_thrusters_and_four_controlled_axes(self):
++    def test_default_layout_has_six_thrusters_and_five_controlled_axes(self):
+         array = default_six_thruster_array()
+         self.assertEqual(array.names, ["H1", "H2", "H3", "H4", "V1", "V2"])
+         self.assertEqual(array.allocation_matrix.shape, (6, 6))
+         controlled = array.wrench_weights > 0
+         np.testing.assert_array_equal(
+             controlled,
+-            np.array([True, True, True, False, False, True]),
++            np.array([True, True, True, False, True, True]),
+         )
+         self.assertEqual(
+             np.linalg.matrix_rank(array.allocation_matrix[controlled]),
+-            4,
++            5,
+         )
+ 
+     def test_feasible_controlled_wrench_is_reconstructed(self):
+         array = default_six_thruster_array()
+-        desired = np.array([10.0, -5.0, 8.0, 0.0, 0.0, 3.0])
++        desired = np.array([10.0, -5.0, 8.0, 0.0, 2.0, 3.0])
+         result = array.allocate(desired)
+ 
+         np.testing.assert_allclose(result.achieved_wrench, desired, atol=1e-9)
+@@ -55,15 +55,23 @@ class ThrusterAllocationTests(unittest.TestCase):
+         self.assertTrue(np.all(result.thruster_forces >= array.min_forces - 1e-12))
+         self.assertGreater(np.linalg.norm(result.residual_wrench), 0.0)
+ 
+-    def test_roll_and_pitch_are_not_actively_allocated(self):
++    def test_roll_is_passive_but_pitch_is_actively_allocated(self):
+         array = default_six_thruster_array()
+         desired = np.array([0.0, 0.0, 0.0, 2.0, -3.0, 0.0])
+ 
+         result = array.allocate(desired)
+ 
+-        np.testing.assert_allclose(result.thruster_forces, 0.0, atol=1e-12)
+-        np.testing.assert_allclose(result.achieved_wrench, 0.0, atol=1e-12)
+-        np.testing.assert_allclose(result.residual_wrench, desired, atol=1e-12)
++        np.testing.assert_allclose(
++            result.achieved_wrench,
++            np.array([0.0, 0.0, 0.0, 0.0, -3.0, 0.0]),
++            atol=1e-12,
++        )
++        np.testing.assert_allclose(
++            result.residual_wrench,
++            np.array([0.0, 0.0, 0.0, 2.0, 0.0, 0.0]),
++            atol=1e-12,
++        )
++        self.assertGreater(np.linalg.norm(result.thruster_forces[4:]), 0.0)
+ 
+     def test_effectiveness_aware_allocation_avoids_failed_thruster(self):
+         array = default_six_thruster_array()
+@@ -216,6 +224,37 @@ class ThrusterFaultActuationTests(unittest.TestCase):
+ 
+ 
+ class SixDOFControllerTests(unittest.TestCase):
++    def test_controller_tracks_target_velocity_with_drag_feedforward(self):
++        controller = CascadedSixDOFController()
++        target = PoseTarget(
++            np.zeros(3),
++            linear_velocity_ned=np.array([1.2, 0.0, 0.0]),
++        )
++
++        output = controller.compute(SixDOFState(), target, dt=0.1)
++
++        np.testing.assert_allclose(
++            output.desired_velocity_ned,
++            np.array([1.2, 0.0, 0.0]),
++        )
++        self.assertGreater(output.desired_wrench_body[0], 0.0)
++
++    def test_controller_limits_horizontal_speed_by_vector_norm(self):
++        controller = CascadedSixDOFController()
++        output = controller.compute(
++            SixDOFState(),
++            PoseTarget(np.array([100.0, 100.0, 100.0])),
++            dt=0.1,
++        )
++
++        self.assertAlmostEqual(
++            np.linalg.norm(output.desired_velocity_ned[:2]),
++            1.5,
++        )
++        self.assertAlmostEqual(output.desired_velocity_ned[2], 0.35)
++        self.assertLess(output.desired_velocity_ned[0], 1.5)
++        self.assertLess(output.desired_velocity_ned[1], 1.5)
++
+     def test_guidance_context_is_validated_and_logged(self):
+         with self.assertRaises(ValueError):
+             PoseTarget(np.zeros(3), guidance_context_id=-1)
+diff --git a/math-model/tests/test_six_dof_demo_scenario.py b/math-model/tests/test_six_dof_demo_scenario.py
+index 112ca5e..9fbe931 100644
+--- a/math-model/tests/test_six_dof_demo_scenario.py
++++ b/math-model/tests/test_six_dof_demo_scenario.py
+@@ -17,6 +17,7 @@ from demo_six_dof_unified_diagnostics import (
+     load_acceptance_badge,
+     run_demo,
+ )
++from presentation.six_dof_demo_renderer import active_injected_truth
+ 
+ 
+ def _manifest(seed, mode="random"):
+@@ -70,6 +71,21 @@ def test_fixed_schedule_remains_the_reproducible_reference_story():
+     }]
+ 
+ 
++def test_display_truth_tracks_injections_without_entering_diagnosis_frames():
++    manifest = _manifest(123, mode="fixed")
++
++    assert active_injected_truth(manifest, 2.0) == []
++    assert active_injected_truth(manifest, 3.2)[0]["source"] == "DEPTH"
++    link_truth = active_injected_truth(manifest, 15.5)
++    assert [(item["kind"], item["source"]) for item in link_truth] == [
++        ("esc_link", "V2 ESC")
++    ]
++    thruster_truth = active_injected_truth(manifest, 17.1)
++    assert [(item["kind"], item["source"]) for item in thruster_truth] == [
++        ("thruster", "V1")
++    ]
++
++
+ def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
+     logs, frames, events, manifest = run_demo(
+         18.0, 0.10, 123, injection_mode="fixed"
+@@ -80,6 +96,7 @@ def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
+         if 15.35 <= float(log["time"]) <= 16.35
+     ]
+     assert communication
++    assert 195.0 <= float(logs[0]["position_ned"][2]) <= 205.0
+     assert all("V2" in log["ftc_untrusted_esc_channels"] for log in communication)
+     assert all(log["ftc_targeted_thruster_name"] is None for log in communication)
+     assert any(
+diff --git a/math-model/tests/test_six_dof_domain_randomization.py b/math-model/tests/test_six_dof_domain_randomization.py
+index 9375fbe..c88c62e 100644
+--- a/math-model/tests/test_six_dof_domain_randomization.py
++++ b/math-model/tests/test_six_dof_domain_randomization.py
+@@ -13,15 +13,90 @@ for path in (EXAMPLES_ROOT, SRC_ROOT):
+         sys.path.insert(0, str(path))
+ 
+ from generate_six_dof_fault_dataset import (
++    DEPTH_BAND_PROBABILITIES,
++    DEPTH_BANDS_M,
++    _depth_band_index_for_mission,
++    _mission_schedule,
+     _randomized_dynamics,
+     _randomized_thrusters,
+     _split_counts,
+     _split_for_repetition,
++    _target_provider,
+     fixed_split_indices,
+ )
+ 
+ 
+ class SixDOFDomainRandomizationTests(unittest.TestCase):
++    def test_depth_bands_follow_zero_to_300m_focused_mix(self):
++        split_bands = {name: [] for name in ("train", "validation", "test")}
++        for scenario_index in range(13):
++            for repetition in range(20):
++                split = _split_for_repetition(repetition, 20)
++                split_bands[split].append(_depth_band_index_for_mission(
++                    scenario_index,
++                    repetition,
++                    20,
++                ))
++
++        expected_counts = {
++            "train": [45, 64, 55, 18],
++            "validation": [10, 13, 12, 4],
++            "test": [10, 13, 12, 4],
++        }
++        for split, bands in split_bands.items():
++            counts = np.bincount(bands, minlength=len(DEPTH_BANDS_M))
++            self.assertEqual(counts.tolist(), expected_counts[split])
++            self.assertAlmostEqual(
++                float(np.mean(np.asarray(bands) < 3)),
++                0.90,
++                delta=0.015,
++            )
++
++        np.testing.assert_allclose(
++            DEPTH_BAND_PROBABILITIES,
++            [0.25, 0.35, 0.30, 0.10],
++        )
++
++    def test_mission_schedule_stays_inside_selected_depth_band(self):
++        for band_index, (depth_low, depth_high) in enumerate(DEPTH_BANDS_M):
++            plan = _mission_schedule(
++                duration=90.0,
++                rng=np.random.default_rng(100 + band_index),
++                depth_band_index=band_index,
++            )
++            depths = np.array([item[1][2] for item in plan.waypoints])
++
++            self.assertTrue(np.all(depths >= depth_low))
++            self.assertTrue(np.all(depths <= depth_high))
++            self.assertGreaterEqual(plan.cruise_speed_mps, 1.2)
++            self.assertLessEqual(plan.cruise_speed_mps, 1.5)
++            self.assertGreaterEqual(plan.vertical_speed_mps, 0.15)
++            self.assertLessEqual(plan.vertical_speed_mps, 0.35)
++
++    def test_smooth_target_respects_horizontal_and_vertical_speed_limits(self):
++        plan = _mission_schedule(
++            duration=90.0,
++            rng=np.random.default_rng(44),
++            depth_band_index=2,
++        )
++        provider = _target_provider(plan)
++        sample_times = np.linspace(0.0, 90.0, 9001)
++        positions = np.array([
++            provider(time_s, None).position_ned
++            for time_s in sample_times
++        ])
++        velocities = np.diff(positions, axis=0) / np.diff(sample_times)[:, None]
++
++        horizontal_speeds = np.linalg.norm(velocities[:, :2], axis=1)
++        self.assertLessEqual(
++            float(np.max(horizontal_speeds)),
++            plan.cruise_speed_mps + 1e-3,
++        )
++        self.assertLessEqual(
++            float(np.max(np.abs(velocities[:, 2]))),
++            plan.vertical_speed_mps + 1e-3,
++        )
++
+     def test_twenty_missions_give_fourteen_three_three_split(self):
+         self.assertEqual(
+             _split_counts(20),
+@@ -32,7 +107,7 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
+         self.assertEqual(splits.count("validation"), 3)
+         self.assertEqual(splits.count("test"), 3)
+ 
+-    def test_held_out_mass_scale_is_outside_training_range(self):
++    def test_independent_splits_share_broad_deployment_range(self):
+         train_dynamics, _ = _randomized_dynamics(
+             np.random.default_rng(1), "train"
+         )
+@@ -40,11 +115,13 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
+             np.random.default_rng(1), "test"
+         )
+ 
+-        self.assertGreaterEqual(train_dynamics.config.mass, 45.0)
+-        self.assertLessEqual(train_dynamics.config.mass, 55.0)
+-        self.assertTrue(
+-            test_dynamics.config.mass <= 45.0
+-            or test_dynamics.config.mass >= 55.0
++        self.assertGreaterEqual(train_dynamics.config.mass, 41.0)
++        self.assertLessEqual(train_dynamics.config.mass, 59.0)
++        self.assertGreaterEqual(test_dynamics.config.mass, 41.0)
++        self.assertLessEqual(test_dynamics.config.mass, 59.0)
++        self.assertEqual(
++            train_dynamics.config.mass,
++            test_dynamics.config.mass,
+         )
+         self.assertGreater(
+             np.min(np.linalg.eigvalsh(test_dynamics.mass_matrix)), 0.0

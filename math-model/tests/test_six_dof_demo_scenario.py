@@ -17,6 +17,7 @@ from demo_six_dof_unified_diagnostics import (
     load_acceptance_badge,
     run_demo,
 )
+from presentation.six_dof_demo_renderer import active_injected_truth
 
 
 def _manifest(seed, mode="random"):
@@ -70,6 +71,21 @@ def test_fixed_schedule_remains_the_reproducible_reference_story():
     }]
 
 
+def test_display_truth_tracks_injections_without_entering_diagnosis_frames():
+    manifest = _manifest(123, mode="fixed")
+
+    assert active_injected_truth(manifest, 2.0) == []
+    assert active_injected_truth(manifest, 3.2)[0]["source"] == "DEPTH"
+    link_truth = active_injected_truth(manifest, 15.5)
+    assert [(item["kind"], item["source"]) for item in link_truth] == [
+        ("esc_link", "V2 ESC")
+    ]
+    thruster_truth = active_injected_truth(manifest, 17.1)
+    assert [(item["kind"], item["source"]) for item in thruster_truth] == [
+        ("thruster", "V1")
+    ]
+
+
 def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
     logs, frames, events, manifest = run_demo(
         18.0, 0.10, 123, injection_mode="fixed"
@@ -80,6 +96,7 @@ def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
         if 15.35 <= float(log["time"]) <= 16.35
     ]
     assert communication
+    assert 195.0 <= float(logs[0]["position_ned"][2]) <= 205.0
     assert all("V2" in log["ftc_untrusted_esc_channels"] for log in communication)
     assert all(log["ftc_targeted_thruster_name"] is None for log in communication)
     assert any(

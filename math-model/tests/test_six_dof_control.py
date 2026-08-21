@@ -24,23 +24,23 @@ from simple_control.six_dof_controller import (
 
 
 class ThrusterAllocationTests(unittest.TestCase):
-    def test_default_layout_has_six_thrusters_and_four_controlled_axes(self):
+    def test_default_layout_has_six_thrusters_and_five_controlled_axes(self):
         array = default_six_thruster_array()
         self.assertEqual(array.names, ["H1", "H2", "H3", "H4", "V1", "V2"])
         self.assertEqual(array.allocation_matrix.shape, (6, 6))
         controlled = array.wrench_weights > 0
         np.testing.assert_array_equal(
             controlled,
-            np.array([True, True, True, False, False, True]),
+            np.array([True, True, True, False, True, True]),
         )
         self.assertEqual(
             np.linalg.matrix_rank(array.allocation_matrix[controlled]),
-            4,
+            5,
         )
 
     def test_feasible_controlled_wrench_is_reconstructed(self):
         array = default_six_thruster_array()
-        desired = np.array([10.0, -5.0, 8.0, 0.0, 0.0, 3.0])
+        desired = np.array([10.0, -5.0, 8.0, 0.0, 2.0, 3.0])
         result = array.allocate(desired)
 
         np.testing.assert_allclose(result.achieved_wrench, desired, atol=1e-9)
@@ -55,15 +55,23 @@ class ThrusterAllocationTests(unittest.TestCase):
         self.assertTrue(np.all(result.thruster_forces >= array.min_forces - 1e-12))
         self.assertGreater(np.linalg.norm(result.residual_wrench), 0.0)
 
-    def test_roll_and_pitch_are_not_actively_allocated(self):
+    def test_roll_is_passive_but_pitch_is_actively_allocated(self):
         array = default_six_thruster_array()
         desired = np.array([0.0, 0.0, 0.0, 2.0, -3.0, 0.0])
 
         result = array.allocate(desired)
 
-        np.testing.assert_allclose(result.thruster_forces, 0.0, atol=1e-12)
-        np.testing.assert_allclose(result.achieved_wrench, 0.0, atol=1e-12)
-        np.testing.assert_allclose(result.residual_wrench, desired, atol=1e-12)
+        np.testing.assert_allclose(
+            result.achieved_wrench,
+            np.array([0.0, 0.0, 0.0, 0.0, -3.0, 0.0]),
+            atol=1e-12,
+        )
+        np.testing.assert_allclose(
+            result.residual_wrench,
+            np.array([0.0, 0.0, 0.0, 2.0, 0.0, 0.0]),
+            atol=1e-12,
+        )
+        self.assertGreater(np.linalg.norm(result.thruster_forces[4:]), 0.0)
 
     def test_effectiveness_aware_allocation_avoids_failed_thruster(self):
         array = default_six_thruster_array()
@@ -216,6 +224,37 @@ class ThrusterFaultActuationTests(unittest.TestCase):
 
 
 class SixDOFControllerTests(unittest.TestCase):
+    def test_controller_tracks_target_velocity_with_drag_feedforward(self):
+        controller = CascadedSixDOFController()
+        target = PoseTarget(
+            np.zeros(3),
+            linear_velocity_ned=np.array([1.2, 0.0, 0.0]),
+        )
+
+        output = controller.compute(SixDOFState(), target, dt=0.1)
+
+        np.testing.assert_allclose(
+            output.desired_velocity_ned,
+            np.array([1.2, 0.0, 0.0]),
+        )
+        self.assertGreater(output.desired_wrench_body[0], 0.0)
+
+    def test_controller_limits_horizontal_speed_by_vector_norm(self):
+        controller = CascadedSixDOFController()
+        output = controller.compute(
+            SixDOFState(),
+            PoseTarget(np.array([100.0, 100.0, 100.0])),
+            dt=0.1,
+        )
+
+        self.assertAlmostEqual(
+            np.linalg.norm(output.desired_velocity_ned[:2]),
+            1.5,
+        )
+        self.assertAlmostEqual(output.desired_velocity_ned[2], 0.35)
+        self.assertLess(output.desired_velocity_ned[0], 1.5)
+        self.assertLess(output.desired_velocity_ned[1], 1.5)
+
     def test_guidance_context_is_validated_and_logged(self):
         with self.assertRaises(ValueError):
             PoseTarget(np.zeros(3), guidance_context_id=-1)

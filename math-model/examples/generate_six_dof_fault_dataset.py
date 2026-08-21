@@ -3,6 +3,7 @@
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +23,11 @@ from actuators.six_dof_thruster_faults import (
 )
 from actuators.thruster_array import default_six_thruster_array
 from config.six_dof_config import SixDOFConfig
-from environment.six_dof_dynamics import SixDOFDynamics
+from environment.six_dof_dynamics import (
+    SixDOFDynamics,
+    SixDOFState,
+    euler_to_quaternion,
+)
 from environment.six_dof_simulator import SixDOFSimulator
 from sensors.depth_sensor import DepthSensor
 from sensors.dvl_sensor import DVLSensor
@@ -36,6 +41,58 @@ from utils.six_dof_feature_extractor import (
     JOINT_FAULT_NAMES,
     THRUSTER_NAMES,
 )
+
+
+DEPTH_BANDS_M = (
+    (0.0, 50.0),
+    (50.0, 150.0),
+    (150.0, 300.0),
+    (300.0, 500.0),
+)
+DEPTH_BAND_PROBABILITIES = np.array([0.25, 0.35, 0.30, 0.10])
+# A deterministic 20-mission cycle matching the probabilities above.  The
+# interleaving avoids long runs in one band while keeping every split close to
+# the requested distribution.
+DEPTH_BAND_WEIGHTED_CYCLE = (
+    1, 2, 0, 1, 3, 2, 1, 0, 2, 1,
+    0, 2, 1, 3, 0, 2, 1, 0, 2, 1,
+)
+CRUISE_SPEEDS_MPS = np.array([1.2, 1.35, 1.5])
+CRUISE_SPEED_PROBABILITIES = np.array([0.30, 0.40, 0.30])
+VERTICAL_SPEED_RANGE_MPS = (0.15, 0.35)
+
+
+@dataclass(frozen=True)
+class MissionPlan:
+    """A depth-stratified local mission with continuous position targets."""
+
+    waypoints: tuple
+    initial_position_ned: np.ndarray
+    initial_euler_rpy: np.ndarray
+    depth_band_index: int
+    depth_band_m: tuple
+    cruise_speed_mps: float
+    vertical_speed_mps: float
+    ramp_duration_s: float
+
+    def to_metadata(self):
+        return {
+            "profile": "depth_weighted_local_smooth_v2",
+            "depth_band_index": self.depth_band_index,
+            "depth_band_m": list(self.depth_band_m),
+            "initial_position_ned_m": self.initial_position_ned.tolist(),
+            "cruise_speed_mps": self.cruise_speed_mps,
+            "vertical_speed_mps": self.vertical_speed_mps,
+            "ramp_duration_s": self.ramp_duration_s,
+            "waypoints": [
+                {
+                    "time_s": float(time_s),
+                    "position_ned_m": position.tolist(),
+                    "euler_rpy_rad": attitude.tolist(),
+                }
+                for time_s, position, attitude in self.waypoints
+            ],
+        }
 
 
 def scenario_definitions():
@@ -79,53 +136,39 @@ def _split_for_repetition(repetition, missions_per_scenario):
     return "test"
 
 
-def _edge_scale(rng, lower_outer, lower_inner, upper_inner, upper_outer):
-    """Sample outside the in-domain interval for a held-out OOD test."""
-    if rng.random() < 0.5:
-        return rng.uniform(lower_outer, lower_inner)
-    return rng.uniform(upper_inner, upper_outer)
-
-
-def _scale(rng, split, in_domain, held_out):
-    if split != "test":
-        return rng.uniform(*in_domain)
-    return _edge_scale(rng, *held_out)
-
-
 def _randomized_dynamics(rng, split):
-    mass_scale = _scale(rng, split, (0.90, 1.10), (0.82, 0.90, 1.10, 1.18))
+    """Sample a broad deployment domain for every leakage-safe split."""
+    del split
+    mass_scale = rng.uniform(0.82, 1.18)
     inertia_scale = np.array([
-        _scale(rng, split, (0.82, 1.18), (0.70, 0.82, 1.18, 1.30))
+        rng.uniform(0.70, 1.30)
         for _ in range(3)
     ])
     added_mass_scale = np.array([
-        _scale(rng, split, (0.80, 1.20), (0.65, 0.80, 1.20, 1.35))
+        rng.uniform(0.65, 1.35)
         for _ in range(6)
     ])
     linear_damping_scale = np.array([
-        _scale(rng, split, (0.75, 1.25), (0.60, 0.75, 1.25, 1.40))
+        rng.uniform(0.60, 1.40)
         for _ in range(6)
     ])
     quadratic_damping_scale = np.array([
-        _scale(rng, split, (0.75, 1.25), (0.60, 0.75, 1.25, 1.40))
+        rng.uniform(0.60, 1.40)
         for _ in range(6)
     ])
     mass = 50.0 * mass_scale
     weight = mass * 9.81
-    buoyancy_ratio = rng.uniform(
-        0.995 if split != "test" else 0.990,
-        1.005 if split != "test" else 1.010,
-    )
-    xy_offset = 0.010 if split != "test" else 0.018
+    buoyancy_ratio = rng.uniform(0.990, 1.010)
+    xy_offset = 0.018
     cg = np.array([
         rng.uniform(-xy_offset, xy_offset),
         rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(0.015, 0.030 if split != "test" else 0.035),
+        rng.uniform(0.015, 0.035),
     ])
     cb = np.array([
         rng.uniform(-xy_offset, xy_offset),
         rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(-0.030 if split != "test" else -0.035, -0.015),
+        rng.uniform(-0.035, -0.015),
     ])
     config = SixDOFConfig(
         mass=mass,
@@ -161,16 +204,11 @@ def _randomized_dynamics(rng, split):
 
 
 def _randomized_thrusters(rng, split):
-    if split == "test":
-        length = rng.uniform(1.00, 1.40)
-        width = rng.uniform(0.48, 0.72)
-        horizontal_limit = rng.uniform(34.0, 46.0)
-        vertical_limit = rng.uniform(29.0, 41.0)
-    else:
-        length = rng.uniform(1.10, 1.30)
-        width = rng.uniform(0.54, 0.66)
-        horizontal_limit = rng.uniform(37.0, 43.0)
-        vertical_limit = rng.uniform(32.0, 38.0)
+    del split
+    length = rng.uniform(1.00, 1.40)
+    width = rng.uniform(0.48, 0.72)
+    horizontal_limit = rng.uniform(34.0, 46.0)
+    vertical_limit = rng.uniform(34.0, 46.0)
     array = default_six_thruster_array(
         length=length,
         width=width,
@@ -185,48 +223,181 @@ def _randomized_thrusters(rng, split):
     }
 
 
-def _mission_schedule(duration, rng):
-    times = np.array([0.0, 0.25, 0.50, 0.75]) * duration
-    positions = [
-        np.array([0.0, 0.0, rng.uniform(1.5, 2.5)]),
-        np.array([
-            rng.uniform(3.5, 7.0),
-            rng.uniform(-2.5, 2.5),
-            rng.uniform(1.5, 3.5),
-        ]),
-        np.array([
-            rng.uniform(2.0, 7.0),
-            rng.uniform(2.5, 6.0) * rng.choice([-1.0, 1.0]),
-            rng.uniform(2.0, 4.0),
-        ]),
-        np.array([
-            rng.uniform(-1.0, 3.0),
-            rng.uniform(-4.0, 4.0),
-            rng.uniform(1.0, 3.0),
-        ]),
+def _depth_band_index_for_mission(
+    scenario_index,
+    repetition,
+    missions_per_scenario,
+):
+    """Apply the 0--300 m focused depth mix independently to every split."""
+    counts = _split_counts(missions_per_scenario)
+    split = _split_for_repetition(repetition, missions_per_scenario)
+    if split == "train":
+        local_index = repetition
+    elif split == "validation":
+        local_index = repetition - counts["train"]
+    else:
+        local_index = repetition - counts["train"] - counts["validation"]
+    split_index = int(scenario_index) * counts[split] + local_index
+    return DEPTH_BAND_WEIGHTED_CYCLE[
+        split_index % len(DEPTH_BAND_WEIGHTED_CYCLE)
     ]
-    attitudes = [
-        np.array([0.0, 0.0, rng.uniform(-0.2, 0.2)]),
-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
-        np.array([0.0, 0.0, rng.uniform(-np.pi, np.pi)]),
-    ]
-    return list(zip(times, positions, attitudes))
 
 
-def _target_provider(schedule):
+def _mission_schedule(duration, rng, depth_band_index=None):
+    """Build a local mission, with 300--500 m reserved for sparse stress runs."""
+    duration = float(duration)
+    if not np.isfinite(duration) or duration <= 0.0:
+        raise ValueError("duration must be finite and positive")
+    if depth_band_index is None:
+        depth_band_index = int(rng.choice(
+            len(DEPTH_BANDS_M),
+            p=DEPTH_BAND_PROBABILITIES,
+        ))
+    depth_band_index = int(depth_band_index)
+    if depth_band_index not in range(len(DEPTH_BANDS_M)):
+        raise ValueError("depth_band_index is outside the configured bands")
+
+    depth_low, depth_high = DEPTH_BANDS_M[depth_band_index]
+    depth_margin = min(5.0, 0.05 * (depth_high - depth_low))
+    working_low = depth_low + depth_margin
+    working_high = depth_high - depth_margin
+    initial_depth = rng.uniform(working_low, working_high)
+    cruise_speed = float(rng.choice(
+        CRUISE_SPEEDS_MPS,
+        p=CRUISE_SPEED_PROBABILITIES,
+    ))
+    vertical_speed = float(rng.uniform(*VERTICAL_SPEED_RANGE_MPS))
+
+    turn_duration = min(5.0, 0.08 * duration)
+    cruise_duration = (duration - 3.0 * turn_duration) / 4.0
+    ramp_duration = min(4.0, 0.25 * cruise_duration)
+    effective_travel_time = cruise_duration - ramp_duration
+    headings = [float(rng.uniform(-np.pi, np.pi))]
+    for _ in range(3):
+        headings.append(headings[-1] + float(rng.uniform(-0.55, 0.55)))
+    initial_position = np.array([0.0, 0.0, initial_depth])
+    waypoints = [(0.0, initial_position.copy(), np.array([
+        0.0, 0.0, headings[0],
+    ]))]
+
+    first_vertical_direction = float(rng.choice((-1.0, 1.0)))
+    vertical_directions = (
+        first_vertical_direction,
+        0.0,
+        -first_vertical_direction,
+        float(rng.choice((-1.0, 0.0, 1.0))),
+    )
+    current_time = 0.0
+    current_position = initial_position.copy()
+    for segment_index, vertical_direction in enumerate(vertical_directions):
+        heading = headings[segment_index]
+        horizontal_distance = cruise_speed * effective_travel_time
+        depth_delta = (
+            vertical_direction * vertical_speed * effective_travel_time
+        )
+        next_depth = np.clip(
+            current_position[2] + depth_delta,
+            working_low,
+            working_high,
+        )
+        next_position = current_position + np.array([
+            horizontal_distance * np.cos(heading),
+            horizontal_distance * np.sin(heading),
+            next_depth - current_position[2],
+        ])
+        current_time += cruise_duration
+        waypoints.append((
+            current_time,
+            next_position.copy(),
+            np.array([0.0, 0.0, heading]),
+        ))
+        current_position = next_position
+        if segment_index < len(vertical_directions) - 1:
+            current_time += turn_duration
+            waypoints.append((
+                current_time,
+                current_position.copy(),
+                np.array([0.0, 0.0, headings[segment_index + 1]]),
+            ))
+
+    waypoints = tuple(waypoints)
+    return MissionPlan(
+        waypoints=waypoints,
+        initial_position_ned=initial_position,
+        initial_euler_rpy=waypoints[0][2].copy(),
+        depth_band_index=depth_band_index,
+        depth_band_m=(depth_low, depth_high),
+        cruise_speed_mps=cruise_speed,
+        vertical_speed_mps=vertical_speed,
+        ramp_duration_s=ramp_duration,
+    )
+
+
+def _trapezoidal_profile(elapsed_s, duration_s, ramp_duration_s):
+    """Return normalized distance and its rate for a trapezoidal profile."""
+    duration_s = float(duration_s)
+    elapsed_s = float(np.clip(elapsed_s, 0.0, duration_s))
+    ramp = float(np.clip(ramp_duration_s, 0.0, 0.5 * duration_s))
+    if ramp <= 1e-12:
+        return elapsed_s / duration_s, 1.0 / duration_s
+    total_distance_scale = duration_s - ramp
+    if elapsed_s < ramp:
+        distance_scale = 0.5 * elapsed_s * elapsed_s / ramp
+        rate_scale = elapsed_s / ramp
+    elif elapsed_s <= duration_s - ramp:
+        distance_scale = 0.5 * ramp + elapsed_s - ramp
+        rate_scale = 1.0
+    else:
+        remaining = duration_s - elapsed_s
+        distance_scale = total_distance_scale - 0.5 * remaining * remaining / ramp
+        rate_scale = remaining / ramp
+    return (
+        float(distance_scale / total_distance_scale),
+        float(rate_scale / total_distance_scale),
+    )
+
+
+def _target_provider(plan):
+    schedule = plan.waypoints
+
     def provider(time_s, _state):
-        selected_index = 0
-        for index, candidate in enumerate(schedule):
-            if time_s >= candidate[0]:
-                selected_index = index
-            else:
-                break
-        selected = schedule[selected_index]
+        if time_s <= schedule[0][0]:
+            segment_index = 0
+            progress = 0.0
+            progress_rate = 0.0
+        elif time_s >= schedule[-1][0]:
+            segment_index = len(schedule) - 2
+            progress = 1.0
+            progress_rate = 0.0
+        else:
+            segment_index = 0
+            for index in range(len(schedule) - 1):
+                if schedule[index][0] <= time_s < schedule[index + 1][0]:
+                    segment_index = index
+                    break
+            start_time = schedule[segment_index][0]
+            end_time = schedule[segment_index + 1][0]
+            progress, progress_rate = _trapezoidal_profile(
+                time_s - start_time,
+                end_time - start_time,
+                plan.ramp_duration_s,
+            )
+
+        start = schedule[segment_index]
+        end = schedule[segment_index + 1]
+        position = (1.0 - progress) * start[1] + progress * end[1]
+        linear_velocity_ned = progress_rate * (end[1] - start[1])
+        attitude = (1.0 - progress) * start[2] + progress * end[2]
+        yaw_delta = np.arctan2(
+            np.sin(end[2][2] - start[2][2]),
+            np.cos(end[2][2] - start[2][2]),
+        )
+        attitude[2] = start[2][2] + progress * yaw_delta
         return PoseTarget(
-            selected[1],
-            selected[2],
-            guidance_context_id=selected_index,
+            position,
+            attitude,
+            guidance_context_id=segment_index,
+            linear_velocity_ned=linear_velocity_ned,
         )
 
     return provider
@@ -250,7 +421,15 @@ def _disturbance_provider(rng):
     }
 
 
-def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
+def run_mission(
+    thruster_name,
+    fault_mode,
+    duration,
+    dt,
+    seed,
+    split="train",
+    depth_band_index=None,
+):
     rng = np.random.default_rng(seed)
     dynamics, dynamics_metadata = _randomized_dynamics(rng, split)
     thruster_array, thruster_metadata = _randomized_thrusters(rng, split)
@@ -267,22 +446,13 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
             ),
         )
 
-    if split == "test":
-        depth_noise = rng.uniform(0.08, 0.12)
-        dvl_noise = rng.uniform(0.05, 0.08)
-        dvl_dropout = rng.uniform(0.03, 0.06)
-        current_noise = rng.uniform(0.08, 0.14)
-        rpm_noise = rng.uniform(35.0, 70.0)
-        voltage_noise = rng.uniform(0.08, 0.15)
-        temperature_noise = rng.uniform(0.20, 0.50)
-    else:
-        depth_noise = rng.uniform(0.02, 0.08)
-        dvl_noise = rng.uniform(0.01, 0.05)
-        dvl_dropout = rng.uniform(0.0, 0.03)
-        current_noise = rng.uniform(0.02, 0.08)
-        rpm_noise = rng.uniform(10.0, 35.0)
-        voltage_noise = rng.uniform(0.02, 0.08)
-        temperature_noise = rng.uniform(0.05, 0.25)
+    depth_noise = rng.uniform(0.02, 0.12)
+    dvl_noise = rng.uniform(0.01, 0.08)
+    dvl_dropout = rng.uniform(0.0, 0.06)
+    current_noise = rng.uniform(0.02, 0.14)
+    rpm_noise = rng.uniform(10.0, 70.0)
+    voltage_noise = rng.uniform(0.02, 0.15)
+    temperature_noise = rng.uniform(0.05, 0.50)
     sensor_suite = SixDOFSensorSuite(
         depth_sensor=DepthSensor(
             noise_std=depth_noise,
@@ -327,15 +497,24 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
         actuator_bank=actuator_bank,
         sensor_suite=sensor_suite,
     )
+    mission_plan = _mission_schedule(
+        duration,
+        rng,
+        depth_band_index=depth_band_index,
+    )
+    simulator.reset(SixDOFState(
+        position_ned=mission_plan.initial_position_ned,
+        quaternion_nb=euler_to_quaternion(*mission_plan.initial_euler_rpy),
+    ))
     logs = simulator.run(
         duration=duration,
         dt=dt,
-        target_provider=_target_provider(_mission_schedule(duration, rng)),
+        target_provider=_target_provider(mission_plan),
         disturbance_provider=disturbance_provider,
     )
     metadata = {
         "split": split,
-        "domain": "held_out_ood" if split == "test" else "in_domain",
+        "domain": "independent_broad_deployment_domain",
         "dynamics": dynamics_metadata,
         "thrusters": thruster_metadata,
         "sensors": {
@@ -348,6 +527,7 @@ def run_mission(thruster_name, fault_mode, duration, dt, seed, split="train"):
             "temperature_noise_std_c": temperature_noise,
         },
         "disturbance": disturbance_metadata,
+        "mission": mission_plan.to_metadata(),
         "fault_start_time_s": None if fault is None else fault.start_time,
         "thrust_efficiency": (
             None if fault is None else fault.thrust_efficiency
@@ -392,6 +572,11 @@ def generate_dataset(
                 dt=dt,
                 seed=mission_seed,
                 split=split,
+                depth_band_index=_depth_band_index_for_mission(
+                    scenario_index,
+                    repetition,
+                    missions_per_scenario,
+                ),
             )
             chunk = build_six_dof_sequence_dataset(
                 {mission_id: logs},
@@ -469,12 +654,15 @@ def _torch_payload(dataset, splits, mission_metadata):
             torch.from_numpy(value) if isinstance(value, np.ndarray) else value
         )
     payload.update({
-        "dataset_version": "six_dof_hybrid_telemetry_v3",
+        "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3",
         "label_format": "multitask_mode_and_location_with_joint_baseline",
         "split_policy": (
-            "fixed mission seeds; in-domain train/validation; "
-            "held-out OOD test"
+            "fixed mission seeds; 90% mission focus at 0-300 m and 10% "
+            "deep-stress coverage at 300-500 m; broad randomized deployment "
+            "domain with disjoint train/validation/test mission seeds"
         ),
+        "depth_bands_m": [list(band) for band in DEPTH_BANDS_M],
+        "depth_band_probabilities": DEPTH_BAND_PROBABILITIES.tolist(),
         "mode_names": FAULT_MODE_NAMES,
         "location_names": FAULT_LOCATION_NAMES,
         "joint_names": JOINT_FAULT_NAMES,
@@ -504,7 +692,7 @@ def main():
             / "depth-sensor-fault-detection"
             / "depth_fault_detection"
             / "data"
-            / "simulation_dataset_six_dof_hybrid_telemetry.pth"
+            / "simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth"
         ),
     )
     args = parser.parse_args()
@@ -543,7 +731,21 @@ def main():
             name: int(len(np.unique(dataset["mission_ids"][indices])))
             for name, indices in splits.items()
         },
-        "test_domain": "held_out_ood",
+        "split_depth_band_missions": {
+            split: {
+                f"{low:g}-{high:g}m": sum(
+                    1
+                    for metadata in mission_metadata.values()
+                    if metadata["split"] == split
+                    and metadata["parameters"]["mission"][
+                        "depth_band_index"
+                    ] == band_index
+                )
+                for band_index, (low, high) in enumerate(DEPTH_BANDS_M)
+            }
+            for split in ("train", "validation", "test")
+        },
+        "test_domain": "independent_broad_deployment_domain",
         "output": str(args.output),
     }
     print(json.dumps(summary, indent=2))

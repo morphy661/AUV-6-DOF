@@ -459,8 +459,8 @@ def main():
             "temporal thresholds preserve causal raw health observations; "
             "formal ticket thresholds are selected on validation missions "
             "for severe no-output recall and maintenance precision; exact "
-            "thruster location is not an optimization target; held-out OOD "
-            "missions are evaluated only after selection"
+            "thruster location is not an optimization target; independent "
+            "test missions are evaluated only after selection"
         ),
         "maintenance_policy": {
             "normal": "no health event",
