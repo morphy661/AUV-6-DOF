@@ -23,7 +23,9 @@ from generate_six_dof_fault_dataset import (
     _split_for_repetition,
     _target_provider,
     fixed_split_indices,
+    run_mission,
 )
+from actuators.six_dof_thruster_faults import SixDOFThrusterFaultMode
 
 
 class SixDOFDomainRandomizationTests(unittest.TestCase):
@@ -157,6 +159,68 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
         self.assertFalse(
             split_missions["validation"] & split_missions["test"]
         )
+
+    def test_paired_fault_seed_preserves_environment_parameters(self):
+        common = {
+            "duration": 12.0,
+            "dt": 0.1,
+            "seed": 8123,
+            "split": "train",
+            "depth_band_index": 1,
+            "fault_seed": 99123,
+            "rpm_noise_std_override": 68.0,
+        }
+        _, normal = run_mission(
+            thruster_name=None,
+            fault_mode=None,
+            **common,
+        )
+        _, fault = run_mission(
+            thruster_name="H1",
+            fault_mode=SixDOFThrusterFaultMode.THRUST_LOSS,
+            **common,
+        )
+
+        for key in (
+            "dynamics",
+            "thrusters",
+            "sensors",
+            "disturbance",
+            "mission",
+        ):
+            self.assertEqual(normal[key], fault[key])
+        self.assertIsNone(normal["fault_start_time_s"])
+        self.assertIsNone(normal["thrust_efficiency"])
+        self.assertIsNotNone(fault["fault_start_time_s"])
+        self.assertIsNotNone(fault["thrust_efficiency"])
+
+    def test_rpm_override_changes_only_rpm_metadata(self):
+        common = {
+            "thruster_name": None,
+            "fault_mode": None,
+            "duration": 12.0,
+            "dt": 0.1,
+            "seed": 8456,
+            "split": "train",
+            "depth_band_index": 2,
+            "fault_seed": 99456,
+        }
+        _, nominal = run_mission(
+            rpm_noise_std_override=40.0,
+            **common,
+        )
+        _, high_noise = run_mission(
+            rpm_noise_std_override=70.0,
+            **common,
+        )
+
+        nominal_sensors = dict(nominal["sensors"])
+        high_noise_sensors = dict(high_noise["sensors"])
+        self.assertEqual(nominal_sensors.pop("rpm_noise_std"), 40.0)
+        self.assertEqual(high_noise_sensors.pop("rpm_noise_std"), 70.0)
+        self.assertEqual(nominal_sensors, high_noise_sensors)
+        for key in ("dynamics", "thrusters", "disturbance", "mission"):
+            self.assertEqual(nominal[key], high_noise[key])
 
 
 if __name__ == "__main__":

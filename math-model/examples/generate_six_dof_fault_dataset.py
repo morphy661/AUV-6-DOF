@@ -429,18 +429,25 @@ def run_mission(
     seed,
     split="train",
     depth_band_index=None,
+    fault_seed=None,
+    rpm_noise_std_override=None,
 ):
     rng = np.random.default_rng(seed)
     dynamics, dynamics_metadata = _randomized_dynamics(rng, split)
     thruster_array, thruster_metadata = _randomized_thrusters(rng, split)
     fault = None
     if fault_mode is not None:
+        fault_rng = (
+            rng
+            if fault_seed is None
+            else np.random.default_rng(fault_seed)
+        )
         fault = SingleThrusterFault(
             thruster_name=thruster_name,
             mode=fault_mode,
-            start_time=rng.uniform(0.35 * duration, 0.60 * duration),
+            start_time=fault_rng.uniform(0.35 * duration, 0.60 * duration),
             thrust_efficiency=(
-                rng.uniform(0.30, 0.70)
+                fault_rng.uniform(0.30, 0.70)
                 if fault_mode is SixDOFThrusterFaultMode.THRUST_LOSS
                 else 0.0
             ),
@@ -450,7 +457,14 @@ def run_mission(
     dvl_noise = rng.uniform(0.01, 0.08)
     dvl_dropout = rng.uniform(0.0, 0.06)
     current_noise = rng.uniform(0.02, 0.14)
-    rpm_noise = rng.uniform(10.0, 70.0)
+    sampled_rpm_noise = rng.uniform(10.0, 70.0)
+    rpm_noise = (
+        sampled_rpm_noise
+        if rpm_noise_std_override is None
+        else float(rpm_noise_std_override)
+    )
+    if not np.isfinite(rpm_noise) or rpm_noise < 0.0:
+        raise ValueError("rpm_noise_std_override must be finite and nonnegative")
     voltage_noise = rng.uniform(0.02, 0.15)
     temperature_noise = rng.uniform(0.05, 0.50)
     sensor_suite = SixDOFSensorSuite(
