@@ -1,0 +1,1691 @@
+{
+  "experiment_id": "six_dof_feature_ablation_retrained_v1_20260821",
+  "experiment_type": "controlled_retraining_feature_ablation",
+  "selection_policy": "validation joint macro F1 only; test evaluated after checkpoint freeze and not used for model selection",
+  "controlled_factors": "same dataset splits, model architecture, seed, optimizer, loss, normalization, temporal policy, and ticket policy",
+  "device": "cuda",
+  "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3",
+  "dataset_sha256": "209517014A9E9AA192EFEB92633FA7EEB1DF7382F58ECA899ECD1A4749549398",
+  "split_missions": {
+    "train": 182,
+    "validation": 39,
+    "test": 39
+  },
+  "training": {
+    "epochs": 30,
+    "batch_size": 256,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "early_stopping_patience": 7,
+    "seed": 42
+  },
+  "variants": {
+    "baseline": {
+      "masked_raw_features": [],
+      "best_epoch": 17,
+      "validation_selection_joint_macro_f1": 0.8055430271760815,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 2.3968997677258606,
+          "validation_loss": 1.4921322270102113,
+          "validation_mode_macro_f1": 0.6693220649785309,
+          "validation_location_macro_f1": 0.6291343818568872,
+          "validation_joint_macro_f1": 0.5410357114367854,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 2,
+          "train_loss": 1.1818510390606876,
+          "validation_loss": 0.9935255453572067,
+          "validation_mode_macro_f1": 0.758853705347923,
+          "validation_location_macro_f1": 0.7201645816144193,
+          "validation_joint_macro_f1": 0.6830313811553239,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.7813111687985417,
+          "validation_loss": 0.9091169713775274,
+          "validation_mode_macro_f1": 0.794619472326016,
+          "validation_location_macro_f1": 0.7535823303718198,
+          "validation_joint_macro_f1": 0.7220950368839776,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.569632963567858,
+          "validation_loss": 0.8404649656987557,
+          "validation_mode_macro_f1": 0.8166831032042817,
+          "validation_location_macro_f1": 0.7759672235182931,
+          "validation_joint_macro_f1": 0.7572693797206358,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.4180802365920553,
+          "validation_loss": 0.8380010372159133,
+          "validation_mode_macro_f1": 0.8354304727389342,
+          "validation_location_macro_f1": 0.7874777057204778,
+          "validation_joint_macro_f1": 0.7685630937019242,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.33798780995310496,
+          "validation_loss": 0.9193519877567967,
+          "validation_mode_macro_f1": 0.8420669095008216,
+          "validation_location_macro_f1": 0.7872509353481201,
+          "validation_joint_macro_f1": 0.7758516835329854,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.2887195113609577,
+          "validation_loss": 0.9831987344104672,
+          "validation_mode_macro_f1": 0.8154569671015142,
+          "validation_location_macro_f1": 0.7706338738875748,
+          "validation_joint_macro_f1": 0.7458130561767933,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.23633868428025667,
+          "validation_loss": 0.966581885634551,
+          "validation_mode_macro_f1": 0.8541166969943901,
+          "validation_location_macro_f1": 0.8037752766956204,
+          "validation_joint_macro_f1": 0.7933674435647691,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.19843045276471938,
+          "validation_loss": 1.0783324637722038,
+          "validation_mode_macro_f1": 0.8327403706464359,
+          "validation_location_macro_f1": 0.7962076250172724,
+          "validation_joint_macro_f1": 0.7720653436234927,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.1624673137262863,
+          "validation_loss": 1.0504854489431303,
+          "validation_mode_macro_f1": 0.8320617490469443,
+          "validation_location_macro_f1": 0.7914046495145728,
+          "validation_joint_macro_f1": 0.7830179006617529,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.12721951465725442,
+          "validation_loss": 1.0662904299590223,
+          "validation_mode_macro_f1": 0.8411147349529813,
+          "validation_location_macro_f1": 0.8004212742623135,
+          "validation_joint_macro_f1": 0.7842264863738511,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.11089161053471182,
+          "validation_loss": 1.215084851364316,
+          "validation_mode_macro_f1": 0.8301349318164748,
+          "validation_location_macro_f1": 0.796742782642423,
+          "validation_joint_macro_f1": 0.7775377032824353,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.0773881570817867,
+          "validation_loss": 1.1673196129503534,
+          "validation_mode_macro_f1": 0.8445272615775673,
+          "validation_location_macro_f1": 0.8103683249926122,
+          "validation_joint_macro_f1": 0.7966872213532175,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.06677839622872087,
+          "validation_loss": 1.2352197331593449,
+          "validation_mode_macro_f1": 0.8456283623779535,
+          "validation_location_macro_f1": 0.8089287019856836,
+          "validation_joint_macro_f1": 0.7959136373362186,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.057698453044754336,
+          "validation_loss": 1.2870636273147469,
+          "validation_mode_macro_f1": 0.8397039330239147,
+          "validation_location_macro_f1": 0.8034332600025476,
+          "validation_joint_macro_f1": 0.7888191915072247,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.05303716890656628,
+          "validation_loss": 1.346133440060723,
+          "validation_mode_macro_f1": 0.8498060276802911,
+          "validation_location_macro_f1": 0.8103295633840377,
+          "validation_joint_macro_f1": 0.7979203762763833,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.050846091072107184,
+          "validation_loss": 1.3842632374454475,
+          "validation_mode_macro_f1": 0.8580154410429278,
+          "validation_location_macro_f1": 0.8140563214093012,
+          "validation_joint_macro_f1": 0.8055430271760815,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.0473655891795268,
+          "validation_loss": 1.3941812738055956,
+          "validation_mode_macro_f1": 0.8452220043909645,
+          "validation_location_macro_f1": 0.8083868863308709,
+          "validation_joint_macro_f1": 0.7940925980789721,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.04425590404262945,
+          "validation_loss": 1.5228968104537652,
+          "validation_mode_macro_f1": 0.8469284888626992,
+          "validation_location_macro_f1": 0.8070639651846492,
+          "validation_joint_macro_f1": 0.7935756199749704,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.046866402949181554,
+          "validation_loss": 1.410526159541222,
+          "validation_mode_macro_f1": 0.8545009786766403,
+          "validation_location_macro_f1": 0.8095742715138657,
+          "validation_joint_macro_f1": 0.8014523638039768,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.035993737027448715,
+          "validation_loss": 1.5079273021737607,
+          "validation_mode_macro_f1": 0.847880169805498,
+          "validation_location_macro_f1": 0.8110048840636691,
+          "validation_joint_macro_f1": 0.7966718798943844,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.031207529855214088,
+          "validation_loss": 1.4781867282347059,
+          "validation_mode_macro_f1": 0.8476123683855779,
+          "validation_location_macro_f1": 0.8122246238641387,
+          "validation_joint_macro_f1": 0.7995117485548285,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 23,
+          "train_loss": 0.025139415664919493,
+          "validation_loss": 1.556111506480194,
+          "validation_mode_macro_f1": 0.8504621019702169,
+          "validation_location_macro_f1": 0.8142652450641256,
+          "validation_joint_macro_f1": 0.8022404693483763,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 24,
+          "train_loss": 0.025890035479975385,
+          "validation_loss": 1.553983830910535,
+          "validation_mode_macro_f1": 0.8454577421226261,
+          "validation_location_macro_f1": 0.8116379532728243,
+          "validation_joint_macro_f1": 0.7982382969614281,
+          "learning_rate": 7.5e-05
+        }
+      ],
+      "checkpoint_sha256": "5175F059553C8DB2538AB769A1576594DDF57B2E3BF5E0A88DE8AE4F37367ABC",
+      "validation": {
+        "mode_macro_f1": 0.8580154410429278,
+        "location_macro_f1": 0.8140563214093012,
+        "joint_macro_f1": 0.8055430271760815,
+        "window_metrics": {
+          "normal_recall": 0.912975912975913,
+          "no_output_recall": 0.9890560875512996,
+          "thrust_loss_recall": 0.6477419354838709,
+          "fault_detection_recall": 0.8134130146082338,
+          "fault_mode_recall": 0.8134130146082338
+        },
+        "false_alarm": {
+          "raw": 0.08702408702408702,
+          "temporal": 0.07692307692307693,
+          "operator_attention_window_coverage": 0.000777000777000777,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.18357487922705315,
+          "pre_fault_segment_raw": 0.06851851851851852,
+          "raw_episode_count": 32,
+          "raw_episodes_at_least_8_s": 4,
+          "temporal_episode_count": 11,
+          "temporal_episodes_at_least_8_s": 6
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.8333333333333334,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.6666666666666666,
+          "ticket_fault_mode_judgement_rate": 0.8333333333333334,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 30,
+          "maintenance_observation_count": 30,
+          "recovered_before_confirmation_observations": 14,
+          "pending_at_mission_end_observations": 4,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 12,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 12.38166618347168,
+          "median_ticket_detection_delay_s": 3.799999237060547,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.9666666666666667,
+          "ticket_top2_location_hit_rate": 0.9666666666666667,
+          "detected_ticket_missions": 30,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 68,
+          "merged_event_count": 67,
+          "event_count_reduction": 1,
+          "event_compression_ratio": 0.014705882352941124,
+          "background_trace_count": 12,
+          "observation_count": 25,
+          "maintenance_advisory_count": 12,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 30,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 19,
+          "raw_fault_mission_recall": 0.9722222222222222,
+          "review_log_fault_mission_recall": 0.9722222222222222,
+          "operator_attention_fault_mission_recall": 0.8333333333333334,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.6666666666666666,
+          "normal_window_operator_attention_rate": 0.000777000777000777
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 14,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 15,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 16,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 38,
+            "raw_false_alarm_rate": 0.5507246376811594,
+            "temporal_false_alarm_rate": 0.5362318840579711,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      },
+      "test": {
+        "mode_macro_f1": 0.8881951206326694,
+        "location_macro_f1": 0.8051565098817866,
+        "joint_macro_f1": 0.7980933505757034,
+        "window_metrics": {
+          "normal_recall": 0.8738872403560831,
+          "no_output_recall": 0.9932065217391305,
+          "thrust_loss_recall": 0.8031161473087819,
+          "fault_detection_recall": 0.9001386962552012,
+          "fault_mode_recall": 0.9001386962552012
+        },
+        "false_alarm": {
+          "raw": 0.1261127596439169,
+          "temporal": 0.12388724035608309,
+          "operator_attention_window_coverage": 0.013353115727002967,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.3188405797101449,
+          "pre_fault_segment_raw": 0.09114811568799298,
+          "raw_episode_count": 49,
+          "raw_episodes_at_least_8_s": 8,
+          "temporal_episode_count": 26,
+          "temporal_episodes_at_least_8_s": 10
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.8888888888888888,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.7777777777777778,
+          "ticket_fault_mode_judgement_rate": 0.8888888888888888,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 32,
+          "maintenance_observation_count": 35,
+          "recovered_before_confirmation_observations": 10,
+          "pending_at_mission_end_observations": 4,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 21,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 10.293749928474426,
+          "median_ticket_detection_delay_s": 3.8000001907348633,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.9375,
+          "ticket_top2_location_hit_rate": 0.9375,
+          "detected_ticket_missions": 32,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 77,
+          "merged_event_count": 76,
+          "event_count_reduction": 1,
+          "event_compression_ratio": 0.012987012987012991,
+          "background_trace_count": 13,
+          "observation_count": 31,
+          "maintenance_advisory_count": 14,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 32,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 33,
+          "raw_fault_mission_recall": 1.0,
+          "review_log_fault_mission_recall": 1.0,
+          "operator_attention_fault_mission_recall": 0.8888888888888888,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.7777777777777778,
+          "normal_window_operator_attention_rate": 0.013353115727002967
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 17,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 8,
+            "raw_false_alarm_rate": 0.11594202898550725,
+            "temporal_false_alarm_rate": 0.08695652173913043,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 18,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 28,
+            "raw_false_alarm_rate": 0.4057971014492754,
+            "temporal_false_alarm_rate": 0.36231884057971014,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 19,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 30,
+            "raw_false_alarm_rate": 0.43478260869565216,
+            "temporal_false_alarm_rate": 0.43478260869565216,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      }
+    },
+    "motion_loss_evidence": {
+      "masked_raw_features": [
+        "H1_motion_loss_evidence",
+        "H2_motion_loss_evidence",
+        "H3_motion_loss_evidence",
+        "H4_motion_loss_evidence",
+        "V1_motion_loss_evidence",
+        "V2_motion_loss_evidence"
+      ],
+      "best_epoch": 14,
+      "validation_selection_joint_macro_f1": 0.805416102643554,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 2.398075423551245,
+          "validation_loss": 1.4973596628532588,
+          "validation_mode_macro_f1": 0.6649938799288597,
+          "validation_location_macro_f1": 0.6321013984103488,
+          "validation_joint_macro_f1": 0.5438135432024889,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 2,
+          "train_loss": 1.1883349177846507,
+          "validation_loss": 1.0081211077966359,
+          "validation_mode_macro_f1": 0.7653954170129725,
+          "validation_location_macro_f1": 0.7209502513712349,
+          "validation_joint_macro_f1": 0.6864724423691733,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.7838026208804485,
+          "validation_loss": 0.879400927406718,
+          "validation_mode_macro_f1": 0.7982092338267689,
+          "validation_location_macro_f1": 0.752129851203326,
+          "validation_joint_macro_f1": 0.7307133916357794,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5638174107613692,
+          "validation_loss": 0.8191589598070111,
+          "validation_mode_macro_f1": 0.8323175603730082,
+          "validation_location_macro_f1": 0.7867968075119155,
+          "validation_joint_macro_f1": 0.7664380307066673,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.42058082365898336,
+          "validation_loss": 0.9224096211830519,
+          "validation_mode_macro_f1": 0.8370734014216875,
+          "validation_location_macro_f1": 0.7801436461038083,
+          "validation_joint_macro_f1": 0.7621744174694709,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.3381144036826503,
+          "validation_loss": 0.8725619138546242,
+          "validation_mode_macro_f1": 0.8438436246430577,
+          "validation_location_macro_f1": 0.7913376360564796,
+          "validation_joint_macro_f1": 0.7790885880908779,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.28623842761205986,
+          "validation_loss": 0.9273766624513511,
+          "validation_mode_macro_f1": 0.8429761375494254,
+          "validation_location_macro_f1": 0.7920131179893035,
+          "validation_joint_macro_f1": 0.777082097198845,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.23509394242160622,
+          "validation_loss": 0.9023877837689512,
+          "validation_mode_macro_f1": 0.8579013548789298,
+          "validation_location_macro_f1": 0.8094122311553777,
+          "validation_joint_macro_f1": 0.797441285246671,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.1847366976737976,
+          "validation_loss": 0.9866257115072816,
+          "validation_mode_macro_f1": 0.8317401317705221,
+          "validation_location_macro_f1": 0.8026300165699155,
+          "validation_joint_macro_f1": 0.785077737119749,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.17416572604599584,
+          "validation_loss": 1.076928993386263,
+          "validation_mode_macro_f1": 0.8435627758389117,
+          "validation_location_macro_f1": 0.7952792655318633,
+          "validation_joint_macro_f1": 0.7830313026906048,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.144512507422217,
+          "validation_loss": 0.9925307047823787,
+          "validation_mode_macro_f1": 0.8431601897949997,
+          "validation_location_macro_f1": 0.8051350108804797,
+          "validation_joint_macro_f1": 0.7913453231655626,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.11281115860317859,
+          "validation_loss": 1.1299959237200787,
+          "validation_mode_macro_f1": 0.8480633561646252,
+          "validation_location_macro_f1": 0.8077717533446013,
+          "validation_joint_macro_f1": 0.7910371963694078,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.079663623947065,
+          "validation_loss": 1.1479365700169613,
+          "validation_mode_macro_f1": 0.8599456971590582,
+          "validation_location_macro_f1": 0.814102843571234,
+          "validation_joint_macro_f1": 0.8027190800646754,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.06841944552701094,
+          "validation_loss": 1.167570878389784,
+          "validation_mode_macro_f1": 0.863102552012415,
+          "validation_location_macro_f1": 0.8180432317740698,
+          "validation_joint_macro_f1": 0.805416102643554,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.06053256293822979,
+          "validation_loss": 1.1855920630460821,
+          "validation_mode_macro_f1": 0.8600428010208644,
+          "validation_location_macro_f1": 0.8178772867656612,
+          "validation_joint_macro_f1": 0.8048073230042152,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.05858326502572531,
+          "validation_loss": 1.3354801225098836,
+          "validation_mode_macro_f1": 0.8512473539544422,
+          "validation_location_macro_f1": 0.8109688605517958,
+          "validation_joint_macro_f1": 0.7963930689023976,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.05243745814338041,
+          "validation_loss": 1.3696184088327616,
+          "validation_mode_macro_f1": 0.8571948953640357,
+          "validation_location_macro_f1": 0.8145905945298353,
+          "validation_joint_macro_f1": 0.8018363249613394,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.04648164947028361,
+          "validation_loss": 1.3378429321503493,
+          "validation_mode_macro_f1": 0.8423619478124427,
+          "validation_location_macro_f1": 0.8052642793561366,
+          "validation_joint_macro_f1": 0.7887804578641341,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.03986500810731873,
+          "validation_loss": 1.3791132219965383,
+          "validation_mode_macro_f1": 0.854573380914601,
+          "validation_location_macro_f1": 0.8129016420010681,
+          "validation_joint_macro_f1": 0.8005286412845145,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.03603190911798185,
+          "validation_loss": 1.3846913473263804,
+          "validation_mode_macro_f1": 0.8565029160015326,
+          "validation_location_macro_f1": 0.8132554028993887,
+          "validation_joint_macro_f1": 0.7990693995510438,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.033938372631867726,
+          "validation_loss": 1.4537388072234092,
+          "validation_mode_macro_f1": 0.8452663734520035,
+          "validation_location_macro_f1": 0.8058592928727041,
+          "validation_joint_macro_f1": 0.7904878189591115,
+          "learning_rate": 7.5e-05
+        }
+      ],
+      "checkpoint_sha256": "7728336D455BED9976AB0EB26877FECD7E32EA0217E85815AA73096F07D2900A",
+      "validation": {
+        "mode_macro_f1": 0.863102552012415,
+        "location_macro_f1": 0.8180432317740698,
+        "joint_macro_f1": 0.805416102643554,
+        "window_metrics": {
+          "normal_recall": 0.940947940947941,
+          "no_output_recall": 0.9890560875512996,
+          "thrust_loss_recall": 0.6283870967741936,
+          "fault_detection_recall": 0.8034528552456839,
+          "fault_mode_recall": 0.8034528552456839
+        },
+        "false_alarm": {
+          "raw": 0.059052059052059055,
+          "temporal": 0.05672105672105672,
+          "operator_attention_window_coverage": 0.001554001554001554,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.13043478260869565,
+          "pre_fault_segment_raw": 0.04537037037037037,
+          "raw_episode_count": 23,
+          "raw_episodes_at_least_8_s": 4,
+          "temporal_episode_count": 10,
+          "temporal_episodes_at_least_8_s": 5
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.8611111111111112,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.7222222222222222,
+          "ticket_fault_mode_judgement_rate": 0.8611111111111112,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 31,
+          "maintenance_observation_count": 24,
+          "recovered_before_confirmation_observations": 8,
+          "pending_at_mission_end_observations": 5,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 11,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 11.422580226775139,
+          "median_ticket_detection_delay_s": 2.5,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.967741935483871,
+          "ticket_top2_location_hit_rate": 0.967741935483871,
+          "detected_ticket_missions": 31,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 68,
+          "merged_event_count": 67,
+          "event_count_reduction": 1,
+          "event_compression_ratio": 0.014705882352941124,
+          "background_trace_count": 9,
+          "observation_count": 27,
+          "maintenance_advisory_count": 13,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 31,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 14,
+          "raw_fault_mission_recall": 0.9722222222222222,
+          "review_log_fault_mission_recall": 0.9722222222222222,
+          "operator_attention_fault_mission_recall": 0.8611111111111112,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.7222222222222222,
+          "normal_window_operator_attention_rate": 0.001554001554001554
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 14,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 15,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 16,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 27,
+            "raw_false_alarm_rate": 0.391304347826087,
+            "temporal_false_alarm_rate": 0.391304347826087,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      },
+      "test": {
+        "mode_macro_f1": 0.8889676590401724,
+        "location_macro_f1": 0.8126539012127062,
+        "joint_macro_f1": 0.8006937436605036,
+        "window_metrics": {
+          "normal_recall": 0.8976261127596439,
+          "no_output_recall": 0.9945652173913043,
+          "thrust_loss_recall": 0.7677053824362606,
+          "fault_detection_recall": 0.883495145631068,
+          "fault_mode_recall": 0.883495145631068
+        },
+        "false_alarm": {
+          "raw": 0.10237388724035608,
+          "temporal": 0.09198813056379822,
+          "operator_attention_window_coverage": 0.000741839762611276,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.24154589371980675,
+          "pre_fault_segment_raw": 0.07712532865907099,
+          "raw_episode_count": 48,
+          "raw_episodes_at_least_8_s": 6,
+          "temporal_episode_count": 18,
+          "temporal_episodes_at_least_8_s": 8
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.8888888888888888,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.7777777777777778,
+          "ticket_fault_mode_judgement_rate": 0.8888888888888888,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 32,
+          "maintenance_observation_count": 29,
+          "recovered_before_confirmation_observations": 11,
+          "pending_at_mission_end_observations": 4,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 14,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 9.590624928474426,
+          "median_ticket_detection_delay_s": 3.8000001907348633,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.9375,
+          "ticket_top2_location_hit_rate": 0.90625,
+          "detected_ticket_missions": 32,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 75,
+          "merged_event_count": 72,
+          "event_count_reduction": 3,
+          "event_compression_ratio": 0.040000000000000036,
+          "background_trace_count": 17,
+          "observation_count": 23,
+          "maintenance_advisory_count": 14,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 32,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 31,
+          "raw_fault_mission_recall": 0.9722222222222222,
+          "review_log_fault_mission_recall": 0.9722222222222222,
+          "operator_attention_fault_mission_recall": 0.8888888888888888,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.7777777777777778,
+          "normal_window_operator_attention_rate": 0.000741839762611276
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 17,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 7,
+            "raw_false_alarm_rate": 0.10144927536231885,
+            "temporal_false_alarm_rate": 0.08695652173913043,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 18,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 16,
+            "raw_false_alarm_rate": 0.2318840579710145,
+            "temporal_false_alarm_rate": 0.2753623188405797,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 19,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 27,
+            "raw_false_alarm_rate": 0.391304347826087,
+            "temporal_false_alarm_rate": 0.3333333333333333,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      }
+    },
+    "simplified_response_residual": {
+      "masked_raw_features": [
+        "nominal_expected_accel_x_mps2",
+        "nominal_expected_accel_y_mps2",
+        "nominal_expected_accel_z_mps2",
+        "linear_response_residual_x_mps2",
+        "linear_response_residual_y_mps2",
+        "linear_response_residual_z_mps2",
+        "nominal_expected_angular_accel_p_radps2",
+        "nominal_expected_angular_accel_q_radps2",
+        "nominal_expected_angular_accel_r_radps2"
+      ],
+      "best_epoch": 16,
+      "validation_selection_joint_macro_f1": 0.7702171472566948,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 2.3839129965332733,
+          "validation_loss": 1.4510509011739476,
+          "validation_mode_macro_f1": 0.7065747700839586,
+          "validation_location_macro_f1": 0.6398775839736066,
+          "validation_joint_macro_f1": 0.5560234608889153,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 2,
+          "train_loss": 1.1823855072876504,
+          "validation_loss": 0.9942280895343785,
+          "validation_mode_macro_f1": 0.7530260270967366,
+          "validation_location_macro_f1": 0.7185046050593994,
+          "validation_joint_macro_f1": 0.6779110333634157,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.8212768590221916,
+          "validation_loss": 0.8999896921908348,
+          "validation_mode_macro_f1": 0.7737918441459531,
+          "validation_location_macro_f1": 0.7439185582491644,
+          "validation_joint_macro_f1": 0.704491595396557,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5918206769753234,
+          "validation_loss": 0.8575558107555702,
+          "validation_mode_macro_f1": 0.807514924212986,
+          "validation_location_macro_f1": 0.759138171703581,
+          "validation_joint_macro_f1": 0.7312000972216499,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.44519658257221356,
+          "validation_loss": 0.9670423250918827,
+          "validation_mode_macro_f1": 0.8127064942779191,
+          "validation_location_macro_f1": 0.7694843580009435,
+          "validation_joint_macro_f1": 0.7403352162455403,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.36219380348121527,
+          "validation_loss": 1.0414438630106455,
+          "validation_mode_macro_f1": 0.8093371159551443,
+          "validation_location_macro_f1": 0.7664100142324035,
+          "validation_joint_macro_f1": 0.7363631168599979,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.29358658452371983,
+          "validation_loss": 1.0347193198267208,
+          "validation_mode_macro_f1": 0.7976153775985724,
+          "validation_location_macro_f1": 0.7671623227980484,
+          "validation_joint_macro_f1": 0.7325752960891917,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.2543047778085731,
+          "validation_loss": 1.1621264535553602,
+          "validation_mode_macro_f1": 0.8145900292796874,
+          "validation_location_macro_f1": 0.7681394151180546,
+          "validation_joint_macro_f1": 0.7401441226127891,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.2010713305601215,
+          "validation_loss": 1.1790826239553438,
+          "validation_mode_macro_f1": 0.8141317118935142,
+          "validation_location_macro_f1": 0.7801943529450456,
+          "validation_joint_macro_f1": 0.7548045007124448,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.17546512716117946,
+          "validation_loss": 1.2590609231048102,
+          "validation_mode_macro_f1": 0.804816292165607,
+          "validation_location_macro_f1": 0.764645152859502,
+          "validation_joint_macro_f1": 0.7419755160348604,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.15329190591971079,
+          "validation_loss": 1.1329703864511775,
+          "validation_mode_macro_f1": 0.8077527624352706,
+          "validation_location_macro_f1": 0.7635428754158119,
+          "validation_joint_macro_f1": 0.7410999298391019,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.14240807431411012,
+          "validation_loss": 1.2774383399463494,
+          "validation_mode_macro_f1": 0.8198112520698917,
+          "validation_location_macro_f1": 0.781250673355527,
+          "validation_joint_macro_f1": 0.7538164336831927,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.11816151592580751,
+          "validation_loss": 1.2073598468854272,
+          "validation_mode_macro_f1": 0.8052778498520933,
+          "validation_location_macro_f1": 0.7747575927556273,
+          "validation_joint_macro_f1": 0.7550442792250768,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.0888189717624836,
+          "validation_loss": 1.3711228845284227,
+          "validation_mode_macro_f1": 0.8063921427494113,
+          "validation_location_macro_f1": 0.7738794297927064,
+          "validation_joint_macro_f1": 0.7492567079331134,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.08346694485209454,
+          "validation_loss": 1.3983478508582903,
+          "validation_mode_macro_f1": 0.8081774817515429,
+          "validation_location_macro_f1": 0.7729249301862154,
+          "validation_joint_macro_f1": 0.7497491830909299,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.07651843752783377,
+          "validation_loss": 1.4180879592895508,
+          "validation_mode_macro_f1": 0.8178735412919421,
+          "validation_location_macro_f1": 0.7910646284628334,
+          "validation_joint_macro_f1": 0.7702171472566948,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.06390049891681963,
+          "validation_loss": 1.4156848656162326,
+          "validation_mode_macro_f1": 0.8263474724157343,
+          "validation_location_macro_f1": 0.786621805657629,
+          "validation_joint_macro_f1": 0.7677400034527739,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.06409604476672023,
+          "validation_loss": 1.4690094914352685,
+          "validation_mode_macro_f1": 0.8131465654530943,
+          "validation_location_macro_f1": 0.7866584120536482,
+          "validation_joint_macro_f1": 0.7622669063807757,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.049735687633127086,
+          "validation_loss": 1.5954610262555629,
+          "validation_mode_macro_f1": 0.8153331860383473,
+          "validation_location_macro_f1": 0.7778710910743031,
+          "validation_joint_macro_f1": 0.7583489898044381,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.0665423656537615,
+          "validation_loss": 1.5747971864229797,
+          "validation_mode_macro_f1": 0.8142535737626982,
+          "validation_location_macro_f1": 0.7791308188880114,
+          "validation_joint_macro_f1": 0.7502921285337478,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.04129987584676779,
+          "validation_loss": 1.5724382366367535,
+          "validation_mode_macro_f1": 0.8209174531721865,
+          "validation_location_macro_f1": 0.7858070014587434,
+          "validation_joint_macro_f1": 0.763066093782114,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.032788823373701384,
+          "validation_loss": 1.6047142787172595,
+          "validation_mode_macro_f1": 0.8199142567128798,
+          "validation_location_macro_f1": 0.7868127813342547,
+          "validation_joint_macro_f1": 0.7632685658707588,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 23,
+          "train_loss": 0.02838198868821864,
+          "validation_loss": 1.6418581046470808,
+          "validation_mode_macro_f1": 0.8237480140248445,
+          "validation_location_macro_f1": 0.785622009101666,
+          "validation_joint_macro_f1": 0.7699803958159159,
+          "learning_rate": 0.00015
+        }
+      ],
+      "checkpoint_sha256": "7165646F9012C7A4C695BBEB79D26FE41F11D22457945414945FD985302E0A9B",
+      "validation": {
+        "mode_macro_f1": 0.8178735412919421,
+        "location_macro_f1": 0.7910646284628334,
+        "joint_macro_f1": 0.7702171472566948,
+        "window_metrics": {
+          "normal_recall": 0.9393939393939394,
+          "no_output_recall": 0.9904240766073872,
+          "thrust_loss_recall": 0.49806451612903224,
+          "fault_detection_recall": 0.7377158034528553,
+          "fault_mode_recall": 0.7370517928286853
+        },
+        "false_alarm": {
+          "raw": 0.06060606060606061,
+          "temporal": 0.04972804972804973,
+          "operator_attention_window_coverage": 0.001554001554001554,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.15458937198067632,
+          "pre_fault_segment_raw": 0.04259259259259259,
+          "raw_episode_count": 26,
+          "raw_episodes_at_least_8_s": 4,
+          "temporal_episode_count": 8,
+          "temporal_episodes_at_least_8_s": 3
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.6666666666666666,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.3333333333333333,
+          "ticket_fault_mode_judgement_rate": 0.6666666666666666,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 24,
+          "maintenance_observation_count": 30,
+          "recovered_before_confirmation_observations": 15,
+          "pending_at_mission_end_observations": 4,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 11,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 8.87916628519694,
+          "median_ticket_detection_delay_s": 1.4249992370605469,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 1.0,
+          "ticket_top2_location_hit_rate": 1.0,
+          "detected_ticket_missions": 24,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 64,
+          "merged_event_count": 62,
+          "event_count_reduction": 2,
+          "event_compression_ratio": 0.03125,
+          "background_trace_count": 10,
+          "observation_count": 28,
+          "maintenance_advisory_count": 6,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 24,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 13,
+          "raw_fault_mission_recall": 1.0,
+          "review_log_fault_mission_recall": 0.9722222222222222,
+          "operator_attention_fault_mission_recall": 0.6666666666666666,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.3333333333333333,
+          "normal_window_operator_attention_rate": 0.001554001554001554
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 14,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 5,
+            "raw_false_alarm_rate": 0.07246376811594203,
+            "temporal_false_alarm_rate": 0.08695652173913043,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 15,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 16,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 27,
+            "raw_false_alarm_rate": 0.391304347826087,
+            "temporal_false_alarm_rate": 0.42028985507246375,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      },
+      "test": {
+        "mode_macro_f1": 0.8852169293858041,
+        "location_macro_f1": 0.8096179804514065,
+        "joint_macro_f1": 0.7957578394142727,
+        "window_metrics": {
+          "normal_recall": 0.9102373887240356,
+          "no_output_recall": 0.9945652173913043,
+          "thrust_loss_recall": 0.7351274787535411,
+          "fault_detection_recall": 0.8675450762829403,
+          "fault_mode_recall": 0.8675450762829403
+        },
+        "false_alarm": {
+          "raw": 0.0897626112759644,
+          "temporal": 0.08753709198813056,
+          "operator_attention_window_coverage": 0.001483679525222552,
+          "formal_ticket_window_coverage": 0.0,
+          "wholly_normal_mission_raw": 0.1497584541062802,
+          "pre_fault_segment_raw": 0.07887817703768624,
+          "raw_episode_count": 34,
+          "raw_episodes_at_least_8_s": 6,
+          "temporal_episode_count": 17,
+          "temporal_episodes_at_least_8_s": 8
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.7777777777777778,
+          "ticket_event_precision": 1.0,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.5555555555555556,
+          "ticket_fault_mode_judgement_rate": 0.7777777777777778,
+          "false_tickets_per_hour": 0.0,
+          "false_maintenance_tickets": 0,
+          "formal_maintenance_ticket_count": 28,
+          "maintenance_observation_count": 28,
+          "recovered_before_confirmation_observations": 5,
+          "pending_at_mission_end_observations": 3,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 20,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 9.307142802647181,
+          "median_ticket_detection_delay_s": 1.25,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.8928571428571429,
+          "ticket_top2_location_hit_rate": 1.0,
+          "detected_ticket_missions": 28,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 71,
+          "merged_event_count": 69,
+          "event_count_reduction": 2,
+          "event_compression_ratio": 0.028169014084507005,
+          "background_trace_count": 11,
+          "observation_count": 29,
+          "maintenance_advisory_count": 11,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 29,
+          "operator_event_precision": 1.0,
+          "false_operator_attention_events": 0,
+          "false_events_retained_without_prompt": 25,
+          "raw_fault_mission_recall": 1.0,
+          "review_log_fault_mission_recall": 1.0,
+          "operator_attention_fault_mission_recall": 0.7777777777777778,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.5555555555555556,
+          "normal_window_operator_attention_rate": 0.001483679525222552
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 17,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 4,
+            "raw_false_alarm_rate": 0.057971014492753624,
+            "temporal_false_alarm_rate": 0.07246376811594203,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 18,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 24,
+            "raw_false_alarm_rate": 0.34782608695652173,
+            "temporal_false_alarm_rate": 0.37681159420289856,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 19,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 3,
+            "raw_false_alarm_rate": 0.043478260869565216,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      }
+    },
+    "motion_plus_response": {
+      "masked_raw_features": [
+        "H1_motion_loss_evidence",
+        "H2_motion_loss_evidence",
+        "H3_motion_loss_evidence",
+        "H4_motion_loss_evidence",
+        "V1_motion_loss_evidence",
+        "V2_motion_loss_evidence",
+        "nominal_expected_accel_x_mps2",
+        "nominal_expected_accel_y_mps2",
+        "nominal_expected_accel_z_mps2",
+        "linear_response_residual_x_mps2",
+        "linear_response_residual_y_mps2",
+        "linear_response_residual_z_mps2",
+        "nominal_expected_angular_accel_p_radps2",
+        "nominal_expected_angular_accel_q_radps2",
+        "nominal_expected_angular_accel_r_radps2"
+      ],
+      "best_epoch": 15,
+      "validation_selection_joint_macro_f1": 0.7669773877355429,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 2.3893670371848503,
+          "validation_loss": 1.4598985307326762,
+          "validation_mode_macro_f1": 0.6929890573235163,
+          "validation_location_macro_f1": 0.6408729320116036,
+          "validation_joint_macro_f1": 0.556523915543416,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 2,
+          "train_loss": 1.195498074151547,
+          "validation_loss": 1.0059417219431734,
+          "validation_mode_macro_f1": 0.7592155274711532,
+          "validation_location_macro_f1": 0.7296681396359818,
+          "validation_joint_macro_f1": 0.677991124376305,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.8231394222412987,
+          "validation_loss": 0.919921087100435,
+          "validation_mode_macro_f1": 0.772668205449983,
+          "validation_location_macro_f1": 0.7401574487735374,
+          "validation_joint_macro_f1": 0.698944972904987,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.5883530728935739,
+          "validation_loss": 0.8622403511043266,
+          "validation_mode_macro_f1": 0.806937173739459,
+          "validation_location_macro_f1": 0.771870437482983,
+          "validation_joint_macro_f1": 0.7427485185859566,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.4535600771940531,
+          "validation_loss": 0.8807000709271456,
+          "validation_mode_macro_f1": 0.8109088185874634,
+          "validation_location_macro_f1": 0.7899545013264234,
+          "validation_joint_macro_f1": 0.7576648684142593,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.3645507451492251,
+          "validation_loss": 0.9295735592232611,
+          "validation_mode_macro_f1": 0.7991091544823611,
+          "validation_location_macro_f1": 0.7668744095250173,
+          "validation_joint_macro_f1": 0.7317918309694893,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.29923892656048595,
+          "validation_loss": 0.9911889568947567,
+          "validation_mode_macro_f1": 0.7974257609635259,
+          "validation_location_macro_f1": 0.7719478337910931,
+          "validation_joint_macro_f1": 0.7371864828022583,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.2554691585955492,
+          "validation_loss": 1.0265667155955882,
+          "validation_mode_macro_f1": 0.8210047456790983,
+          "validation_location_macro_f1": 0.7695225371381467,
+          "validation_joint_macro_f1": 0.7494339147692541,
+          "learning_rate": 0.0003
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.21430639905034354,
+          "validation_loss": 1.1344559553742537,
+          "validation_mode_macro_f1": 0.7950720014415493,
+          "validation_location_macro_f1": 0.7558369064920356,
+          "validation_joint_macro_f1": 0.7283669399539259,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.1680160373791881,
+          "validation_loss": 1.0951066671030691,
+          "validation_mode_macro_f1": 0.81140488741657,
+          "validation_location_macro_f1": 0.7767913285724551,
+          "validation_joint_macro_f1": 0.753370078472071,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.12660525794686942,
+          "validation_loss": 1.1369971197820077,
+          "validation_mode_macro_f1": 0.8155831720109278,
+          "validation_location_macro_f1": 0.7791534785861977,
+          "validation_joint_macro_f1": 0.7611389589375231,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.12340612495082548,
+          "validation_loss": 1.2468032587654394,
+          "validation_mode_macro_f1": 0.7987260291406565,
+          "validation_location_macro_f1": 0.7698281539296516,
+          "validation_joint_macro_f1": 0.744177606121011,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.11275552392691031,
+          "validation_loss": 1.2128753502480751,
+          "validation_mode_macro_f1": 0.8031376071662207,
+          "validation_location_macro_f1": 0.7705797054198797,
+          "validation_joint_macro_f1": 0.7457194460507168,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.09723837594876344,
+          "validation_loss": 1.2276463428364832,
+          "validation_mode_macro_f1": 0.8088243508095495,
+          "validation_location_macro_f1": 0.7709524192926994,
+          "validation_joint_macro_f1": 0.7535542131147726,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.08333647332200603,
+          "validation_loss": 1.276657156819645,
+          "validation_mode_macro_f1": 0.8190771133352074,
+          "validation_location_macro_f1": 0.778918466956883,
+          "validation_joint_macro_f1": 0.7669773877355429,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.08428707957724502,
+          "validation_loss": 1.3015907714753607,
+          "validation_mode_macro_f1": 0.8133930288268209,
+          "validation_location_macro_f1": 0.7727901667009138,
+          "validation_joint_macro_f1": 0.7560609644764746,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.07247077071232814,
+          "validation_loss": 1.3465468379873295,
+          "validation_mode_macro_f1": 0.8167709783460652,
+          "validation_location_macro_f1": 0.7793016413236599,
+          "validation_joint_macro_f1": 0.7579218468292699,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.07413399470377699,
+          "validation_loss": 1.3111699553659386,
+          "validation_mode_macro_f1": 0.8095683018009682,
+          "validation_location_macro_f1": 0.7758291562263616,
+          "validation_joint_macro_f1": 0.7560043435012784,
+          "learning_rate": 0.00015
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.06582640449719868,
+          "validation_loss": 1.4252111880189409,
+          "validation_mode_macro_f1": 0.8171433441948158,
+          "validation_location_macro_f1": 0.7749036856832375,
+          "validation_joint_macro_f1": 0.7516360646916114,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.05568139239060924,
+          "validation_loss": 1.369529173701116,
+          "validation_mode_macro_f1": 0.822169605299659,
+          "validation_location_macro_f1": 0.7740878150519015,
+          "validation_joint_macro_f1": 0.7582871537011902,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.045034925227420995,
+          "validation_loss": 1.4432926119931744,
+          "validation_mode_macro_f1": 0.8208854750208134,
+          "validation_location_macro_f1": 0.7772875853178213,
+          "validation_joint_macro_f1": 0.7570852439140325,
+          "learning_rate": 7.5e-05
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.04482353610925063,
+          "validation_loss": 1.4866789593476357,
+          "validation_mode_macro_f1": 0.8206342269781297,
+          "validation_location_macro_f1": 0.768009292340836,
+          "validation_joint_macro_f1": 0.748243892472823,
+          "learning_rate": 7.5e-05
+        }
+      ],
+      "checkpoint_sha256": "CCBD8A53B840D0F50D3EB1C6F601C1918B308D52693EAF86B2512C90B25B5132",
+      "validation": {
+        "mode_macro_f1": 0.8190771133352074,
+        "location_macro_f1": 0.778918466956883,
+        "joint_macro_f1": 0.7669773877355429,
+        "window_metrics": {
+          "normal_recall": 0.885003885003885,
+          "no_output_recall": 0.9904240766073872,
+          "thrust_loss_recall": 0.5625806451612904,
+          "fault_detection_recall": 0.7715803452855245,
+          "fault_mode_recall": 0.7702523240371846
+        },
+        "false_alarm": {
+          "raw": 0.11499611499611499,
+          "temporal": 0.10023310023310024,
+          "operator_attention_window_coverage": 0.01320901320901321,
+          "formal_ticket_window_coverage": 0.003108003108003108,
+          "wholly_normal_mission_raw": 0.14492753623188406,
+          "pre_fault_segment_raw": 0.10925925925925926,
+          "raw_episode_count": 41,
+          "raw_episodes_at_least_8_s": 7,
+          "temporal_episode_count": 18,
+          "temporal_episodes_at_least_8_s": 9
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.7222222222222222,
+          "ticket_event_precision": 0.9629629629629629,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.4444444444444444,
+          "ticket_fault_mode_judgement_rate": 0.7222222222222222,
+          "false_tickets_per_hour": 2.2377622377622375,
+          "false_maintenance_tickets": 1,
+          "formal_maintenance_ticket_count": 27,
+          "maintenance_observation_count": 31,
+          "recovered_before_confirmation_observations": 19,
+          "pending_at_mission_end_observations": 1,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 11,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 11.130768849299503,
+          "median_ticket_detection_delay_s": 1.8249988555908203,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 1.0,
+          "ticket_top2_location_hit_rate": 1.0,
+          "detected_ticket_missions": 26,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 71,
+          "merged_event_count": 71,
+          "event_count_reduction": 0,
+          "event_compression_ratio": 0.0,
+          "background_trace_count": 13,
+          "observation_count": 31,
+          "maintenance_advisory_count": 9,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 27,
+          "operator_event_precision": 0.9629629629629629,
+          "false_operator_attention_events": 1,
+          "false_events_retained_without_prompt": 22,
+          "raw_fault_mission_recall": 1.0,
+          "review_log_fault_mission_recall": 0.9722222222222222,
+          "operator_attention_fault_mission_recall": 0.7222222222222222,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.4444444444444444,
+          "normal_window_operator_attention_rate": 0.01320901320901321
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 14,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 5,
+            "raw_false_alarm_rate": 0.07246376811594203,
+            "temporal_false_alarm_rate": 0.08695652173913043,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 15,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 16,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 25,
+            "raw_false_alarm_rate": 0.36231884057971014,
+            "temporal_false_alarm_rate": 0.34782608695652173,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      },
+      "test": {
+        "mode_macro_f1": 0.8842056143379442,
+        "location_macro_f1": 0.8181462890945819,
+        "joint_macro_f1": 0.8088739485008675,
+        "window_metrics": {
+          "normal_recall": 0.8939169139465876,
+          "no_output_recall": 0.9945652173913043,
+          "thrust_loss_recall": 0.7563739376770539,
+          "fault_detection_recall": 0.8779472954230236,
+          "fault_mode_recall": 0.8779472954230236
+        },
+        "false_alarm": {
+          "raw": 0.10608308605341246,
+          "temporal": 0.10089020771513353,
+          "operator_attention_window_coverage": 0.01483679525222552,
+          "formal_ticket_window_coverage": 0.002225519287833828,
+          "wholly_normal_mission_raw": 0.20772946859903382,
+          "pre_fault_segment_raw": 0.0876424189307625,
+          "raw_episode_count": 36,
+          "raw_episodes_at_least_8_s": 7,
+          "temporal_episode_count": 19,
+          "temporal_episodes_at_least_8_s": 10
+        },
+        "formal_ticket_metrics": {
+          "ticket_event_recall": 0.8333333333333334,
+          "ticket_event_precision": 0.967741935483871,
+          "no_output_ticket_recall": 1.0,
+          "thrust_loss_ticket_recall": 0.6666666666666666,
+          "ticket_fault_mode_judgement_rate": 0.8333333333333334,
+          "false_tickets_per_hour": 2.136498516320475,
+          "false_maintenance_tickets": 1,
+          "formal_maintenance_ticket_count": 31,
+          "maintenance_observation_count": 27,
+          "recovered_before_confirmation_observations": 5,
+          "pending_at_mission_end_observations": 3,
+          "superseded_by_no_output_observations": 0,
+          "context_transition_observations": 19,
+          "intermittent_thrust_loss_advisories": 0,
+          "mean_ticket_detection_delay_s": 9.364999898274739,
+          "median_ticket_detection_delay_s": 1.4750003814697266,
+          "single_ticket_per_detected_mission_rate": 1.0,
+          "ticket_probable_group_accuracy": 0.9333333333333333,
+          "ticket_top2_location_hit_rate": 0.9666666666666667,
+          "detected_ticket_missions": 30,
+          "total_fault_missions": 36
+        },
+        "graded_log_metrics": {
+          "raw_event_count": 66,
+          "merged_event_count": 66,
+          "event_count_reduction": 0,
+          "event_compression_ratio": 0.0,
+          "background_trace_count": 10,
+          "observation_count": 23,
+          "maintenance_advisory_count": 15,
+          "safety_alert_count": 18,
+          "operator_attention_event_count": 33,
+          "operator_event_precision": 0.9696969696969697,
+          "false_operator_attention_events": 1,
+          "false_events_retained_without_prompt": 24,
+          "raw_fault_mission_recall": 1.0,
+          "review_log_fault_mission_recall": 1.0,
+          "operator_attention_fault_mission_recall": 0.8333333333333334,
+          "no_output_operator_attention_recall": 1.0,
+          "thrust_loss_operator_attention_recall": 0.6666666666666666,
+          "normal_window_operator_attention_rate": 0.01483679525222552
+        },
+        "wholly_normal_missions": [
+          {
+            "mission_id": 17,
+            "depth_band": "50-150 m",
+            "normal_windows": 69,
+            "raw_false_windows": 4,
+            "raw_false_alarm_rate": 0.057971014492753624,
+            "temporal_false_alarm_rate": 0.07246376811594203,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          },
+          {
+            "mission_id": 18,
+            "depth_band": "150-300 m",
+            "normal_windows": 69,
+            "raw_false_windows": 39,
+            "raw_false_alarm_rate": 0.5652173913043478,
+            "temporal_false_alarm_rate": 0.5797101449275363,
+            "operator_false_windows": 12,
+            "ticket_false_windows": 3
+          },
+          {
+            "mission_id": 19,
+            "depth_band": "0-50 m",
+            "normal_windows": 69,
+            "raw_false_windows": 0,
+            "raw_false_alarm_rate": 0.0,
+            "temporal_false_alarm_rate": 0.0,
+            "operator_false_windows": 0,
+            "ticket_false_windows": 0
+          }
+        ]
+      }
+    }
+  }
+}
