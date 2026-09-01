@@ -136,7 +136,7 @@ def _split_for_repetition(repetition, missions_per_scenario):
     return "test"
 
 
-def _randomized_dynamics(rng, split):
+def _randomized_dynamics(rng, split, mass_kg_override=None):
     """Sample a broad deployment domain for every leakage-safe split."""
     del split
     mass_scale = rng.uniform(0.82, 1.18)
@@ -156,7 +156,14 @@ def _randomized_dynamics(rng, split):
         rng.uniform(0.60, 1.40)
         for _ in range(6)
     ])
-    mass = 50.0 * mass_scale
+    sampled_mass = 50.0 * mass_scale
+    mass = (
+        sampled_mass
+        if mass_kg_override is None
+        else float(mass_kg_override)
+    )
+    if not np.isfinite(mass) or mass <= 0.0:
+        raise ValueError("mass_kg_override must be finite and positive")
     weight = mass * 9.81
     buoyancy_ratio = rng.uniform(0.990, 1.010)
     xy_offset = 0.018
@@ -203,12 +210,25 @@ def _randomized_dynamics(rng, split):
     return SixDOFDynamics(config=config), metadata
 
 
-def _randomized_thrusters(rng, split):
+def _randomized_thrusters(
+    rng,
+    split,
+    vertical_force_limit_override=None,
+):
     del split
     length = rng.uniform(1.00, 1.40)
     width = rng.uniform(0.48, 0.72)
     horizontal_limit = rng.uniform(34.0, 46.0)
-    vertical_limit = rng.uniform(34.0, 46.0)
+    sampled_vertical_limit = rng.uniform(34.0, 46.0)
+    vertical_limit = (
+        sampled_vertical_limit
+        if vertical_force_limit_override is None
+        else float(vertical_force_limit_override)
+    )
+    if not np.isfinite(vertical_limit) or vertical_limit <= 0.0:
+        raise ValueError(
+            "vertical_force_limit_override must be finite and positive"
+        )
     array = default_six_thruster_array(
         length=length,
         width=width,
@@ -403,13 +423,30 @@ def _target_provider(plan):
     return provider
 
 
-def _disturbance_provider(rng):
+def _disturbance_provider(
+    rng,
+    lateral_force_amplitudes_override=None,
+):
     amplitudes = rng.uniform(
         low=np.zeros(6),
         high=np.array([1.5, 1.5, 0.8, 0.03, 0.03, 0.08]),
     )
     frequencies = rng.uniform(0.03, 0.12, size=6)
     phases = rng.uniform(-np.pi, np.pi, size=6)
+    if lateral_force_amplitudes_override is not None:
+        lateral = np.asarray(
+            lateral_force_amplitudes_override, dtype=float
+        )
+        if (
+            lateral.shape != (2,)
+            or not np.all(np.isfinite(lateral))
+            or np.any(lateral < 0.0)
+        ):
+            raise ValueError(
+                "lateral_force_amplitudes_override must contain two "
+                "finite nonnegative values"
+            )
+        amplitudes[:2] = lateral
 
     def provider(time_s, _state):
         return amplitudes * np.sin(frequencies * time_s + phases)
@@ -431,10 +468,21 @@ def run_mission(
     depth_band_index=None,
     fault_seed=None,
     rpm_noise_std_override=None,
+    lateral_force_amplitudes_override=None,
+    vertical_force_limit_override=None,
+    mass_kg_override=None,
 ):
     rng = np.random.default_rng(seed)
-    dynamics, dynamics_metadata = _randomized_dynamics(rng, split)
-    thruster_array, thruster_metadata = _randomized_thrusters(rng, split)
+    dynamics, dynamics_metadata = _randomized_dynamics(
+        rng,
+        split,
+        mass_kg_override=mass_kg_override,
+    )
+    thruster_array, thruster_metadata = _randomized_thrusters(
+        rng,
+        split,
+        vertical_force_limit_override=vertical_force_limit_override,
+    )
     fault = None
     if fault_mode is not None:
         fault_rng = (
@@ -504,7 +552,12 @@ def run_mission(
         temperature_noise_std=temperature_noise,
         seed=seed + 4,
     )
-    disturbance_provider, disturbance_metadata = _disturbance_provider(rng)
+    disturbance_provider, disturbance_metadata = _disturbance_provider(
+        rng,
+        lateral_force_amplitudes_override=(
+            lateral_force_amplitudes_override
+        ),
+    )
     simulator = SixDOFSimulator(
         dynamics=dynamics,
         thruster_array=thruster_array,

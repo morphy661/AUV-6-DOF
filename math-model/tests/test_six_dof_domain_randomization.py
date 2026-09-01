@@ -16,6 +16,7 @@ from generate_six_dof_fault_dataset import (
     DEPTH_BAND_PROBABILITIES,
     DEPTH_BANDS_M,
     _depth_band_index_for_mission,
+    _disturbance_provider,
     _mission_schedule,
     _randomized_dynamics,
     _randomized_thrusters,
@@ -221,6 +222,56 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
         self.assertEqual(nominal_sensors, high_noise_sensors)
         for key in ("dynamics", "thrusters", "disturbance", "mission"):
             self.assertEqual(nominal[key], high_noise[key])
+
+    def test_lateral_disturbance_override_changes_only_xy_amplitudes(self):
+        _, low = _disturbance_provider(
+            np.random.default_rng(771),
+            lateral_force_amplitudes_override=(0.25, 0.25),
+        )
+        _, high = _disturbance_provider(
+            np.random.default_rng(771),
+            lateral_force_amplitudes_override=(1.40, 1.40),
+        )
+
+        np.testing.assert_allclose(low["amplitudes"][:2], [0.25, 0.25])
+        np.testing.assert_allclose(high["amplitudes"][:2], [1.40, 1.40])
+        np.testing.assert_allclose(
+            low["amplitudes"][2:], high["amplitudes"][2:]
+        )
+        self.assertEqual(low["frequencies_radps"], high["frequencies_radps"])
+        self.assertEqual(low["phases_rad"], high["phases_rad"])
+
+    def test_vertical_force_override_preserves_other_thruster_parameters(self):
+        _, low = _randomized_thrusters(
+            np.random.default_rng(881),
+            "train",
+            vertical_force_limit_override=34.5,
+        )
+        _, high = _randomized_thrusters(
+            np.random.default_rng(881),
+            "train",
+            vertical_force_limit_override=45.0,
+        )
+
+        self.assertEqual(low.pop("vertical_force_limit_n"), 34.5)
+        self.assertEqual(high.pop("vertical_force_limit_n"), 45.0)
+        self.assertEqual(low, high)
+
+    def test_mass_override_preserves_other_dynamics_parameters(self):
+        _, low = _randomized_dynamics(
+            np.random.default_rng(991),
+            "train",
+            mass_kg_override=45.0,
+        )
+        _, high = _randomized_dynamics(
+            np.random.default_rng(991),
+            "train",
+            mass_kg_override=58.0,
+        )
+
+        self.assertEqual(low.pop("mass_kg"), 45.0)
+        self.assertEqual(high.pop("mass_kg"), 58.0)
+        self.assertEqual(low, high)
 
 
 if __name__ == "__main__":

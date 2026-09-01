@@ -1,0 +1,68 @@
+{
+  "analysis_id": "six_dof_false_alarm_cause_localization_v1_20260901",
+  "scope": "frozen V3 in the current randomized 0-300 m simulation domain",
+  "predeclared_support_rule": {
+    "minimum_mean_raw_far_increase": 0.02,
+    "minimum_positive_pair_count": 8,
+    "pair_count_per_factor": 12
+  },
+  "task_level_correlation_audit": {
+    "mission_count": 78,
+    "mass_spearman_rho": 0.447,
+    "mass_p_value_upper_bound": 0.0001,
+    "lowest_mass_quartile_mean_raw_far": 0.037,
+    "highest_mass_quartile_mean_raw_far": 0.181,
+    "rpm_noise_spearman_rho": 0.186,
+    "rpm_noise_p_value": 0.1032
+  },
+  "paired_counterfactuals": {
+    "rpm_noise": {
+      "baseline": "40 rpm",
+      "candidate": "70 rpm",
+      "raw_far_delta": 0.019323671497584544,
+      "temporal_far_delta": 0.033816425120772944,
+      "positive_raw_pairs": 8,
+      "supports_primary_factor": false,
+      "false_formal_tickets_baseline": 0,
+      "false_formal_tickets_candidate": 0
+    },
+    "lateral_disturbance": {
+      "baseline": "0.25 N in x and y",
+      "candidate": "1.40 N in x and y",
+      "raw_far_delta": 0.0012077294685990338,
+      "temporal_far_delta": -0.004830917874396136,
+      "positive_raw_pairs": 1,
+      "supports_primary_factor": false,
+      "false_formal_tickets_baseline": 0,
+      "false_formal_tickets_candidate": 0
+    },
+    "vertical_force_limit": {
+      "baseline": "45.0 N",
+      "candidate": "34.5 N",
+      "raw_far_delta": 0.013285024154589375,
+      "temporal_far_delta": 0.009661835748792268,
+      "positive_raw_pairs": 4,
+      "supports_primary_factor": false,
+      "false_formal_tickets_baseline": 0,
+      "false_formal_tickets_candidate": 0
+    },
+    "vehicle_mass": {
+      "baseline": "45 kg",
+      "candidate": "58 kg",
+      "raw_far_delta": 0.1497584541062802,
+      "temporal_far_delta": 0.1533816425120773,
+      "positive_raw_pairs": 11,
+      "supports_primary_factor": true,
+      "false_formal_tickets_baseline": 1,
+      "false_formal_tickets_candidate": 4
+    }
+  },
+  "primary_cause": "vehicle-mass variation is not represented in the fixed nominal dynamics-response feature, causing healthy high-mass response to overlap with thrust-loss evidence",
+  "important_limit": "the mass counterfactual establishes causality in simulation; a mass-conditioned feature and retraining experiment are still required before claiming the repair is effective",
+  "source_results": [
+    "math-model/results/six_dof_rpm_noise_counterfactual_v1_20260901/rpm_noise_counterfactual.json",
+    "math-model/results/six_dof_lateral_disturbance_counterfactual_v1_20260901/lateral_disturbance_counterfactual.json",
+    "math-model/results/six_dof_vertical_force_counterfactual_v1_20260901/vertical_force_counterfactual.json",
+    "math-model/results/six_dof_mass_counterfactual_v1_20260901/mass_counterfactual.json"
+  ]
+}

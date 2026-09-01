@@ -1,0 +1,558 @@
+{
+  "experiment_id": "six_dof_lateral_disturbance_counterfactual_v1_20260901",
+  "experiment_type": "paired_frozen_model_counterfactual",
+  "interpretation_policy": "Simulation-only causal evidence. The frozen V3 model and rules are evaluated without calibration or retraining.",
+  "device": "cuda",
+  "checkpoint_sha256": "26C88C14F4E8D5E9C93ACD7383A50EC78244CD5B150D9208C6953173D843D667",
+  "temporal_config_sha256": "0F5380921B7526F03D32D916BEE459D959F6DEB8CD69E459DFE3388B46BD07BA",
+  "ticket_config_sha256": "1CC5689CD15EC5F83058FA817E5699182DFC7983AF7B47F016C90EB827A23EB3",
+  "parameters": {
+    "repeats_per_depth_band": 4,
+    "depth_band_indices": [
+      0,
+      1,
+      2
+    ],
+    "duration_s": 90.0,
+    "dt_s": 0.05,
+    "sequence_length": 100,
+    "stride": 25,
+    "base_seed": 940000,
+    "rpm_noise_std": 40.0,
+    "low_lateral_force_amplitude_n": 0.25,
+    "high_lateral_force_amplitude_n": 1.4
+  },
+  "pair_integrity": {
+    "all_pairs_equal_except_lateral_amplitudes": true,
+    "pairs": [
+      {
+        "pair_id": "band0_rep0",
+        "environment_seed": 940000,
+        "depth_band_index": 0,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band0_rep1",
+        "environment_seed": 940001,
+        "depth_band_index": 0,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band0_rep2",
+        "environment_seed": 940002,
+        "depth_band_index": 0,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band0_rep3",
+        "environment_seed": 940003,
+        "depth_band_index": 0,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band1_rep0",
+        "environment_seed": 950000,
+        "depth_band_index": 1,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band1_rep1",
+        "environment_seed": 950001,
+        "depth_band_index": 1,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band1_rep2",
+        "environment_seed": 950002,
+        "depth_band_index": 1,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band1_rep3",
+        "environment_seed": 950003,
+        "depth_band_index": 1,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band2_rep0",
+        "environment_seed": 960000,
+        "depth_band_index": 2,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band2_rep1",
+        "environment_seed": 960001,
+        "depth_band_index": 2,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band2_rep2",
+        "environment_seed": 960002,
+        "depth_band_index": 2,
+        "parameters_equal_except_lateral_amplitudes": true
+      },
+      {
+        "pair_id": "band2_rep3",
+        "environment_seed": 960003,
+        "depth_band_index": 2,
+        "parameters_equal_except_lateral_amplitudes": true
+      }
+    ]
+  },
+  "conditions": {
+    "low_lateral_disturbance": {
+      "normal_windows": 828,
+      "raw_false_alarm_rate": 0.04106280193236715,
+      "temporal_false_alarm_rate": 0.036231884057971016,
+      "operator_attention_window_coverage": 0.0,
+      "formal_ticket_window_coverage": 0.0,
+      "raw_episode_count": 11,
+      "raw_episodes_at_least_8_s": 2,
+      "false_formal_ticket_count": 0,
+      "missions": [
+        {
+          "mission_id": 0,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 2,
+          "raw_false_alarm_rate": 0.028985507246376812,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 2,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 4,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 1,
+          "raw_false_alarm_rate": 0.014492753623188406,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 6,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 6,
+          "raw_false_alarm_rate": 0.08695652173913043,
+          "temporal_false_alarm_rate": 0.10144927536231885,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 8,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 10,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 11,
+          "raw_false_alarm_rate": 0.15942028985507245,
+          "temporal_false_alarm_rate": 0.14492753623188406,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 12,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 14,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 16,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 13,
+          "raw_false_alarm_rate": 0.18840579710144928,
+          "temporal_false_alarm_rate": 0.18840579710144928,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 18,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 20,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 1,
+          "raw_false_alarm_rate": 0.014492753623188406,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 22,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        }
+      ]
+    },
+    "high_lateral_disturbance": {
+      "normal_windows": 828,
+      "raw_false_alarm_rate": 0.042270531400966184,
+      "temporal_false_alarm_rate": 0.03140096618357488,
+      "operator_attention_window_coverage": 0.0,
+      "formal_ticket_window_coverage": 0.0,
+      "raw_episode_count": 13,
+      "raw_episodes_at_least_8_s": 2,
+      "false_formal_ticket_count": 0,
+      "missions": [
+        {
+          "mission_id": 1,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 3,
+          "raw_false_alarm_rate": 0.043478260869565216,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 3,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 5,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 1,
+          "raw_false_alarm_rate": 0.014492753623188406,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 7,
+          "depth_band": "0-50 m",
+          "normal_windows": 69,
+          "raw_false_windows": 6,
+          "raw_false_alarm_rate": 0.08695652173913043,
+          "temporal_false_alarm_rate": 0.043478260869565216,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 9,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 11,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 11,
+          "raw_false_alarm_rate": 0.15942028985507245,
+          "temporal_false_alarm_rate": 0.14492753623188406,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 13,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 15,
+          "depth_band": "50-150 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 17,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 13,
+          "raw_false_alarm_rate": 0.18840579710144928,
+          "temporal_false_alarm_rate": 0.18840579710144928,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 19,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 21,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 1,
+          "raw_false_alarm_rate": 0.014492753623188406,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        },
+        {
+          "mission_id": 23,
+          "depth_band": "150-300 m",
+          "normal_windows": 69,
+          "raw_false_windows": 0,
+          "raw_false_alarm_rate": 0.0,
+          "temporal_false_alarm_rate": 0.0,
+          "operator_false_windows": 0,
+          "ticket_false_windows": 0
+        }
+      ]
+    }
+  },
+  "paired_summary": {
+    "pair_count": 12,
+    "raw_delta_mean": 0.0012077294685990338,
+    "raw_delta_median": 0.0,
+    "raw_delta_sample_standard_deviation": 0.004183697602823375,
+    "raw_positive_pair_count": 1,
+    "temporal_delta_mean": -0.004830917874396136,
+    "temporal_delta_median": 0.0,
+    "temporal_positive_pair_count": 0,
+    "predeclared_support_rule": {
+      "minimum_mean_raw_far_increase": 0.02,
+      "minimum_positive_pair_count": 8
+    },
+    "supports_lateral_disturbance_as_causal_false_alarm_factor": false
+  },
+  "depth_band_summary": {
+    "0": {
+      "depth_band_m": "0-50",
+      "pair_count": 4,
+      "low_raw_false_alarm_rate_mean": 0.03260869565217391,
+      "high_raw_false_alarm_rate_mean": 0.036231884057971016,
+      "raw_delta_mean": 0.003623188405797101,
+      "temporal_delta_mean": -0.014492753623188408,
+      "raw_positive_pair_count": 1
+    },
+    "1": {
+      "depth_band_m": "50-150",
+      "pair_count": 4,
+      "low_raw_false_alarm_rate_mean": 0.03985507246376811,
+      "high_raw_false_alarm_rate_mean": 0.03985507246376811,
+      "raw_delta_mean": 0.0,
+      "temporal_delta_mean": 0.0,
+      "raw_positive_pair_count": 0
+    },
+    "2": {
+      "depth_band_m": "150-300",
+      "pair_count": 4,
+      "low_raw_false_alarm_rate_mean": 0.050724637681159424,
+      "high_raw_false_alarm_rate_mean": 0.050724637681159424,
+      "raw_delta_mean": 0.0,
+      "temporal_delta_mean": 0.0,
+      "raw_positive_pair_count": 0
+    }
+  },
+  "paired_rows": [
+    {
+      "pair_id": "band0_rep0",
+      "environment_seed": 940000,
+      "depth_band_index": 0,
+      "depth_band_m": "0-50",
+      "low_raw_false_alarm_rate": 0.028985507246376812,
+      "high_raw_false_alarm_rate": 0.043478260869565216,
+      "delta_raw_false_alarm_rate": 0.014492753623188404,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band0_rep1",
+      "environment_seed": 940001,
+      "depth_band_index": 0,
+      "depth_band_m": "0-50",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band0_rep2",
+      "environment_seed": 940002,
+      "depth_band_index": 0,
+      "depth_band_m": "0-50",
+      "low_raw_false_alarm_rate": 0.014492753623188406,
+      "high_raw_false_alarm_rate": 0.014492753623188406,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band0_rep3",
+      "environment_seed": 940003,
+      "depth_band_index": 0,
+      "depth_band_m": "0-50",
+      "low_raw_false_alarm_rate": 0.08695652173913043,
+      "high_raw_false_alarm_rate": 0.08695652173913043,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.10144927536231885,
+      "high_temporal_false_alarm_rate": 0.043478260869565216,
+      "delta_temporal_false_alarm_rate": -0.05797101449275363
+    },
+    {
+      "pair_id": "band1_rep0",
+      "environment_seed": 950000,
+      "depth_band_index": 1,
+      "depth_band_m": "50-150",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band1_rep1",
+      "environment_seed": 950001,
+      "depth_band_index": 1,
+      "depth_band_m": "50-150",
+      "low_raw_false_alarm_rate": 0.15942028985507245,
+      "high_raw_false_alarm_rate": 0.15942028985507245,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.14492753623188406,
+      "high_temporal_false_alarm_rate": 0.14492753623188406,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band1_rep2",
+      "environment_seed": 950002,
+      "depth_band_index": 1,
+      "depth_band_m": "50-150",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band1_rep3",
+      "environment_seed": 950003,
+      "depth_band_index": 1,
+      "depth_band_m": "50-150",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band2_rep0",
+      "environment_seed": 960000,
+      "depth_band_index": 2,
+      "depth_band_m": "150-300",
+      "low_raw_false_alarm_rate": 0.18840579710144928,
+      "high_raw_false_alarm_rate": 0.18840579710144928,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.18840579710144928,
+      "high_temporal_false_alarm_rate": 0.18840579710144928,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band2_rep1",
+      "environment_seed": 960001,
+      "depth_band_index": 2,
+      "depth_band_m": "150-300",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band2_rep2",
+      "environment_seed": 960002,
+      "depth_band_index": 2,
+      "depth_band_m": "150-300",
+      "low_raw_false_alarm_rate": 0.014492753623188406,
+      "high_raw_false_alarm_rate": 0.014492753623188406,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    },
+    {
+      "pair_id": "band2_rep3",
+      "environment_seed": 960003,
+      "depth_band_index": 2,
+      "depth_band_m": "150-300",
+      "low_raw_false_alarm_rate": 0.0,
+      "high_raw_false_alarm_rate": 0.0,
+      "delta_raw_false_alarm_rate": 0.0,
+      "low_temporal_false_alarm_rate": 0.0,
+      "high_temporal_false_alarm_rate": 0.0,
+      "delta_temporal_false_alarm_rate": 0.0
+    }
+  ]
+}
