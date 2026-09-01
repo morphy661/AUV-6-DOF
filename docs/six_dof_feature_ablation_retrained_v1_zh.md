@@ -1,5 +1,11 @@
 # 六自由度误报特征重训练消融实验 V1
 
+> **多种子复核更新（2026-09-01）：** 本文第四、五节关于直接采用
+> `motion_loss_evidence` 输入屏蔽的结论只来自 seed 42，现已被 seeds
+> 42/43/44 的控制实验否定。该掩码在 seed 44 上使验证与测试误报率明显
+> 上升，因此不得接入正式 V3.1。当前有效结论以
+> `docs/six_dof_feature_ablation_multiseed_v1_zh.md` 为准。
+
 实验日期：2026-08-21
 数据集：`six_dof_hybrid_telemetry_0_300m_focus_v3`
 模型：结构化融合 BiLSTM-attention

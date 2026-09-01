@@ -1,0 +1,241 @@
+{
+  "experiment_type": "controlled_multiseed_feature_ablation_summary",
+  "candidate_variant": "motion_loss_evidence",
+  "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3",
+  "dataset_sha256": "209517014A9E9AA192EFEB92633FA7EEB1DF7382F58ECA899ECD1A4749549398",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "input_files": [
+    "depth-sensor-fault-detection\\depth_fault_detection\\results\\six_dof_feature_ablation_retrained_v1_20260821\\retrained_feature_ablation.json",
+    "depth-sensor-fault-detection\\depth_fault_detection\\results\\six_dof_feature_ablation_retrained_seed43_20260901\\retrained_feature_ablation.json",
+    "depth-sensor-fault-detection\\depth_fault_detection\\results\\six_dof_feature_ablation_retrained_seed44_20260901\\retrained_feature_ablation.json"
+  ],
+  "aggregate_deltas": {
+    "validation": {
+      "delta_false_maintenance_tickets": {
+        "mean": -0.6666666666666666,
+        "sample_standard_deviation": 0.5773502691896257,
+        "minimum": -1.0,
+        "maximum": 0.0
+      },
+      "delta_joint_macro_f1": {
+        "mean": 0.0011269230761311588,
+        "sample_standard_deviation": 0.004188158660752048,
+        "minimum": -0.0022910971980563133,
+        "maximum": 0.005798790958977285
+      },
+      "delta_no_output_ticket_recall": {
+        "mean": 0.0,
+        "sample_standard_deviation": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0
+      },
+      "delta_raw_false_alarm_rate": {
+        "mean": -0.0018130018130018087,
+        "sample_standard_deviation": 0.03222758446165896,
+        "minimum": -0.02797202797202797,
+        "maximum": 0.03418803418803419
+      },
+      "delta_temporal_false_alarm_rate": {
+        "mean": -0.005957005957005959,
+        "sample_standard_deviation": 0.02400333021310056,
+        "minimum": -0.020202020202020207,
+        "maximum": 0.021756021756021746
+      },
+      "delta_thrust_loss_ticket_recall": {
+        "mean": 0.07407407407407403,
+        "sample_standard_deviation": 0.03207501495497919,
+        "minimum": 0.05555555555555547,
+        "maximum": 0.11111111111111105
+      }
+    },
+    "test": {
+      "delta_false_maintenance_tickets": {
+        "mean": 0.0,
+        "sample_standard_deviation": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0
+      },
+      "delta_joint_macro_f1": {
+        "mean": 0.00031440178086935183,
+        "sample_standard_deviation": 0.0019977911716872747,
+        "minimum": -0.0010966468219024694,
+        "maximum": 0.002600393084800201
+      },
+      "delta_no_output_ticket_recall": {
+        "mean": 0.0,
+        "sample_standard_deviation": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0
+      },
+      "delta_raw_false_alarm_rate": {
+        "mean": 0.004203758654797232,
+        "sample_standard_deviation": 0.03743412924446989,
+        "minimum": -0.02373887240356083,
+        "maximum": 0.04673590504451039
+      },
+      "delta_temporal_false_alarm_rate": {
+        "mean": -0.0032146389713155338,
+        "sample_standard_deviation": 0.028202922708967862,
+        "minimum": -0.03189910979228487,
+        "maximum": 0.024480712166172106
+      },
+      "delta_thrust_loss_ticket_recall": {
+        "mean": 0.0,
+        "sample_standard_deviation": 0.0,
+        "minimum": 0.0,
+        "maximum": 0.0
+      }
+    }
+  },
+  "adoption_decision": {
+    "gates": {
+      "raw_false_alarm_rate_lower_for_every_seed": false,
+      "joint_macro_f1_within_tolerance_for_every_seed": true,
+      "no_output_ticket_recall_not_lower_for_every_seed": true,
+      "thrust_loss_ticket_recall_within_tolerance_for_every_seed": true,
+      "false_maintenance_tickets_not_higher_for_every_seed": true
+    },
+    "adopt_candidate_mask": false,
+    "policy": "Validation is used for adoption. Test remains descriptive and does not change the decision.",
+    "joint_macro_f1_absolute_tolerance": 0.01,
+    "thrust_loss_ticket_recall_absolute_tolerance": 0.05555555555555555
+  },
+  "rows": [
+    {
+      "seed": 42,
+      "split": "validation",
+      "baseline_raw_false_alarm_rate": 0.08702408702408702,
+      "candidate_raw_false_alarm_rate": 0.059052059052059055,
+      "delta_raw_false_alarm_rate": -0.02797202797202797,
+      "baseline_temporal_false_alarm_rate": 0.07692307692307693,
+      "candidate_temporal_false_alarm_rate": 0.05672105672105672,
+      "delta_temporal_false_alarm_rate": -0.020202020202020207,
+      "baseline_joint_macro_f1": 0.8055430271760815,
+      "candidate_joint_macro_f1": 0.805416102643554,
+      "delta_joint_macro_f1": -0.0001269245325274948,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.6666666666666666,
+      "candidate_thrust_loss_ticket_recall": 0.7222222222222222,
+      "delta_thrust_loss_ticket_recall": 0.05555555555555558,
+      "baseline_false_maintenance_tickets": 0,
+      "candidate_false_maintenance_tickets": 0,
+      "delta_false_maintenance_tickets": 0
+    },
+    {
+      "seed": 42,
+      "split": "test",
+      "baseline_raw_false_alarm_rate": 0.1261127596439169,
+      "candidate_raw_false_alarm_rate": 0.10237388724035608,
+      "delta_raw_false_alarm_rate": -0.02373887240356083,
+      "baseline_temporal_false_alarm_rate": 0.12388724035608309,
+      "candidate_temporal_false_alarm_rate": 0.09198813056379822,
+      "delta_temporal_false_alarm_rate": -0.03189910979228487,
+      "baseline_joint_macro_f1": 0.7980933505757034,
+      "candidate_joint_macro_f1": 0.8006937436605036,
+      "delta_joint_macro_f1": 0.002600393084800201,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.7777777777777778,
+      "candidate_thrust_loss_ticket_recall": 0.7777777777777778,
+      "delta_thrust_loss_ticket_recall": 0.0,
+      "baseline_false_maintenance_tickets": 0,
+      "candidate_false_maintenance_tickets": 0,
+      "delta_false_maintenance_tickets": 0
+    },
+    {
+      "seed": 43,
+      "split": "validation",
+      "baseline_raw_false_alarm_rate": 0.07459207459207459,
+      "candidate_raw_false_alarm_rate": 0.06293706293706294,
+      "delta_raw_false_alarm_rate": -0.011655011655011649,
+      "baseline_temporal_false_alarm_rate": 0.07381507381507381,
+      "candidate_temporal_false_alarm_rate": 0.05439005439005439,
+      "delta_temporal_false_alarm_rate": -0.019425019425019417,
+      "baseline_joint_macro_f1": 0.7919648242843714,
+      "candidate_joint_macro_f1": 0.7977636152433487,
+      "delta_joint_macro_f1": 0.005798790958977285,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.6111111111111112,
+      "candidate_thrust_loss_ticket_recall": 0.7222222222222222,
+      "delta_thrust_loss_ticket_recall": 0.11111111111111105,
+      "baseline_false_maintenance_tickets": 1,
+      "candidate_false_maintenance_tickets": 0,
+      "delta_false_maintenance_tickets": -1
+    },
+    {
+      "seed": 43,
+      "split": "test",
+      "baseline_raw_false_alarm_rate": 0.1172106824925816,
+      "candidate_raw_false_alarm_rate": 0.10682492581602374,
+      "delta_raw_false_alarm_rate": -0.010385756676557861,
+      "baseline_temporal_false_alarm_rate": 0.10905044510385757,
+      "candidate_temporal_false_alarm_rate": 0.10682492581602374,
+      "delta_temporal_false_alarm_rate": -0.0022255192878338353,
+      "baseline_joint_macro_f1": 0.8023832945527131,
+      "candidate_joint_macro_f1": 0.8012866477308106,
+      "delta_joint_macro_f1": -0.0010966468219024694,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.8888888888888888,
+      "candidate_thrust_loss_ticket_recall": 0.8888888888888888,
+      "delta_thrust_loss_ticket_recall": 0.0,
+      "baseline_false_maintenance_tickets": 1,
+      "candidate_false_maintenance_tickets": 1,
+      "delta_false_maintenance_tickets": 0
+    },
+    {
+      "seed": 44,
+      "split": "validation",
+      "baseline_raw_false_alarm_rate": 0.07925407925407925,
+      "candidate_raw_false_alarm_rate": 0.11344211344211344,
+      "delta_raw_false_alarm_rate": 0.03418803418803419,
+      "baseline_temporal_false_alarm_rate": 0.08080808080808081,
+      "candidate_temporal_false_alarm_rate": 0.10256410256410256,
+      "delta_temporal_false_alarm_rate": 0.021756021756021746,
+      "baseline_joint_macro_f1": 0.7750050929066963,
+      "candidate_joint_macro_f1": 0.77271399570864,
+      "delta_joint_macro_f1": -0.0022910971980563133,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.6111111111111112,
+      "candidate_thrust_loss_ticket_recall": 0.6666666666666666,
+      "delta_thrust_loss_ticket_recall": 0.05555555555555547,
+      "baseline_false_maintenance_tickets": 1,
+      "candidate_false_maintenance_tickets": 0,
+      "delta_false_maintenance_tickets": -1
+    },
+    {
+      "seed": 44,
+      "split": "test",
+      "baseline_raw_false_alarm_rate": 0.1142433234421365,
+      "candidate_raw_false_alarm_rate": 0.1609792284866469,
+      "delta_raw_false_alarm_rate": 0.04673590504451039,
+      "baseline_temporal_false_alarm_rate": 0.11943620178041543,
+      "candidate_temporal_false_alarm_rate": 0.14391691394658754,
+      "delta_temporal_false_alarm_rate": 0.024480712166172106,
+      "baseline_joint_macro_f1": 0.7766668396133997,
+      "candidate_joint_macro_f1": 0.77610629869311,
+      "delta_joint_macro_f1": -0.0005605409202896761,
+      "baseline_no_output_ticket_recall": 1.0,
+      "candidate_no_output_ticket_recall": 1.0,
+      "delta_no_output_ticket_recall": 0.0,
+      "baseline_thrust_loss_ticket_recall": 0.6666666666666666,
+      "candidate_thrust_loss_ticket_recall": 0.6666666666666666,
+      "delta_thrust_loss_ticket_recall": 0.0,
+      "baseline_false_maintenance_tickets": 2,
+      "candidate_false_maintenance_tickets": 2,
+      "delta_false_maintenance_tickets": 0
+    }
+  ]
+}
