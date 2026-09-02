@@ -98,6 +98,22 @@ class SixDOFDatasetBuilderTests(unittest.TestCase):
         self.assertEqual(normalized.shape, augmented.shape)
         self.assertTrue(np.all(np.isfinite(normalized)))
 
+    def test_builder_applies_explicit_onboard_mass_configuration(self):
+        logs = mission_logs(12)
+        configured = np.array([110.0, 140.0, 150.0, 9.0, 27.0, 27.0])
+        dataset = build_six_dof_sequence_dataset(
+            {1: logs},
+            seq_len=10,
+            stride=5,
+            diagnostic_generalized_mass_diagonal=configured,
+        )
+
+        first_feature = dataset["X"][0, 0]
+        np.testing.assert_allclose(
+            first_feature[52:55],
+            logs[0]["allocated_wrench_body"][:3] / configured[:3],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

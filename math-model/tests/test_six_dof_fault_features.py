@@ -90,6 +90,31 @@ class SixDOFFaultFeatureTests(unittest.TestCase):
         )
         np.testing.assert_allclose(features[58:61], [1.0, -1.0, 2.0])
 
+    def test_physics_response_features_accept_calibrated_vehicle_model(self):
+        configured_mass = 2.0 * NOMINAL_GENERALIZED_MASS_DIAGONAL
+        features = extract_six_dof_features(
+            observable_log(),
+            generalized_mass_diagonal=configured_mass,
+        )
+
+        np.testing.assert_allclose(features[52:55], [0.5, -0.5, 0.5])
+        np.testing.assert_allclose(
+            features[55:58], [-0.3, 0.4, -0.45], atol=1e-7
+        )
+        np.testing.assert_allclose(features[58:61], [0.5, -0.5, 1.0])
+
+    def test_invalid_calibrated_vehicle_model_is_rejected(self):
+        with self.assertRaises(ValueError):
+            extract_six_dof_features(
+                observable_log(),
+                generalized_mass_diagonal=[55.0, 70.0, 75.0],
+            )
+        with self.assertRaises(ValueError):
+            extract_six_dof_features(
+                observable_log(),
+                generalized_mass_diagonal=[55.0, 70.0, 75.0, 4.5, 0.0, 13.5],
+            )
+
     def test_local_monitor_isolates_no_output_telemetry(self):
         log = observable_log()
         log["commanded_thruster_forces"] = np.full(6, 20.0)
@@ -135,6 +160,30 @@ class SixDOFFaultFeatureTests(unittest.TestCase):
         self.assertGreater(health.motion_loss_evidence[4], 0.25)
         self.assertEqual(np.count_nonzero(health.motion_loss_evidence), 1)
 
+    def test_motion_monitor_uses_same_calibrated_vehicle_model(self):
+        previous = observable_log()
+        previous["time"] = 0.0
+        previous["imu"]["angular_velocity"] = np.zeros(3)
+        current = observable_log()
+        current["time"] = 0.1
+        commands = np.zeros(6)
+        commands[4] = 20.0
+        command_wrench = current["thruster_allocation_matrix"] @ commands
+        configured_mass = 1.8 * NOMINAL_GENERALIZED_MASS_DIAGONAL
+        current["commanded_thruster_forces"] = commands
+        current["allocated_wrench_body"] = command_wrench
+        observed = command_wrench / configured_mass
+        current["imu"]["linear_acceleration"] = observed[:3]
+        current["imu"]["angular_velocity"] = observed[3:] * 0.1
+
+        health = extract_thruster_health_features(
+            current,
+            previous,
+            generalized_mass_diagonal=configured_mass,
+        )
+
+        np.testing.assert_allclose(health.motion_loss_evidence, np.zeros(6))
+
     def test_privileged_truth_cannot_change_features(self):
         baseline_log = observable_log()
         poisoned_log = copy.deepcopy(baseline_log)
@@ -151,6 +200,7 @@ class SixDOFFaultFeatureTests(unittest.TestCase):
             ),
             "fault_label": 12,
             "true_depth": -500.0,
+            "diagnostic_generalized_mass_diagonal": np.ones(6),
         })
 
         np.testing.assert_array_equal(

@@ -32,6 +32,35 @@ class ThrusterHealthFeatures:
     motion_loss_evidence: np.ndarray
 
 
+def resolve_generalized_mass_diagonal(value=None) -> np.ndarray:
+    """Return a validated onboard diagonal inertia model.
+
+    The optional value is a calibrated vehicle configuration available to the
+    deployed diagnostic system.  It is deliberately passed as configuration
+    rather than read from simulator logs, so injected fault truth cannot alter
+    the expected-response model.  ``None`` preserves the frozen V3 nominal
+    behavior.
+    """
+
+    if value is None:
+        return NOMINAL_GENERALIZED_MASS_DIAGONAL.copy()
+    try:
+        diagonal = np.asarray(value, dtype=float)
+    except (TypeError, ValueError) as error:
+        raise ValueError(
+            "generalized_mass_diagonal must contain six positive values"
+        ) from error
+    if (
+        diagonal.shape != (6,)
+        or not np.all(np.isfinite(diagonal))
+        or np.any(diagonal <= 0.0)
+    ):
+        raise ValueError(
+            "generalized_mass_diagonal must contain six finite positive values"
+        )
+    return diagonal.copy()
+
+
 def _finite_float(value: Any, default: float) -> float:
     try:
         converted = float(value)
@@ -156,6 +185,7 @@ def _motion_loss_evidence(
     previous_log: Optional[Mapping[str, Any]],
     commands: np.ndarray,
     force_limits: np.ndarray,
+    generalized_mass_diagonal: np.ndarray,
 ) -> np.ndarray:
     if previous_log is None:
         return np.zeros(THRUSTER_COUNT)
@@ -188,7 +218,7 @@ def _motion_loss_evidence(
     )
     residual_wrench = (
         commanded_wrench
-        - NOMINAL_GENERALIZED_MASS_DIAGONAL * observed_acceleration
+        - generalized_mass_diagonal * observed_acceleration
     )
     residual_scaled = residual_wrench / NOMINAL_WRENCH_SCALE
 
@@ -213,6 +243,8 @@ def _motion_loss_evidence(
 def extract_thruster_health_features(
     log: Mapping[str, Any],
     previous_log: Optional[Mapping[str, Any]] = None,
+    *,
+    generalized_mass_diagonal=None,
 ) -> ThrusterHealthFeatures:
     """Return local telemetry ratios and motion-confirmation evidence."""
 
@@ -223,11 +255,15 @@ def extract_thruster_health_features(
         rpm_ratio,
         local_anomaly,
     ) = _local_telemetry_features(log)
+    configured_mass = resolve_generalized_mass_diagonal(
+        generalized_mass_diagonal
+    )
     motion_evidence = _motion_loss_evidence(
         log,
         previous_log,
         commands,
         force_limits,
+        configured_mass,
     )
     return ThrusterHealthFeatures(
         current_ratio=current_ratio.astype(np.float32),

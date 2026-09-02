@@ -12,7 +12,9 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 
 from diagnosis.thruster_health_monitor import (
+    NOMINAL_GENERALIZED_MASS_DIAGONAL,
     extract_thruster_health_features,
+    resolve_generalized_mass_diagonal,
 )
 
 
@@ -113,13 +115,6 @@ SIX_DOF_RAW_FEATURE_NAMES = (
 SIX_DOF_RAW_FEATURE_DIM = len(SIX_DOF_RAW_FEATURE_NAMES)
 SIX_DOF_MODEL_INPUT_DIM = 2 * SIX_DOF_RAW_FEATURE_DIM
 
-# Diagonal of the nominal rigid-body plus added-mass matrix.  It is an onboard
-# model parameter, not simulator truth from the randomized mission.
-NOMINAL_GENERALIZED_MASS_DIAGONAL = np.array([
-    55.0, 70.0, 75.0, 4.5, 13.5, 13.5
-])
-
-
 @dataclass(frozen=True)
 class SixDOFFaultLabels:
     """Multi-task labels plus a convenient 13-class comparison label."""
@@ -163,6 +158,8 @@ def _validate_thruster_order(log: Mapping[str, Any]) -> None:
 def extract_six_dof_features(
     log: Mapping[str, Any],
     previous_log: Mapping[str, Any] | None = None,
+    *,
+    generalized_mass_diagonal=None,
 ) -> np.ndarray:
     """Return 109 raw features using only inference-time observable signals.
 
@@ -245,13 +242,18 @@ def extract_six_dof_features(
         log.get("allocated_wrench_body", log.get("desired_wrench_body")),
         6,
     )
-    nominal_expected_acceleration = (
-        commanded_wrench / NOMINAL_GENERALIZED_MASS_DIAGONAL
+    configured_mass = resolve_generalized_mass_diagonal(
+        generalized_mass_diagonal
     )
+    nominal_expected_acceleration = commanded_wrench / configured_mass
     linear_response_residual = (
         acceleration - nominal_expected_acceleration[:3]
     )
-    health = extract_thruster_health_features(log, previous_log=previous_log)
+    health = extract_thruster_health_features(
+        log,
+        previous_log=previous_log,
+        generalized_mass_diagonal=configured_mass,
+    )
 
     features = np.concatenate([
         np.array([

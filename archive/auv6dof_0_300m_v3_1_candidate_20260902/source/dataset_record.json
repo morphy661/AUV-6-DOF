@@ -1,0 +1,12 @@
+{
+  "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3_1",
+  "repository_relative_path": "depth-sensor-fault-detection/depth_fault_detection/data/simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3_1.pth",
+  "included_in_archive": false,
+  "sha256": "CB52EB270615CB1DA9BB293FEA6B4C0B16C047734C7FD6AD0CE9C4858E64A496",
+  "missions": 260,
+  "windows": 18633,
+  "shape": [18633, 100, 109],
+  "mass_range_policy_kg": [49.0, 51.0],
+  "diagnostic_feature_profile": "configured_generalized_mass_diagonal_v1",
+  "generation_command": "D:\\Anaconda_envs\\envs\\auv_gpu\\python.exe math-model/examples/generate_six_dof_fault_dataset.py --missions-per-scenario 20 --duration 90 --dt 0.05 --seq-len 100 --stride 25 --seed 42"
+}

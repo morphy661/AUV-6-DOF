@@ -60,6 +60,9 @@ DEPTH_BAND_WEIGHTED_CYCLE = (
 CRUISE_SPEEDS_MPS = np.array([1.2, 1.35, 1.5])
 CRUISE_SPEED_PROBABILITIES = np.array([0.30, 0.40, 0.30])
 VERTICAL_SPEED_RANGE_MPS = (0.15, 0.35)
+NOMINAL_VEHICLE_MASS_KG = 50.0
+DEFAULT_MASS_RELATIVE_ERROR = 0.02
+DIAGNOSTIC_FEATURE_PROFILE = "configured_generalized_mass_diagonal_v1"
 
 
 @dataclass(frozen=True)
@@ -136,10 +139,26 @@ def _split_for_repetition(repetition, missions_per_scenario):
     return "test"
 
 
-def _randomized_dynamics(rng, split, mass_kg_override=None):
-    """Sample a broad deployment domain for every leakage-safe split."""
+def _randomized_dynamics(
+    rng,
+    split,
+    mass_kg_override=None,
+    mass_relative_error=DEFAULT_MASS_RELATIVE_ERROR,
+):
+    """Sample hydrodynamics with a small calibrated rigid-mass error."""
     del split
-    mass_scale = rng.uniform(0.82, 1.18)
+    mass_relative_error = float(mass_relative_error)
+    if (
+        not np.isfinite(mass_relative_error)
+        or not 0.0 <= mass_relative_error <= 0.10
+    ):
+        raise ValueError(
+            "mass_relative_error must be finite and within [0.0, 0.10]"
+        )
+    mass_scale = rng.uniform(
+        1.0 - mass_relative_error,
+        1.0 + mass_relative_error,
+    )
     inertia_scale = np.array([
         rng.uniform(0.70, 1.30)
         for _ in range(3)
@@ -156,7 +175,7 @@ def _randomized_dynamics(rng, split, mass_kg_override=None):
         rng.uniform(0.60, 1.40)
         for _ in range(6)
     ])
-    sampled_mass = 50.0 * mass_scale
+    sampled_mass = NOMINAL_VEHICLE_MASS_KG * mass_scale
     mass = (
         sampled_mass
         if mass_kg_override is None
@@ -199,8 +218,13 @@ def _randomized_dynamics(rng, split, mass_kg_override=None):
     )
     metadata = {
         "mass_kg": mass,
+        "nominal_mass_kg": NOMINAL_VEHICLE_MASS_KG,
+        "mass_relative_error_limit": mass_relative_error,
         "inertia_diagonal": np.diag(config.inertia).tolist(),
         "added_mass_diagonal": np.diag(config.added_mass).tolist(),
+        "configured_generalized_mass_diagonal": np.diag(
+            config.total_mass_matrix
+        ).tolist(),
         "linear_damping": config.linear_damping.tolist(),
         "quadratic_damping": config.quadratic_damping.tolist(),
         "buoyancy_to_weight_ratio": buoyancy_ratio,
@@ -471,12 +495,14 @@ def run_mission(
     lateral_force_amplitudes_override=None,
     vertical_force_limit_override=None,
     mass_kg_override=None,
+    mass_relative_error=DEFAULT_MASS_RELATIVE_ERROR,
 ):
     rng = np.random.default_rng(seed)
     dynamics, dynamics_metadata = _randomized_dynamics(
         rng,
         split,
         mass_kg_override=mass_kg_override,
+        mass_relative_error=mass_relative_error,
     )
     thruster_array, thruster_metadata = _randomized_thrusters(
         rng,
@@ -581,7 +607,7 @@ def run_mission(
     )
     metadata = {
         "split": split,
-        "domain": "independent_broad_deployment_domain",
+        "domain": "small_mass_error_broad_hydrodynamic_domain",
         "dynamics": dynamics_metadata,
         "thrusters": thruster_metadata,
         "sensors": {
@@ -610,6 +636,7 @@ def generate_dataset(
     seq_len,
     stride,
     seed,
+    mass_relative_error=DEFAULT_MASS_RELATIVE_ERROR,
 ):
     chunks = []
     mission_metadata = {}
@@ -644,11 +671,16 @@ def generate_dataset(
                     repetition,
                     missions_per_scenario,
                 ),
+                mass_relative_error=mass_relative_error,
             )
             chunk = build_six_dof_sequence_dataset(
                 {mission_id: logs},
                 seq_len=seq_len,
                 stride=stride,
+                diagnostic_generalized_mass_diagonal=(
+                    parameter_metadata["dynamics"]
+                    ["configured_generalized_mass_diagonal"]
+                ),
             )
             chunks.append(chunk)
             mission_metadata[mission_id] = {
@@ -687,6 +719,11 @@ def generate_dataset(
             "sequence_length",
         )
     })
+    dataset.update({
+        "diagnostic_feature_profile": DIAGNOSTIC_FEATURE_PROFILE,
+        "nominal_vehicle_mass_kg": NOMINAL_VEHICLE_MASS_KG,
+        "mass_relative_error_limit": float(mass_relative_error),
+    })
     return dataset, mission_metadata
 
 
@@ -721,12 +758,13 @@ def _torch_payload(dataset, splits, mission_metadata):
             torch.from_numpy(value) if isinstance(value, np.ndarray) else value
         )
     payload.update({
-        "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3",
+        "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3_1",
         "label_format": "multitask_mode_and_location_with_joint_baseline",
         "split_policy": (
             "fixed mission seeds; 90% mission focus at 0-300 m and 10% "
-            "deep-stress coverage at 300-500 m; broad randomized deployment "
-            "domain with disjoint train/validation/test mission seeds"
+            "deep-stress coverage at 300-500 m; calibrated vehicle mass with "
+            "a small relative error, parameter-conditioned response features, "
+            "and disjoint train/validation/test mission seeds"
         ),
         "depth_bands_m": [list(band) for band in DEPTH_BANDS_M],
         "depth_band_probabilities": DEPTH_BAND_PROBABILITIES.tolist(),
@@ -752,6 +790,15 @@ def main():
     parser.add_argument("--stride", type=int, default=25)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument(
+        "--mass-relative-error",
+        type=float,
+        default=DEFAULT_MASS_RELATIVE_ERROR,
+        help=(
+            "Relative rigid-body mass uncertainty around 50 kg; default 0.02 "
+            "gives a 49-51 kg deployment range."
+        ),
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=(
@@ -759,7 +806,7 @@ def main():
             / "depth-sensor-fault-detection"
             / "depth_fault_detection"
             / "data"
-            / "simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3.pth"
+            / "simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3_1.pth"
         ),
     )
     args = parser.parse_args()
@@ -767,6 +814,8 @@ def main():
         parser.error("--missions-per-scenario must be at least 3")
     if args.duration <= 0.0 or args.dt <= 0.0:
         parser.error("--duration and --dt must be positive")
+    if not 0.0 <= args.mass_relative_error <= 0.10:
+        parser.error("--mass-relative-error must be within [0.0, 0.10]")
 
     dataset, mission_metadata = generate_dataset(
         missions_per_scenario=args.missions_per_scenario,
@@ -775,6 +824,7 @@ def main():
         seq_len=args.seq_len,
         stride=args.stride,
         seed=args.seed,
+        mass_relative_error=args.mass_relative_error,
     )
     splits = fixed_split_indices(
         dataset["mission_ids"],
@@ -812,7 +862,12 @@ def main():
             }
             for split in ("train", "validation", "test")
         },
-        "test_domain": "independent_broad_deployment_domain",
+        "test_domain": "small_mass_error_broad_hydrodynamic_domain",
+        "diagnostic_feature_profile": DIAGNOSTIC_FEATURE_PROFILE,
+        "mass_range_kg": [
+            NOMINAL_VEHICLE_MASS_KG * (1.0 - args.mass_relative_error),
+            NOMINAL_VEHICLE_MASS_KG * (1.0 + args.mass_relative_error),
+        ],
         "output": str(args.output),
     }
     print(json.dumps(summary, indent=2))

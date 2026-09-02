@@ -34,6 +34,8 @@ def build_six_dof_sequence_dataset(
     seq_len: int = 50,
     stride: int = 10,
     include_transition_windows: bool = True,
+    *,
+    diagnostic_generalized_mass_diagonal=None,
 ) -> dict[str, Any]:
     """Build causal windows without ever crossing a mission boundary.
 
@@ -63,6 +65,9 @@ def build_six_dof_sequence_dataset(
             extract_six_dof_features(
                 log,
                 previous_log=(logs[index - 1] if index > 0 else None),
+                generalized_mass_diagonal=(
+                    diagnostic_generalized_mass_diagonal
+                ),
             )
             for index, log in enumerate(logs)
         ]).astype(np.float32)

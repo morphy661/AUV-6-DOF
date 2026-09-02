@@ -693,6 +693,15 @@ def main():
             "six_dof_false_alarm_audit_v1_20260821"
         ),
     )
+    parser.add_argument(
+        "--reference-summary",
+        type=Path,
+        default=None,
+        help=(
+            "Optional temporal_decision_summary.json used only to verify that "
+            "this descriptive audit reproduces the selected run."
+        ),
+    )
     parser.add_argument("--batch-size", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -748,23 +757,24 @@ def main():
             ticket_config,
         )
 
-    expected = {
-        "validation": {"raw": 0.08702408702408702,
-                       "temporal": 0.07692307692307693},
-        "test": {"raw": 0.1261127596439169,
-                 "temporal": 0.12388724035608309},
-    }
-    for split, rates in expected.items():
-        for layer, expected_rate in rates.items():
-            observed = audits[split]["summary"][layer]["false_alarm_rate"]
-            if not np.isclose(observed, expected_rate, atol=1e-12):
-                raise RuntimeError(
-                    f"{split} {layer} FAR mismatch: {observed} != "
-                    f"{expected_rate}"
-                )
+    if args.reference_summary is not None:
+        reference = _json(args.reference_summary)
+        for split in ("validation", "test"):
+            for layer in ("raw", "temporal"):
+                expected_rate = reference[split][layer]["operations"][
+                    "normal_window_false_alarm_rate"
+                ]
+                observed = audits[split]["summary"][layer][
+                    "false_alarm_rate"
+                ]
+                if not np.isclose(observed, expected_rate, atol=1e-12):
+                    raise RuntimeError(
+                        f"{split} {layer} FAR mismatch: {observed} != "
+                        f"{expected_rate}"
+                    )
 
     result = {
-        "audit_id": "six_dof_false_alarm_audit_v1_20260821",
+        "audit_id": "six_dof_false_alarm_audit_v3_1_20260902",
         "analysis_policy": (
             "descriptive audit only; no threshold, model, or test-set tuning"
         ),
@@ -772,6 +782,11 @@ def main():
         "dataset_version": dataset["dataset_version"],
         "dataset_sha256": _sha256(args.dataset),
         "checkpoint_sha256": _sha256(args.checkpoint),
+        "reference_summary_sha256": (
+            None
+            if args.reference_summary is None
+            else _sha256(args.reference_summary)
+        ),
         "temporal_config": asdict(temporal_config),
         "ticket_config": asdict(ticket_config),
         "split_missions": {

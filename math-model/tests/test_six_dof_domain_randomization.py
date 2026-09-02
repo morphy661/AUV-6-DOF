@@ -118,10 +118,10 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
             np.random.default_rng(1), "test"
         )
 
-        self.assertGreaterEqual(train_dynamics.config.mass, 41.0)
-        self.assertLessEqual(train_dynamics.config.mass, 59.0)
-        self.assertGreaterEqual(test_dynamics.config.mass, 41.0)
-        self.assertLessEqual(test_dynamics.config.mass, 59.0)
+        self.assertGreaterEqual(train_dynamics.config.mass, 49.0)
+        self.assertLessEqual(train_dynamics.config.mass, 51.0)
+        self.assertGreaterEqual(test_dynamics.config.mass, 49.0)
+        self.assertLessEqual(test_dynamics.config.mass, 51.0)
         self.assertEqual(
             train_dynamics.config.mass,
             test_dynamics.config.mass,
@@ -129,6 +129,25 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
         self.assertGreater(
             np.min(np.linalg.eigvalsh(test_dynamics.mass_matrix)), 0.0
         )
+
+    def test_dynamics_metadata_exposes_only_configured_onboard_mass_model(self):
+        dynamics, metadata = _randomized_dynamics(
+            np.random.default_rng(19), "train"
+        )
+
+        np.testing.assert_allclose(
+            metadata["configured_generalized_mass_diagonal"],
+            np.diag(dynamics.config.total_mass_matrix),
+        )
+        self.assertEqual(metadata["mass_relative_error_limit"], 0.02)
+
+    def test_rigid_mass_uncertainty_cannot_restore_broad_v3_range(self):
+        with self.assertRaises(ValueError):
+            _randomized_dynamics(
+                np.random.default_rng(19),
+                "train",
+                mass_relative_error=0.18,
+            )
 
     def test_randomized_thruster_layout_remains_valid(self):
         array, metadata = _randomized_thrusters(
@@ -271,6 +290,19 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
 
         self.assertEqual(low.pop("mass_kg"), 45.0)
         self.assertEqual(high.pop("mass_kg"), 58.0)
+        low_configured = np.asarray(
+            low.pop("configured_generalized_mass_diagonal")
+        )
+        high_configured = np.asarray(
+            high.pop("configured_generalized_mass_diagonal")
+        )
+        np.testing.assert_allclose(
+            high_configured[:3] - low_configured[:3],
+            np.full(3, 13.0),
+        )
+        np.testing.assert_allclose(
+            high_configured[3:], low_configured[3:]
+        )
         self.assertEqual(low, high)
 
 

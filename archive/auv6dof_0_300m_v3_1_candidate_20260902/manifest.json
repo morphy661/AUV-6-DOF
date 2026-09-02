@@ -1,0 +1,30 @@
+{
+  "archive_id": "auv6dof_0_300m_v3_1_candidate_20260902",
+  "created_at_jst": "2026-09-02",
+  "status": "candidate_not_frozen",
+  "base_git_commit": "01313f58641b0aa7dc3d893781184aaed83fa403",
+  "source_branch": "codex/auv6dof-v3.1-false-alarm",
+  "selected_training_seed": 42,
+  "selection_rule": "highest validation joint macro F1 among seeds 42, 43, and 44",
+  "diagnostic_feature_profile": "configured_generalized_mass_diagonal_v1",
+  "ftc_modified": false,
+  "dataset": {
+    "included": false,
+    "size_bytes": 813884319,
+    "sha256": "CB52EB270615CB1DA9BB293FEA6B4C0B16C047734C7FD6AD0CE9C4858E64A496",
+    "missions": 260,
+    "windows": 18633,
+    "mass_range_policy_kg": [49.0, 51.0]
+  },
+  "independent_test": {
+    "raw_normal_window_false_alarm_rate": 0.07863501483679525,
+    "temporal_normal_window_false_alarm_rate": 0.07789317507418397,
+    "mode_macro_f1": 0.9130200572597302,
+    "location_macro_f1": 0.8351614672355885,
+    "joint_macro_f1": 0.8237275816276782,
+    "false_maintenance_tickets": 0,
+    "no_output_ticket_recall": 1.0,
+    "thrust_loss_ticket_recall": 0.9444444444444444
+  },
+  "claim_boundary": "Randomized simulation candidate only; not sea-trial evidence or a hardware depth certification."
+}

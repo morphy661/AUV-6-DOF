@@ -20,6 +20,9 @@ from utils.six_dof_feature_extractor import (
     SIX_DOF_RAW_FEATURE_NAMES,
     extract_six_dof_features,
 )
+from diagnosis.thruster_health_monitor import (
+    resolve_generalized_mass_diagonal,
+)
 
 
 MODE_NAMES = ("normal", "no_output", "thrust_loss")
@@ -49,6 +52,7 @@ class SixDOFModelBridge:
         inference_stride=10,
         advisory_stabilization_time_s=3.0,
         device=None,
+        diagnostic_generalized_mass_diagonal=None,
     ):
         import torch
 
@@ -66,8 +70,17 @@ class SixDOFModelBridge:
         self.device = torch.device(
             device or ("cuda" if torch.cuda.is_available() else "cpu")
         )
+        self.diagnostic_generalized_mass_diagonal = (
+            resolve_generalized_mass_diagonal(
+                diagnostic_generalized_mass_diagonal
+            )
+        )
         checkpoint = torch.load(
             self.checkpoint_path, map_location="cpu", weights_only=False
+        )
+        self.diagnostic_feature_profile = checkpoint.get(
+            "diagnostic_feature_profile",
+            "fixed_nominal_generalized_mass_v3",
         )
         if int(checkpoint.get("input_dim", -1)) != SIX_DOF_MODEL_INPUT_DIM:
             raise ValueError("checkpoint model input dimension is incompatible")
@@ -281,7 +294,13 @@ class SixDOFModelBridge:
         gate = self.context_gate.update(log)
         if gate.reset_model_context:
             self._reset_model_context()
-        feature = extract_six_dof_features(log, self.previous_log)
+        feature = extract_six_dof_features(
+            log,
+            self.previous_log,
+            generalized_mass_diagonal=(
+                self.diagnostic_generalized_mass_diagonal
+            ),
+        )
         self.previous_log = log
         self.features.append(feature)
         self.sample_index += 1

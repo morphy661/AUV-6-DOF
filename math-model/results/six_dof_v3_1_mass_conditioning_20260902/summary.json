@@ -1,0 +1,74 @@
+{
+  "experiment_id": "six_dof_v3_1_mass_conditioning_20260902",
+  "status": "candidate_not_frozen",
+  "scope": "small rigid-mass uncertainty and configured generalized-mass diagnostic features",
+  "ftc_modified": false,
+  "dataset": {
+    "version": "six_dof_hybrid_telemetry_0_300m_focus_v3_1",
+    "missions": 260,
+    "windows": 18633,
+    "shape": [18633, 100, 109],
+    "mission_split": {"train": 182, "validation": 39, "test": 39},
+    "nominal_mass_kg": 50.0,
+    "mass_relative_error": 0.02,
+    "observed_mass_range_kg": [49.0009263079149, 50.991415952848286],
+    "sha256": "CB52EB270615CB1DA9BB293FEA6B4C0B16C047734C7FD6AD0CE9C4858E64A496",
+    "included_in_git": false
+  },
+  "baseline_v3": {
+    "raw_normal_window_false_alarm_rate": 0.1261127596439169,
+    "temporal_normal_window_false_alarm_rate": 0.12388724035608309,
+    "mode_macro_f1": 0.8881951206326694,
+    "location_macro_f1": 0.8051565098817866,
+    "joint_macro_f1": 0.7980933505757034,
+    "false_maintenance_tickets": 0,
+    "no_output_ticket_recall": 1.0,
+    "thrust_loss_ticket_recall": 0.7777777777777778
+  },
+  "multiseed": {
+    "seeds": [42, 43, 44],
+    "raw_false_alarm_rates": [0.07863501483679525, 0.0897626112759644, 0.08086053412462908],
+    "raw_false_alarm_rate_mean": 0.0830860534124629,
+    "mode_macro_f1_mean": 0.9031926978308992,
+    "location_macro_f1_mean": 0.8347800465253225,
+    "joint_macro_f1_mean": 0.8223203772741456,
+    "fault_mission_detection_rate_each_seed": 1.0
+  },
+  "selected_model": {
+    "selection_rule": "highest validation joint macro F1",
+    "seed": 42,
+    "best_epoch": 17,
+    "validation_joint_macro_f1": 0.8189843227962268,
+    "test_raw_false_alarm_rate": 0.07863501483679525,
+    "test_temporal_false_alarm_rate": 0.07789317507418397,
+    "test_mode_macro_f1": 0.9130200572597302,
+    "test_location_macro_f1": 0.8351614672355885,
+    "test_joint_macro_f1": 0.8237275816276782,
+    "false_maintenance_tickets": 0,
+    "no_output_ticket_recall": 1.0,
+    "thrust_loss_ticket_recall": 0.9444444444444444,
+    "checkpoint_sha256": "7971142031B5260CECACCBCEC2C9BDF97156F46397ACBB77DE57317432574476"
+  },
+  "mass_dependence_audit": {
+    "raw_far_spearman_rho": -0.04491823396177798,
+    "raw_far_p_value": 0.6961672797702297,
+    "temporal_far_spearman_rho": 0.04866214882363331,
+    "temporal_far_p_value": 0.6722335782846149
+  },
+  "remaining_test_temporal_far_by_depth": {
+    "0-50_m": 0.0514,
+    "50-150_m": 0.0698,
+    "150-300_m": 0.1153,
+    "300-500_m": 0.0543
+  },
+  "acceptance": {
+    "all_three_seeds_reduce_raw_far_vs_v3": true,
+    "selected_joint_macro_f1_drop_greater_than_0_01": false,
+    "zero_false_formal_tickets": true,
+    "no_output_ticket_recall_preserved": true,
+    "thrust_loss_ticket_recall_preserved": true,
+    "mass_far_dependence_removed_in_modeled_range": true,
+    "candidate_pass": true
+  },
+  "claim_boundary": "Independent randomized simulation evidence only; no sea-trial or depth-rating claim. Learned output remains maintenance advisory and does not control FTC."
+}

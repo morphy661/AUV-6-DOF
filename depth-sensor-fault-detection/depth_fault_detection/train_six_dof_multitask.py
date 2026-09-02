@@ -100,6 +100,36 @@ def load_and_validate_dataset(path):
     if tuple(dataset["feature_names"]) != SIX_DOF_RAW_FEATURE_NAMES:
         raise ValueError("feature schema does not match the six-DOF extractor")
 
+    diagnostic_profile = dataset.get(
+        "diagnostic_feature_profile",
+        "fixed_nominal_generalized_mass_v3",
+    )
+    if diagnostic_profile == "configured_generalized_mass_diagonal_v1":
+        metadata = dataset.get("mission_metadata")
+        if not isinstance(metadata, dict) or not metadata:
+            raise ValueError(
+                "configured diagnostic features require mission metadata"
+            )
+        for mission_id, item in metadata.items():
+            try:
+                diagonal = np.asarray(
+                    item["parameters"]["dynamics"]
+                    ["configured_generalized_mass_diagonal"],
+                    dtype=float,
+                )
+            except (KeyError, TypeError, ValueError) as error:
+                raise ValueError(
+                    f"mission {mission_id} lacks its configured mass model"
+                ) from error
+            if (
+                diagonal.shape != (6,)
+                or not np.all(np.isfinite(diagonal))
+                or np.any(diagonal <= 0.0)
+            ):
+                raise ValueError(
+                    f"mission {mission_id} has an invalid configured mass model"
+                )
+
     feature_text = " ".join(dataset["feature_names"])
     forbidden_names = [
         name for name in PRIVILEGED_SIMULATOR_FIELDS if name in feature_text
@@ -593,6 +623,11 @@ def main():
                 "best_epoch": best_epoch,
                 "validation_joint_macro_f1": best_score,
                 "structured_fusion": model.structured_fusion,
+                "dataset_version": dataset.get("dataset_version"),
+                "diagnostic_feature_profile": dataset.get(
+                    "diagnostic_feature_profile",
+                    "fixed_nominal_generalized_mass_v3",
+                ),
             }, checkpoint_path)
         else:
             epochs_without_improvement += 1
@@ -652,6 +687,11 @@ def main():
     )
     summary = {
         "device": str(device),
+        "dataset_version": dataset.get("dataset_version"),
+        "diagnostic_feature_profile": dataset.get(
+            "diagnostic_feature_profile",
+            "fixed_nominal_generalized_mass_v3",
+        ),
         "best_epoch": best_epoch,
         "validation_joint_macro_f1": best_score,
         "test_loss": test["loss"],
