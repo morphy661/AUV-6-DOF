@@ -105,6 +105,20 @@ def test_fixed_schedule_remains_the_reproducible_reference_story():
     }]
 
 
+def test_safety_recovery_schedule_contains_one_clear_physical_fault():
+    manifest = _manifest(20260909, mode="safety_recovery")
+
+    assert manifest["injection_mode"] == "safety_recovery"
+    assert manifest["sensor_events"] == []
+    assert manifest["esc_telemetry_events"] == []
+    assert manifest["thruster_fault"] == {
+        "thruster_name": "V1",
+        "mode": "no_output",
+        "start_time_s": 10.0,
+        "thrust_efficiency": 0.0,
+    }
+
+
 def test_display_truth_tracks_injections_without_entering_diagnosis_frames():
     manifest = _manifest(123, mode="fixed")
 
@@ -203,6 +217,35 @@ def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():
         log["ftc_targeted_thruster_name"] == "V1" for log in logs
     )
     assert manifest["thruster_fault"]["thruster_name"] == "V1"
+    hold_index = next(
+        index for index, frame in enumerate(frames)
+        if frame["ftc"]["guidance_mode_applied"] == "vertical_thruster_hold"
+    )
+    hold = frames[hold_index]
+    assert hold["ftc"]["tracking_error_available"]
+    assert hold["ftc"]["position_tracking_safety_active"]
+    assert hold["ftc"]["tilt_angle_deg"] >= 0.0
+    assert hold["ftc"]["depth_tracking_error_m"] >= 0.0
+    assert (
+        hold["pose"]["target_position_ned_m"]
+        != hold["pose"]["mission_target_position_ned_m"]
+    )
+
+    renderer = SixDOFDemoRenderer(
+        frames,
+        events,
+        injection_manifest=manifest,
+        view_mode="summary",
+    )
+    renderer.draw(hold_index)
+    comparison_labels = {
+        text.get_text() for text in renderer.thruster_axis.texts
+    }
+    ftc_labels = {text.get_text() for text in renderer.status_axis.texts}
+    assert {"GROUND TRUTH", "AI MODEL", "RULE / GATE", "OUTCOME"} <= comparison_labels
+    assert {"Action", "Target", "Guidance", "Safety"} <= ftc_labels
+    assert any("MISSION PAUSED" in value for value in ftc_labels)
+    renderer.close()
 
 
 def test_offline_acceptance_badge_is_explicit_and_consistent(tmp_path):

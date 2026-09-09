@@ -1,0 +1,55 @@
+{
+  "demo_version": "online_fusion_safety_demo_v1",
+  "generated_at": "2026-09-09",
+  "scenario": {
+    "operating_depth_m": 200.0,
+    "duration_s": 18.0,
+    "dt_s": 0.05,
+    "seed": 20260909,
+    "injection_mode": "safety_recovery",
+    "fault": {
+      "thruster": "V1",
+      "mode": "no_output",
+      "start_time_s": 10.0,
+      "thrust_efficiency": 0.0
+    }
+  },
+  "causal_timing_s": {
+    "esc_possible": 10.20,
+    "ai_first_raw_fault": 11.55,
+    "ai_first_raw_no_output": 12.05,
+    "esc_confirmed": 12.90,
+    "ftc_targeted_reallocation": 12.90,
+    "vertical_hold_applied": 12.95
+  },
+  "ai_observation": {
+    "first_raw_fault_mode": "thrust_loss",
+    "first_raw_fault_probability": 0.99999999,
+    "first_raw_no_output_probability": 0.99999999,
+    "online_inference_updates": 19,
+    "mean_inference_ms": 2.9726,
+    "p95_inference_ms": 4.1348,
+    "max_inference_ms": 7.6019,
+    "time_budget_ms": 50.0,
+    "over_budget_count": 0,
+    "current_ftc_authority": "advisory_only_for_this_direct_ESC_case"
+  },
+  "post_fault_safety": {
+    "max_tilt_deg": 6.0573,
+    "max_hold_depth_error_m": 0.5310,
+    "max_hold_horizontal_error_m": 0.5773,
+    "max_allocation_residual_ratio": 0.08945,
+    "safe_abort_triggered": false
+  },
+  "diagnostic_outcome": {
+    "ground_truth": "V1 no output",
+    "confirmed_target": "V1",
+    "match": true,
+    "confirmed_sensor_faults": [],
+    "esc_link_anomalies": []
+  },
+  "verification": {
+    "pytest": "260 passed, 5 subtests passed",
+    "python": "D:\\Anaconda_envs\\envs\\auv_gpu\\python.exe"
+  }
+}

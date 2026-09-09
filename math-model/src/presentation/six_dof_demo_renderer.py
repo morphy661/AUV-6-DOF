@@ -136,8 +136,20 @@ class SixDOFDemoRenderer:
         self.times = np.asarray([frame["time_s"] for frame in self.frames])
         self.positions = _pose_array(self.frames, "position_ned_m")
         self.estimates = _pose_array(self.frames, "estimated_position_ned_m")
-        self.targets = _pose_array(self.frames, "target_position_ned_m")
-        combined = np.vstack((self.positions, self.estimates, self.targets))
+        self.control_targets = _pose_array(self.frames, "target_position_ned_m")
+        self.targets = np.asarray([
+            frame["pose"].get(
+                "mission_target_position_ned_m",
+                frame["pose"]["target_position_ned_m"],
+            )
+            for frame in self.frames
+        ], dtype=float)
+        combined = np.vstack((
+            self.positions,
+            self.estimates,
+            self.control_targets,
+            self.targets,
+        ))
         self.spatial_low, self.spatial_high = _limits(combined)
         self.figure = plt.figure(figsize=(12.8, 7.2), facecolor=BACKGROUND)
         grid = self.figure.add_gridspec(
@@ -188,8 +200,22 @@ class SixDOFDemoRenderer:
         axis.plot(
             self.targets[: index + 1, 0], self.targets[: index + 1, 1],
             self.targets[: index + 1, 2], color=TARGET, linestyle="--",
-            linewidth=1.5, label="Target",
+            linewidth=1.5, label="Mission target",
         )
+        target_diverged = bool(np.any(np.linalg.norm(
+            self.control_targets[: index + 1] - self.targets[: index + 1],
+            axis=1,
+        ) > 1e-6))
+        if target_diverged:
+            axis.plot(
+                self.control_targets[: index + 1, 0],
+                self.control_targets[: index + 1, 1],
+                self.control_targets[: index + 1, 2],
+                color=FTC_COLOR,
+                linestyle=":",
+                linewidth=1.8,
+                label="FTC hold target",
+            )
         axis.plot(
             self.positions[: index + 1, 0], self.positions[: index + 1, 1],
             self.positions[: index + 1, 2], color=FOREGROUND, linewidth=2.0,
@@ -207,9 +233,14 @@ class SixDOFDemoRenderer:
         pose = self.frames[index]["pose"]
         current = np.asarray(pose["position_ned_m"], dtype=float)
         target = np.asarray(pose["target_position_ned_m"], dtype=float)
+        mission_target = np.asarray(
+            pose.get("mission_target_position_ned_m", target), dtype=float
+        )
         rpy = np.asarray(pose["euler_rpy_rad"], dtype=float)
         axis.scatter(*current, s=65, color=FOREGROUND, edgecolor=BACKGROUND)
-        axis.scatter(*target, s=70, marker="*", color=TARGET)
+        axis.scatter(*mission_target, s=70, marker="*", color=TARGET)
+        if target_diverged:
+            axis.scatter(*target, s=50, marker="s", color=FTC_COLOR)
         yaw = rpy[2]
         direction = np.array([np.cos(yaw), np.sin(yaw), 0.0])
         axis.quiver(
@@ -343,6 +374,115 @@ class SixDOFDemoRenderer:
             )
         return "NORMAL | no actionable fault", TIER_COLORS["normal"]
 
+    def _ai_summary(self, index):
+        maintenance = self.frames[index].get("maintenance", {})
+        if not maintenance.get("available", False):
+            now_s = float(self.frames[index].get("time_s", 0.0))
+            for candidate_index in range(index - 1, -1, -1):
+                candidate_frame = self.frames[candidate_index]
+                candidate_time_s = float(candidate_frame.get("time_s", 0.0))
+                if now_s - candidate_time_s > 3.0:
+                    break
+                candidate = candidate_frame.get("maintenance", {})
+                if (
+                    candidate.get("available", False)
+                    and float(candidate.get("raw_fault_probability", 0.0)) >= 0.5
+                ):
+                    mode = str(
+                        candidate.get("raw_probable_mode", "unknown")
+                    ).replace("_", " ").upper()
+                    probability = 100.0 * float(
+                        candidate.get("raw_fault_probability", 0.0)
+                    )
+                    group = str(
+                        candidate.get("raw_suspected_group", "unknown")
+                    ).replace("_", " ").upper()
+                    return (
+                        f"RECENT {mode} | P {probability:.0f}% @ "
+                        f"{candidate_time_s:.2f} s | {group}",
+                        TIER_COLORS["possible"],
+                    )
+            return "WARMING UP CAUSAL WINDOW", MUTED
+        mode = str(
+            maintenance.get("raw_probable_mode", "normal")
+        ).replace("_", " ").upper()
+        probability = 100.0 * float(
+            maintenance.get("raw_fault_probability", 0.0)
+        )
+        candidates = list(maintenance.get("candidates", ()))[:2]
+        top = ", ".join(
+            f"{candidate.get('name', '?')} "
+            f"{100.0 * float(candidate.get('probability', 0.0)):.0f}%"
+            for candidate in candidates
+        )
+        if not top:
+            group = str(
+                maintenance.get("raw_suspected_group", "unknown")
+            ).replace("_", " ")
+            top = f"group {group}" if group != "unknown" else "location uncertain"
+        prefix = "NEW" if maintenance.get("updated", False) else "HELD"
+        color = (
+            TIER_COLORS["normal"]
+            if mode == "NORMAL"
+            else TIER_COLORS["possible"]
+        )
+        return (
+            f"{prefix} {mode} | fault P {probability:.0f}% | {top}",
+            color,
+        )
+
+    def _rule_summary(self, index):
+        frame = self.frames[index]
+        ftc = frame["ftc"]
+        target = ftc.get("target_thruster")
+        cards = list(frame.get("thrusters", ()))
+        strongest = max(
+            cards,
+            key=lambda card: float(card.get("no_output_score", 0.0)),
+            default=None,
+        )
+        strongest_name = "none" if strongest is None else strongest.get("name", "?")
+        strongest_score = (
+            0.0 if strongest is None
+            else 100.0 * float(strongest.get("no_output_score", 0.0))
+        )
+        if target:
+            text = f"ESC CONFIRMED {target} | LATCHED"
+            color = TIER_COLORS["confirmed"]
+        elif ftc.get("untrusted_esc_channels"):
+            text = "ESC LINK UNTRUSTED | LOG ONLY"
+            color = TIER_COLORS["log_only"]
+        elif strongest_score >= 80.0:
+            text = (
+                f"{strongest_name} SCORE {strongest_score:.0f}% | "
+                "CONFIRMATION TIMER"
+            )
+            color = TIER_COLORS["possible"]
+        elif strongest_score >= 35.0:
+            text = f"{strongest_name} WEAK EVIDENCE {strongest_score:.0f}% | LOG"
+            color = TIER_COLORS["log_only"]
+        else:
+            text = "NO DIRECT ESC FAULT CONFIRMATION"
+            color = TIER_COLORS["normal"]
+        fusion = ftc.get("ai_fusion", {})
+        if fusion:
+            raw_verdict = str(fusion.get("verdict", "unavailable"))
+            verdict = {
+                "direct_rule_priority": "DIRECT RULE",
+                "context_blocked": "CONTEXT BLOCK",
+                "suspected": "AI SUSPECTED",
+                "normal": "NO AI ESCALATION",
+                "unavailable": "UNAVAILABLE",
+            }.get(raw_verdict, raw_verdict.replace("_", " ").upper())
+            if (
+                raw_verdict == "unavailable"
+                and target
+                and ftc.get("guidance_mode_applied") != "normal"
+            ):
+                verdict = "RESET AFTER ACTION"
+            text += f" | GATE {verdict}"
+        return text, color
+
     def _comparison_text(self, index, active):
         frame = self.frames[index]
         if not active:
@@ -432,17 +572,34 @@ class SixDOFDemoRenderer:
         axis.axis("off")
         frame = self.frames[index]
         depth = float(frame["pose"]["position_ned_m"][2])
-        target_depth = float(frame["pose"]["target_position_ned_m"][2])
+        control_depth = float(frame["pose"]["target_position_ned_m"][2])
+        mission_depth = float(
+            frame["pose"].get(
+                "mission_target_position_ned_m",
+                frame["pose"]["target_position_ned_m"],
+            )[2]
+        )
         initial_depth = float(self.positions[0, 2])
+        guidance = str(
+            frame["ftc"].get("guidance_mode_applied", "normal")
+        )
+        mission_state = (
+            "PAUSED / LOCAL HOLD"
+            if guidance == "vertical_thruster_hold"
+            else "ACTIVE"
+        )
         mode = str(
             self.injection_manifest.get("injection_mode", "unspecified")
         ).upper()
         lines = (
             f"{initial_depth:.0f} m local-depth replay",
             f"Mission time   {self.times[index]:05.2f} / {self.times[-1]:.2f} s",
-            f"Depth          {depth:7.2f} m   | target {target_depth:7.2f} m",
+            (
+                f"Depth          {depth:7.2f} m | control {control_depth:7.2f} m "
+                f"| mission {mission_depth:7.2f} m"
+            ),
+            f"Mission        {mission_state} | guidance {guidance.replace('_', ' ')}",
             f"Injection      {mode}   | environmental disturbance ON",
-            "Simulation truth is display-only; diagnosis remains causal.",
         )
         for row, line in enumerate(lines):
             axis.text(
@@ -456,25 +613,27 @@ class SixDOFDemoRenderer:
     def _draw_summary_comparison(self, index):
         axis = self.thruster_axis
         axis.clear()
-        _configure_axis(axis, "Injected truth vs system output")
+        _configure_axis(axis, "Causal diagnosis chain (truth is display-only)")
         axis.axis("off")
         active, truth_text = self._truth_text(index)
-        diagnosis_text, diagnosis_color = self._primary_diagnosis(index)
+        ai_text, ai_color = self._ai_summary(index)
+        rule_text, rule_color = self._rule_summary(index)
         comparison_text, comparison_color = self._comparison_text(
             index, active
         )
         rows = (
             ("GROUND TRUTH", truth_text, TRUTH_COLOR, 0.88),
-            ("DIAGNOSIS", diagnosis_text, diagnosis_color, 0.55),
-            ("COMPARISON", comparison_text, comparison_color, 0.22),
+            ("AI MODEL", ai_text, ai_color, 0.66),
+            ("RULE / GATE", rule_text, rule_color, 0.44),
+            ("OUTCOME", comparison_text, comparison_color, 0.22),
         )
         for label, value, color, y in rows:
             axis.text(
-                0.02, y, label, color=MUTED, fontsize=7.8,
+                0.02, y, label, color=MUTED, fontsize=7.2,
                 transform=axis.transAxes, va="top",
             )
             axis.text(
-                0.02, y - 0.12, value, color=color, fontsize=8.8,
+                0.25, y, str(value)[:78], color=color, fontsize=7.7,
                 fontweight="bold", transform=axis.transAxes, va="top",
             )
 
@@ -487,25 +646,56 @@ class SixDOFDemoRenderer:
         ftc = frame["ftc"]
         color = TIER_COLORS[ftc["tier"]]
         target = ftc.get("target_thruster") or "none"
-        axis.text(0.02, 0.82, "Action", color=MUTED, fontsize=8,
+        axis.text(0.02, 0.84, "Action", color=MUTED, fontsize=8,
                   transform=axis.transAxes)
         axis.text(
-            0.20, 0.82, ftc["action"].replace("_", " ").upper(),
+            0.22, 0.84, ftc["action"].replace("_", " ").upper(),
             color=color, fontsize=9.5, fontweight="bold",
             transform=axis.transAxes,
         )
-        axis.text(0.02, 0.50, "Target", color=MUTED, fontsize=8,
+        axis.text(0.02, 0.62, "Target", color=MUTED, fontsize=8,
                   transform=axis.transAxes)
-        axis.text(0.20, 0.50, target, color=FOREGROUND, fontsize=9.5,
+        axis.text(0.22, 0.62, target, color=FOREGROUND, fontsize=9.5,
                   fontweight="bold", transform=axis.transAxes)
-        fusion = ftc.get("ai_fusion", {})
-        note = (
-            "AI + rules: " + fusion.get("verdict", "unavailable").replace("_", " ").upper()
-            if fusion else "Rule FTC is authoritative; model output is advisory only."
-        )
+        guidance = str(ftc.get("guidance_mode_applied", "normal"))
+        guidance_text = guidance.replace("_", " ").upper()
+        if guidance == "vertical_thruster_hold":
+            guidance_text += " | MISSION PAUSED"
+        axis.text(0.02, 0.40, "Guidance", color=MUTED, fontsize=8,
+                  transform=axis.transAxes)
         axis.text(
-            0.02, 0.18, note,
-            color=MUTED, fontsize=7.8, transform=axis.transAxes,
+            0.22, 0.40, guidance_text,
+            color=FTC_COLOR if guidance != "normal" else FOREGROUND,
+            fontsize=8.4, fontweight="bold", transform=axis.transAxes,
+        )
+        tracking_available = bool(ftc.get("tracking_error_available", False))
+        ratio = float(ftc.get("tracking_error_ratio", 0.0))
+        if not tracking_available:
+            safety_text = "UNAVAILABLE"
+            safety_color = TIER_COLORS["log_only"]
+        else:
+            tilt = float(ftc.get("tilt_angle_deg", 0.0))
+            depth_error = float(ftc.get("depth_tracking_error_m", 0.0))
+            horizontal = float(ftc.get("horizontal_tracking_error_m", 0.0))
+            safety_text = (
+                f"{'SAFE' if ratio < 1.0 else 'LIMIT EXCEEDED'} | "
+                f"tilt {tilt:.1f}/35 deg | dz {depth_error:.2f}/3 m | "
+                f"dxy {horizontal:.2f}/8 m"
+            )
+            safety_color = (
+                TIER_COLORS["normal"]
+                if ratio < 0.60
+                else (
+                    TIER_COLORS["possible"]
+                    if ratio < 1.0
+                    else TIER_COLORS["confirmed"]
+                )
+            )
+        axis.text(0.02, 0.18, "Safety", color=MUTED, fontsize=8,
+                  transform=axis.transAxes)
+        axis.text(
+            0.22, 0.18, safety_text,
+            color=safety_color, fontsize=7.6, transform=axis.transAxes,
         )
 
     def _draw_sensors(self, index):
@@ -581,7 +771,7 @@ class SixDOFDemoRenderer:
     def _draw_status(self, index):
         axis = self.status_axis
         axis.clear()
-        _configure_axis(axis, "Current-frame FTC, advice and latest event")
+        _configure_axis(axis, "Current-frame FTC, model advice and safety")
         axis.axis("off")
         frame = self.frames[index]
         ftc = frame["ftc"]
@@ -638,17 +828,25 @@ class SixDOFDemoRenderer:
             0.16, 0.25, f"{group} | Top-2 {candidate_text}",
             color=FOREGROUND, fontsize=8.2, va="top",
         )
-        current_time = frame["time_s"]
-        recent = [
-            event for event in self.events if event["time_s"] <= current_time
-        ][-1:]
-        for event in recent:
-            event_color = TIER_COLORS.get(event["level"], MUTED)
-            axis.text(
-                0.01, 0.07,
-                f"{event['time_s']:05.2f}s  {event['message'][:70]}",
-                color=event_color, fontsize=7.5, va="top",
-            )
+        guidance = str(ftc.get("guidance_mode_applied", "normal")).replace(
+            "_", " "
+        )
+        ratio = float(ftc.get("tracking_error_ratio", 0.0))
+        safety_text = (
+            f"{guidance} | ratio {ratio:.2f} | "
+            f"tilt {float(ftc.get('tilt_angle_deg', 0.0)):.1f} deg | "
+            f"dz {float(ftc.get('depth_tracking_error_m', 0.0)):.2f} m"
+        )
+        safety_color = (
+            TIER_COLORS["normal"]
+            if ftc.get("tracking_error_available", False) and ratio < 0.60
+            else TIER_COLORS["possible"]
+        )
+        axis.text(0.01, 0.07, "Safety", color=MUTED, fontsize=8, va="top")
+        axis.text(
+            0.16, 0.07, safety_text,
+            color=safety_color, fontsize=7.5, va="top",
+        )
 
     def _truth_intervals(self):
         intervals = []
@@ -763,12 +961,22 @@ class SixDOFDemoRenderer:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         if index is None:
+            recovery = [
+                frame_index
+                for frame_index, frame in enumerate(self.frames)
+                if frame["ftc"].get("guidance_mode_applied")
+                == "vertical_thruster_hold"
+            ]
             targeted = [
                 frame_index
                 for frame_index, frame in enumerate(self.frames)
                 if frame["ftc"]["target_thruster"] is not None
             ]
-            index = targeted[0] if targeted else len(self.frames) - 1
+            index = (
+                recovery[0]
+                if recovery
+                else (targeted[0] if targeted else len(self.frames) - 1)
+            )
         self.draw(int(index))
         self.figure.savefig(path, dpi=dpi, facecolor=BACKGROUND)
         return path

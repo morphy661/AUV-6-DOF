@@ -337,6 +337,13 @@ def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
             "position_ned_m": position,
             "estimated_position_ned_m": estimated_position,
             "target_position_ned_m": _vector(log.get("target_position_ned"), 3),
+            "mission_target_position_ned_m": _vector(
+                log.get(
+                    "mission_target_position_ned",
+                    log.get("target_position_ned"),
+                ),
+                3,
+            ),
             "euler_rpy_rad": _vector(log.get("euler_rpy"), 3),
             "estimated_euler_rpy_rad": _vector(
                 log.get("estimated_euler_rpy", log.get("euler_rpy")), 3
@@ -365,6 +372,48 @@ def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
                 for value in log.get("ftc_untrusted_esc_channels", ())
                 if str(value) in DEFAULT_THRUSTER_NAMES
             ],
+            "guidance_mode_applied": str(
+                log.get("ftc_guidance_mode_applied", "normal")
+            ),
+            "guidance_mode_next_step": str(
+                log.get("ftc_guidance_mode_next_step", "normal")
+            ),
+            "tracking_error_available": bool(
+                log.get("ftc_tracking_error_ratio_available", False)
+            ),
+            "tracking_error_ratio": max(
+                0.0,
+                _finite_float(log.get("ftc_tracking_error_ratio"), 0.0),
+            ),
+            "horizontal_tracking_error_m": max(
+                0.0,
+                _finite_float(
+                    log.get("ftc_horizontal_tracking_error_m"), 0.0
+                ),
+            ),
+            "depth_tracking_error_m": max(
+                0.0,
+                _finite_float(log.get("ftc_depth_tracking_error_m"), 0.0),
+            ),
+            "tilt_angle_deg": max(
+                0.0,
+                _finite_float(log.get("ftc_tilt_angle_deg"), 0.0),
+            ),
+            "yaw_tracking_error_deg": max(
+                0.0,
+                _finite_float(log.get("ftc_yaw_tracking_error_deg"), 0.0),
+            ),
+            "position_tracking_safety_active": bool(
+                log.get("ftc_position_tracking_safety_active", False)
+            ),
+            "control_saturation_ratio": max(
+                0.0,
+                _finite_float(log.get("ftc_control_saturation_ratio"), 0.0),
+            ),
+            "allocation_residual_ratio": max(
+                0.0,
+                _finite_float(log.get("ftc_allocation_residual_ratio"), 0.0),
+            ),
         },
         "estimator": {
             "quality": str(log.get("state_estimate_quality", "not_available")),

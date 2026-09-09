@@ -183,6 +183,17 @@ def fixed_fault_schedule(seed):
     return events, thruster_fault
 
 
+def safety_recovery_fault_schedule(seed):
+    """Single-event story for explaining online diagnosis and FTC recovery."""
+
+    return [], SingleThrusterFault(
+        "V1",
+        SixDOFThrusterFaultMode.NO_OUTPUT,
+        start_time=10.0,
+        thrust_efficiency=0.0,
+    )
+
+
 def esc_telemetry_schedule(seed, injection_mode):
     """Create an observable ESC-link anomaly before the physical fault."""
 
@@ -194,8 +205,12 @@ def esc_telemetry_schedule(seed, injection_mode):
             "start_time_s": 15.35,
             "end_time_s": 16.35,
         }]
+    if injection_mode == "safety_recovery":
+        return []
     if injection_mode != "random":
-        raise ValueError("injection_mode must be fixed or random")
+        raise ValueError(
+            "injection_mode must be fixed, random, or safety_recovery"
+        )
     rng = np.random.default_rng(int(seed) ^ 0x5EC0F)
     start = float(rng.uniform(14.75, 15.10))
     duration = float(rng.uniform(0.90, 1.15))
@@ -304,8 +319,12 @@ def build_fault_scenario(seed, injection_mode):
         events, thruster_fault = fixed_fault_schedule(seed)
     elif injection_mode == "random":
         events, thruster_fault = random_fault_schedule(seed)
+    elif injection_mode == "safety_recovery":
+        events, thruster_fault = safety_recovery_fault_schedule(seed)
     else:
-        raise ValueError("injection_mode must be fixed or random")
+        raise ValueError(
+            "injection_mode must be fixed, random, or safety_recovery"
+        )
     suite = SixDOFSensorSuite(
         fault_injector=SensorFaultInjector(events), seed=seed
     )
@@ -523,7 +542,9 @@ def main():
     parser.add_argument("--dt", type=float, default=0.05)
     parser.add_argument("--seed", type=int, default=20260717)
     parser.add_argument(
-        "--injection-mode", choices=("fixed", "random"), default="fixed"
+        "--injection-mode",
+        choices=("fixed", "random", "safety_recovery"),
+        default="fixed",
     )
     parser.add_argument("--disable-model", action="store_true")
     parser.add_argument("--diagnosis-mode", choices=("shadow", "fusion"), default="shadow")
