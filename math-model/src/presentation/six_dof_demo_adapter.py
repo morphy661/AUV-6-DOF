@@ -403,6 +403,22 @@ def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
                 0.0,
                 _finite_float(log.get("ftc_yaw_tracking_error_deg"), 0.0),
             ),
+            "yaw_rate_tracking_error_deg_s": max(
+                0.0,
+                _finite_float(
+                    log.get("ftc_yaw_rate_tracking_error_deg_s"), 0.0
+                ),
+            ),
+            "cross_track_error_m": max(
+                0.0,
+                _finite_float(log.get("ftc_cross_track_error_m"), 0.0),
+            ),
+            "horizontal_motion_error_ratio": max(
+                0.0,
+                _finite_float(
+                    log.get("ftc_horizontal_motion_error_ratio"), 0.0
+                ),
+            ),
             "position_tracking_safety_active": bool(
                 log.get("ftc_position_tracking_safety_active", False)
             ),

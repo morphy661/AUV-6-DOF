@@ -109,6 +109,7 @@ class AIControlEvidenceGate:
         control_corroborated = bool(
             evidence.control_saturation_ratio >= cfg.degraded_control_saturation_ratio
             and ((evidence.tracking_error_available and evidence.tracking_error_ratio >= cfg.degraded_tracking_error_ratio)
+                 or evidence.horizontal_motion_error_ratio >= cfg.horizontal_degraded_motion_ratio
                  or evidence.allocation_residual_ratio >= cfg.degraded_allocation_residual_ratio)
         )
         report["control_corroborated"] = control_corroborated
@@ -116,6 +117,13 @@ class AIControlEvidenceGate:
             report["supporting_control_signals"].append("control_saturation")
             if evidence.tracking_error_available and evidence.tracking_error_ratio >= cfg.degraded_tracking_error_ratio:
                 report["supporting_control_signals"].append("tracking_error")
+            if (
+                evidence.horizontal_motion_error_ratio
+                >= cfg.horizontal_degraded_motion_ratio
+            ):
+                report["supporting_control_signals"].append(
+                    "horizontal_motion_error"
+                )
             if evidence.allocation_residual_ratio >= cfg.degraded_allocation_residual_ratio:
                 report["supporting_control_signals"].append("allocation_residual")
         if not control_corroborated:

@@ -585,7 +585,9 @@ class SixDOFDemoRenderer:
         )
         mission_state = (
             "PAUSED / LOCAL HOLD"
-            if guidance == "vertical_thruster_hold"
+            if guidance in {
+                "vertical_thruster_hold", "horizontal_degraded_hold",
+            }
             else "ACTIVE"
         )
         mode = str(
@@ -659,7 +661,9 @@ class SixDOFDemoRenderer:
                   fontweight="bold", transform=axis.transAxes)
         guidance = str(ftc.get("guidance_mode_applied", "normal"))
         guidance_text = guidance.replace("_", " ").upper()
-        if guidance == "vertical_thruster_hold":
+        if guidance in {
+            "vertical_thruster_hold", "horizontal_degraded_hold",
+        }:
             guidance_text += " | MISSION PAUSED"
         axis.text(0.02, 0.40, "Guidance", color=MUTED, fontsize=8,
                   transform=axis.transAxes)
@@ -677,17 +681,34 @@ class SixDOFDemoRenderer:
             tilt = float(ftc.get("tilt_angle_deg", 0.0))
             depth_error = float(ftc.get("depth_tracking_error_m", 0.0))
             horizontal = float(ftc.get("horizontal_tracking_error_m", 0.0))
-            safety_text = (
-                f"{'SAFE' if ratio < 1.0 else 'LIMIT EXCEEDED'} | "
-                f"tilt {tilt:.1f}/35 deg | dz {depth_error:.2f}/3 m | "
-                f"dxy {horizontal:.2f}/8 m"
-            )
+            safety_ratio = ratio
+            if guidance == "horizontal_degraded_hold":
+                motion_ratio = float(
+                    ftc.get("horizontal_motion_error_ratio", 0.0)
+                )
+                safety_ratio = motion_ratio
+                yaw = float(ftc.get("yaw_tracking_error_deg", 0.0))
+                yaw_rate = float(
+                    ftc.get("yaw_rate_tracking_error_deg_s", 0.0)
+                )
+                cross_track = float(ftc.get("cross_track_error_m", 0.0))
+                safety_text = (
+                    f"HOLD | yaw {yaw:.1f}/25 deg | "
+                    f"dr {yaw_rate:.1f}/20 deg/s | "
+                    f"xtrack {cross_track:.2f}/2 m | r {motion_ratio:.2f}"
+                )
+            else:
+                safety_text = (
+                    f"{'SAFE' if ratio < 1.0 else 'LIMIT EXCEEDED'} | "
+                    f"tilt {tilt:.1f}/35 deg | dz {depth_error:.2f}/3 m | "
+                    f"dxy {horizontal:.2f}/8 m"
+                )
             safety_color = (
                 TIER_COLORS["normal"]
-                if ratio < 0.60
+                if safety_ratio < 0.60
                 else (
                     TIER_COLORS["possible"]
-                    if ratio < 1.0
+                    if safety_ratio < 1.0
                     else TIER_COLORS["confirmed"]
                 )
             )
@@ -835,7 +856,8 @@ class SixDOFDemoRenderer:
         safety_text = (
             f"{guidance} | ratio {ratio:.2f} | "
             f"tilt {float(ftc.get('tilt_angle_deg', 0.0)):.1f} deg | "
-            f"dz {float(ftc.get('depth_tracking_error_m', 0.0)):.2f} m"
+            f"yaw {float(ftc.get('yaw_tracking_error_deg', 0.0)):.1f} deg | "
+            f"hm {float(ftc.get('horizontal_motion_error_ratio', 0.0)):.2f}"
         )
         safety_color = (
             TIER_COLORS["normal"]
@@ -965,7 +987,7 @@ class SixDOFDemoRenderer:
                 frame_index
                 for frame_index, frame in enumerate(self.frames)
                 if frame["ftc"].get("guidance_mode_applied")
-                == "vertical_thruster_hold"
+                in {"vertical_thruster_hold", "horizontal_degraded_hold"}
             ]
             targeted = [
                 frame_index

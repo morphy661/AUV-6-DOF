@@ -1,4 +1,4 @@
-"""Mission-command adaptation after confirmed loss of vertical actuation."""
+"""Mission-command adaptation after confirmed or corroborated actuation loss."""
 
 from dataclasses import dataclass
 
@@ -15,7 +15,7 @@ class GuidanceDecision:
 
 
 class FTCGuidanceManager:
-    """Latch an estimated hold point when one vertical thruster is isolated."""
+    """Latch an estimated hold point for vertical or horizontal degradation."""
 
     def __init__(self):
         self.reset()
@@ -27,22 +27,30 @@ class FTCGuidanceManager:
         self.hold_context_id = None
 
     def update(self, requested_target, controller_state, ftc_decision):
-        isolated = set(
-            () if ftc_decision is None
-            else ftc_decision.isolated_thruster_indices
+        requested_mode = (
+            "normal" if ftc_decision is None else ftc_decision.guidance_mode
         )
-        vertical_isolated = bool(isolated.intersection({5, 6}))
-        if not vertical_isolated:
+        if requested_mode == "normal":
             entered = self.mode != "normal"
             self.reset()
             return GuidanceDecision(requested_target, "normal", entered)
+        if requested_mode not in {
+            "vertical_thruster_hold", "horizontal_degraded_hold",
+        }:
+            raise ValueError(f"unknown FTC guidance mode: {requested_mode}")
 
-        entered = self.mode != "vertical_thruster_hold"
+        entered = self.mode != requested_mode
         if entered:
-            self.mode = "vertical_thruster_hold"
+            self.mode = requested_mode
             self.hold_position_ned = controller_state.position_ned.copy()
             self.hold_yaw_rad = float(controller_state.euler_rpy[2])
-            self.hold_context_id = int(requested_target.guidance_context_id) + 100000
+            context_offset = (
+                100000 if requested_mode == "vertical_thruster_hold"
+                else 200000
+            )
+            self.hold_context_id = (
+                int(requested_target.guidance_context_id) + context_offset
+            )
         target = PoseTarget(
             position_ned=self.hold_position_ned,
             euler_rpy=np.array([0.0, 0.0, self.hold_yaw_rad]),

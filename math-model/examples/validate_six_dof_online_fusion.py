@@ -88,16 +88,42 @@ def metrics(logs, dt):
            if log.get("maintenance_diagnosis", {}).get("updated")]
     return {
         "actions": dict(Counter(log["ftc_action"] for log in logs)),
+        "guidance_modes": dict(Counter(
+            log["ftc_guidance_mode_applied"] for log in logs
+        )),
         "isolated_thrusters": sorted({log["ftc_targeted_thruster_name"] for log in logs
                                       if log["ftc_targeted_thruster_name"]}),
         "first_intervention_s": next((log["time"] for log in logs if log["ftc_intervention_requested"]), None),
         "first_ai_admission_s": accepted[0] if accepted else None,
+        "first_horizontal_hold_s": next((
+            log["time"] for log in logs
+            if log["ftc_guidance_mode_applied"] == "horizontal_degraded_hold"
+        ), None),
         "ai_admitted_steps": len(accepted),
         "position_rmse_m": float(np.sqrt(np.mean(np.sum(errors**2, axis=1)))),
         "max_position_error_m": float(np.max(np.linalg.norm(errors, axis=1))),
         "max_abs_roll_pitch_yaw_deg": np.max(np.abs(euler), axis=0).tolist(),
         "max_tracking_error_ratio": max((log["ftc_tracking_error_ratio"] for log in logs
                                           if log.get("ftc_tracking_error_ratio_available")), default=None),
+        "max_horizontal_motion_error_ratio": max((
+            log.get("ftc_horizontal_motion_error_ratio", 0.0)
+            for log in logs
+        ), default=0.0),
+        "max_yaw_tracking_error_deg": max((
+            log.get("ftc_yaw_tracking_error_deg")
+            for log in logs
+            if log.get("ftc_yaw_tracking_error_deg") is not None
+        ), default=None),
+        "max_yaw_rate_tracking_error_deg_s": max((
+            log.get("ftc_yaw_rate_tracking_error_deg_s")
+            for log in logs
+            if log.get("ftc_yaw_rate_tracking_error_deg_s") is not None
+        ), default=None),
+        "max_cross_track_error_m": max((
+            log.get("ftc_cross_track_error_m")
+            for log in logs
+            if log.get("ftc_cross_track_error_m") is not None
+        ), default=None),
         "tracking_error_available_steps": sum(bool(log.get("ftc_tracking_error_ratio_available")) for log in logs),
         "raw_model_fault_predictions": int(sum(np.argmax(d["raw_mode_probabilities"]) != 0 for d in raw)),
         "online": summarize_online_diagnosis(logs, dt),
@@ -161,12 +187,45 @@ def main():
         print(json.dumps({"case": case["name"], "admitted": record["metrics"]["fusion"]["ai_admitted_steps"],
                           "changed_actions": len(differing), "additional_interventions": int(added)}), flush=True)
     normal = [r for r in results if r["case"]["name"].startswith("normal_")]
+    h1_loss = next(
+        r for r in results if r["case"]["name"] == "H1_thrust_loss_200m"
+    )
+    h2_no_output = next(
+        r for r in results if r["case"]["name"] == "H2_no_output_200m"
+    )
+    v1_no_output = next(
+        r for r in results if r["case"]["name"] == "V1_no_output_200m"
+    )
+    h1_shadow = h1_loss["metrics"]["shadow"]
+    h1_fusion = h1_loss["metrics"]["fusion"]
+    acceptance = {
+        "normal_cases_without_additional_interventions": all(
+            r["additional_intervention_steps"] == 0 for r in normal
+        ),
+        "direct_no_output_isolation_preserved": (
+            h2_no_output["metrics"]["fusion"]["isolated_thrusters"] == ["H2"]
+            and v1_no_output["metrics"]["fusion"]["isolated_thrusters"] == ["V1"]
+        ),
+        "h1_loss_ai_evidence_admitted": h1_fusion["ai_admitted_steps"] > 0,
+        "h1_loss_horizontal_hold_entered": (
+            h1_fusion["first_horizontal_hold_s"] is not None
+        ),
+        "h1_loss_does_not_guess_isolation": not h1_fusion["isolated_thrusters"],
+        "h1_loss_max_yaw_below_35_deg": (
+            h1_fusion["max_abs_roll_pitch_yaw_deg"][2] < 35.0
+        ),
+        "h1_loss_reduces_peak_yaw_by_50_percent": (
+            h1_fusion["max_abs_roll_pitch_yaw_deg"][2]
+            < 0.5 * h1_shadow["max_abs_roll_pitch_yaw_deg"][2]
+        ),
+    }
     report = {
         "checkpoint_sha256": _sha256(DEFAULT_CHECKPOINT),
         "temporal_policy_sha256": _sha256(DEFAULT_TEMPORAL_CONFIG),
         "fusion_config": asdict(AIEvidenceGateConfig()),
         "dt_s": dt, "duration_s": args.duration, "case_count": len(cases),
-        "functional_checks_passed": True,
+        "functional_checks_passed": all(acceptance.values()),
+        "acceptance": acceptance,
         "normal_cases_without_additional_interventions": all(r["additional_intervention_steps"] == 0 for r in normal),
         "normal_additional_intervention_steps": sum(r["additional_intervention_steps"] for r in normal),
         "cases": results,
@@ -175,6 +234,7 @@ def main():
     (args.output_dir / "fusion_validation_summary.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print("Paired fusion validation complete.", flush=True)
+    print(json.dumps(acceptance, ensure_ascii=False, indent=2), flush=True)
 
 
 if __name__ == "__main__":

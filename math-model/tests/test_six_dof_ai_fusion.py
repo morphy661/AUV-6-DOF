@@ -74,6 +74,32 @@ def test_compensated_fault_and_saturation_alone_are_record_only():
         assert report["verdict"] == "record_only"
 
 
+def test_horizontal_motion_error_can_corroborate_without_isolation():
+    gate = AIControlEvidenceGate()
+    horizontal_diagnosis = {
+        "suspected_group": "horizontal",
+    }
+    for time_s in (0.0, 0.5):
+        base = FTCEvidence(
+            time_s,
+            tracking_error_ratio=0.1,
+            horizontal_motion_error_ratio=1.2,
+            control_saturation_ratio=0.9,
+        )
+        fused, report = gate.update(
+            base, diagnosis(time_s, **horizontal_diagnosis)
+        )
+
+    assert report["accepted"]
+    assert report["supporting_control_signals"] == [
+        "control_saturation", "horizontal_motion_error",
+    ]
+    decision = FTCSafetySupervisor().update(fused)
+    assert decision.action.value == "degraded_operation"
+    assert decision.guidance_mode == "horizontal_degraded_hold"
+    assert decision.targeted_thruster_name is None
+
+
 def test_direct_esc_path_wins_even_if_ai_is_unavailable_or_wrong():
     scores = np.array([0., .99, 0., 0., 0., 0.])
     base = evidence(0., no_output_scores=scores, excitation_ratios=np.ones(6))

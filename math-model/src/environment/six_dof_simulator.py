@@ -74,7 +74,10 @@ class SixDOFSimulator:
         if ai_ftc_fusion is not None and (diagnostic_observer is None or ftc_supervisor is None):
             raise ValueError("AI FTC fusion requires an online observer and FTC supervisor")
         self.ai_ftc_fusion = ai_ftc_fusion
-        self.vertical_fault_recovery = bool(vertical_fault_recovery)
+        # Keep the public argument for compatibility; the feature now covers
+        # both vertical isolation recovery and horizontal degraded guidance.
+        self.fault_recovery_guidance = bool(vertical_fault_recovery)
+        self.vertical_fault_recovery = self.fault_recovery_guidance
         self.ftc_guidance_manager = FTCGuidanceManager()
         self.ftc_decision = (
             None if self.ftc_supervisor is None else self.ftc_supervisor.reset()
@@ -166,7 +169,7 @@ class SixDOFSimulator:
             controller_state = self.state.copy()
             controller_state_source = "simulator_truth"
         applied_ftc_decision = self.ftc_decision
-        if self.vertical_fault_recovery:
+        if self.fault_recovery_guidance:
             guidance = self.ftc_guidance_manager.update(
                 mission_target,
                 controller_state,
@@ -201,7 +204,7 @@ class SixDOFSimulator:
             wrench_weights=(
                 None
                 if (
-                    not self.vertical_fault_recovery
+                    not self.fault_recovery_guidance
                     or applied_ftc_decision is None
                 )
                 else applied_ftc_decision.allocation_wrench_weights
@@ -305,6 +308,7 @@ class SixDOFSimulator:
             ),
             "mission_guidance_context_id": mission_target.guidance_context_id,
             "vertical_fault_recovery_enabled": self.vertical_fault_recovery,
+            "ftc_guidance_recovery_enabled": self.fault_recovery_guidance,
             "ftc_guidance_mode_applied": (
                 "normal" if guidance is None else guidance.mode
             ),
@@ -314,7 +318,7 @@ class SixDOFSimulator:
             "ftc_allocation_wrench_weights_applied": (
                 self.thruster_array.wrench_weights.copy()
                 if (
-                    not self.vertical_fault_recovery
+                    not self.fault_recovery_guidance
                     or applied_ftc_decision is None
                     or applied_ftc_decision.allocation_wrench_weights is None
                 )
@@ -430,6 +434,9 @@ class SixDOFSimulator:
                     "ftc_untrusted_esc_channels": evidence.untrusted_esc_channels,
                     "ftc_tracking_error_ratio": evidence.tracking_error_ratio,
                     "ftc_tracking_error_ratio_available": evidence.tracking_error_available,
+                    "ftc_horizontal_motion_error_ratio": (
+                        evidence.horizontal_motion_error_ratio
+                    ),
                     "ftc_control_saturation_ratio": evidence.control_saturation_ratio,
                     "ftc_allocation_residual_ratio": evidence.allocation_residual_ratio,
                 })
@@ -480,6 +487,13 @@ class SixDOFSimulator:
                 "ftc_depth_tracking_error_m": evidence.depth_tracking_error_m,
                 "ftc_tilt_angle_deg": evidence.tilt_angle_deg,
                 "ftc_yaw_tracking_error_deg": evidence.yaw_tracking_error_deg,
+                "ftc_yaw_rate_tracking_error_deg_s": (
+                    evidence.yaw_rate_tracking_error_deg_s
+                ),
+                "ftc_cross_track_error_m": evidence.cross_track_error_m,
+                "ftc_horizontal_motion_error_ratio": (
+                    evidence.horizontal_motion_error_ratio
+                ),
                 "ftc_position_tracking_safety_active": (
                     evidence.position_tracking_safety_active
                 ),

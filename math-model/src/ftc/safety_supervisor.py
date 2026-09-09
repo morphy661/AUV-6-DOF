@@ -64,8 +64,14 @@ class FTCSupervisorConfig:
     horizontal_tracking_limit_m: float = 8.0
     depth_tracking_limit_m: float = 3.0
     tilt_limit_deg: float = 35.0
+    horizontal_yaw_error_limit_deg: float = 25.0
+    horizontal_yaw_rate_error_limit_deg_s: float = 20.0
+    horizontal_cross_track_limit_m: float = 2.0
+    horizontal_degraded_motion_ratio: float = 1.0
     vertical_fault_heave_weight: float = 0.10
     vertical_fault_pitch_weight: float = 5.0
+    horizontal_fault_force_weight: float = 0.25
+    horizontal_fault_yaw_weight: float = 4.0
 
     def __post_init__(self):
         if not isinstance(self.require_fresh_esc_telemetry, (bool, np.bool_)):
@@ -107,8 +113,14 @@ class FTCSupervisorConfig:
             "horizontal_tracking_limit_m",
             "depth_tracking_limit_m",
             "tilt_limit_deg",
+            "horizontal_yaw_error_limit_deg",
+            "horizontal_yaw_rate_error_limit_deg_s",
+            "horizontal_cross_track_limit_m",
+            "horizontal_degraded_motion_ratio",
             "vertical_fault_heave_weight",
             "vertical_fault_pitch_weight",
+            "horizontal_fault_force_weight",
+            "horizontal_fault_yaw_weight",
         )
         for name in non_negative:
             value = float(getattr(self, name))
@@ -116,7 +128,11 @@ class FTCSupervisorConfig:
                 raise ValueError(f"{name} must be finite and non-negative")
         for name in (
             "horizontal_tracking_limit_m", "depth_tracking_limit_m",
-            "tilt_limit_deg", "vertical_fault_pitch_weight",
+            "tilt_limit_deg", "horizontal_yaw_error_limit_deg",
+            "horizontal_yaw_rate_error_limit_deg_s",
+            "horizontal_cross_track_limit_m",
+            "horizontal_degraded_motion_ratio",
+            "vertical_fault_pitch_weight", "horizontal_fault_yaw_weight",
         ):
             if float(getattr(self, name)) <= 0.0:
                 raise ValueError(f"{name} must be positive")
@@ -198,6 +214,9 @@ class FTCEvidence:
     depth_tracking_error_m: Optional[float] = None
     tilt_angle_deg: Optional[float] = None
     yaw_tracking_error_deg: Optional[float] = None
+    yaw_rate_tracking_error_deg_s: Optional[float] = None
+    cross_track_error_m: Optional[float] = None
+    horizontal_motion_error_ratio: float = 0.0
     position_tracking_safety_active: bool = False
 
     def __post_init__(self):
@@ -230,7 +249,10 @@ class FTCEvidence:
             if not np.isfinite(value) or not 0.0 <= value <= 1.0:
                 raise ValueError(f"{name} must be finite and in [0, 1]")
             object.__setattr__(self, name, value)
-        for name in ("tracking_error_ratio", "allocation_residual_ratio"):
+        for name in (
+            "tracking_error_ratio", "allocation_residual_ratio",
+            "horizontal_motion_error_ratio",
+        ):
             value = float(getattr(self, name))
             if not np.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and non-negative")
@@ -238,6 +260,7 @@ class FTCEvidence:
         for name in (
             "horizontal_tracking_error_m", "depth_tracking_error_m",
             "tilt_angle_deg", "yaw_tracking_error_deg",
+            "yaw_rate_tracking_error_deg_s", "cross_track_error_m",
         ):
             value = getattr(self, name)
             if value is None:
@@ -312,6 +335,7 @@ class FTCSafetySupervisor:
         self.stress_only_peak_severity = 0.0
         self.critical_escalation_source = None
         self.stress_recovery_start = None
+        self.horizontal_degraded_latched = False
         self.last_decision = self._decision(
             FTCAction.NORMAL_CONTROL,
             "No fault or control-stress evidence.",
@@ -338,9 +362,15 @@ class FTCSafetySupervisor:
             abort = True
             ascent = True
         vertical_isolated = bool(self.isolated_thrusters.intersection({4, 5}))
-        guidance_mode = (
-            "vertical_thruster_hold" if vertical_isolated else "normal"
+        horizontal_hold = (
+            self.horizontal_degraded_latched and not vertical_isolated
         )
+        if vertical_isolated:
+            guidance_mode = "vertical_thruster_hold"
+        elif horizontal_hold:
+            guidance_mode = "horizontal_degraded_hold"
+        else:
+            guidance_mode = "normal"
         allocation_wrench_weights = None
         if vertical_isolated:
             allocation_wrench_weights = np.array([
@@ -349,6 +379,15 @@ class FTCSafetySupervisor:
                 0.0,
                 self.config.vertical_fault_pitch_weight,
                 1.0,
+            ])
+        elif horizontal_hold:
+            allocation_wrench_weights = np.array([
+                self.config.horizontal_fault_force_weight,
+                self.config.horizontal_fault_force_weight,
+                1.0,
+                0.0,
+                1.0,
+                self.config.horizontal_fault_yaw_weight,
             ])
         return FTCDecision(
             action=action,
@@ -558,6 +597,17 @@ class FTCSafetySupervisor:
         self.last_time = evidence.time_s
         new_isolation = self._update_direct_no_output(evidence)
         self._update_stress_state(evidence)
+        if (
+            evidence.health_level >= 2
+            and evidence.confirmed_mode in (1, 2)
+            and evidence.probable_group == "horizontal"
+            and "validated_online_ai" in evidence.source
+            and evidence.horizontal_motion_error_ratio
+            >= self.config.horizontal_degraded_motion_ratio
+        ):
+            # The AI result is allowed to reduce mission demand, but it never
+            # selects an isolation target. Only direct ESC evidence can do so.
+            self.horizontal_degraded_latched = True
 
         vertical_unavailable = evidence.vertical_control_unavailable or {
             4, 5
@@ -606,6 +656,11 @@ class FTCSafetySupervisor:
             decision = self._decision(
                 FTCAction.DEGRADED_OPERATION,
                 "Confirmed depth or DVL sensor failure; reduce navigation demand and use the remaining state-estimation sources.",
+            )
+        elif self.horizontal_degraded_latched:
+            decision = self._decision(
+                FTCAction.DEGRADED_OPERATION,
+                "Persistent online fault evidence is corroborated by horizontal motion error and actuator saturation; pause the mission in a reduced-demand hold without guessing a thruster location.",
             )
         elif self.stress_level == 1:
             decision = self._decision(
@@ -737,6 +792,28 @@ def _observable_tracking_metrics(log, config):
     yaw = float(abs(np.degrees(_wrap_angle(
         target_attitude[2] - attitude[2]
     ))))
+    body_velocity = _optional_vector(log, "controller_body_velocity", 6)
+    desired_angular_velocity = _optional_vector(
+        log, "desired_angular_velocity_body", 3
+    )
+    yaw_rate_error = None
+    if body_velocity is not None and desired_angular_velocity is not None:
+        yaw_rate_error = float(abs(np.degrees(
+            desired_angular_velocity[2] - body_velocity[5]
+        )))
+    heading = float(target_attitude[2])
+    cross_track = float(abs(
+        -np.sin(heading) * error[0] + np.cos(heading) * error[1]
+    ))
+    horizontal_ratios = [
+        yaw / config.horizontal_yaw_error_limit_deg,
+        cross_track / config.horizontal_cross_track_limit_m,
+    ]
+    if yaw_rate_error is not None:
+        horizontal_ratios.append(
+            yaw_rate_error / config.horizontal_yaw_rate_error_limit_deg_s
+        )
+    horizontal_motion_ratio = float(max(horizontal_ratios))
     # A distant mission waypoint is not itself a tracking failure. Position
     # limits become safety evidence only after FTC has latched a local hold
     # point; tilt remains meaningful in every mission mode.
@@ -757,6 +834,9 @@ def _observable_tracking_metrics(log, config):
         "depth_tracking_error_m": depth,
         "tilt_angle_deg": tilt,
         "yaw_tracking_error_deg": yaw,
+        "yaw_rate_tracking_error_deg_s": yaw_rate_error,
+        "cross_track_error_m": cross_track,
+        "horizontal_motion_error_ratio": horizontal_motion_ratio,
         "position_tracking_safety_active": position_safety_active,
     }
 
@@ -956,6 +1036,18 @@ def build_rule_based_ftc_evidence(
         yaw_tracking_error_deg=(
             None if tracking_metrics is None
             else tracking_metrics["yaw_tracking_error_deg"]
+        ),
+        yaw_rate_tracking_error_deg_s=(
+            None if tracking_metrics is None
+            else tracking_metrics["yaw_rate_tracking_error_deg_s"]
+        ),
+        cross_track_error_m=(
+            None if tracking_metrics is None
+            else tracking_metrics["cross_track_error_m"]
+        ),
+        horizontal_motion_error_ratio=(
+            0.0 if tracking_metrics is None
+            else tracking_metrics["horizontal_motion_error_ratio"]
         ),
         position_tracking_safety_active=(
             False if tracking_metrics is None

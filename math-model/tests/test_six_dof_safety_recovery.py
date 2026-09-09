@@ -39,8 +39,10 @@ def evidence_log(**updates):
         "allocation_residual_body": np.zeros(6),
         "controller_position_ned": np.array([1.0, 2.0, 100.0]),
         "controller_euler_rpy": np.array([0.1, 0.2, 0.3]),
+        "controller_body_velocity": np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.1]),
         "target_position_ned": np.array([4.0, 6.0, 102.0]),
         "target_euler_rpy": np.array([0.0, 0.0, 0.5]),
+        "desired_angular_velocity_body": np.array([0.0, 0.0, 0.3]),
         "ftc_guidance_mode_applied": "normal",
     }
     values.update(updates)
@@ -78,6 +80,23 @@ class SixDOFSafetyRecoveryTests(unittest.TestCase):
             first.tracking_error_ratio, second.tracking_error_ratio
         )
         self.assertAlmostEqual(first.tilt_angle_deg, second.tilt_angle_deg)
+
+    def test_horizontal_motion_ratio_uses_yaw_rate_and_cross_track_error(self):
+        evidence = build_rule_based_ftc_evidence(evidence_log(
+            controller_position_ned=np.zeros(3),
+            target_position_ned=np.array([0.0, 3.0, 0.0]),
+            controller_euler_rpy=np.zeros(3),
+            target_euler_rpy=np.zeros(3),
+            controller_body_velocity=np.zeros(6),
+            desired_angular_velocity_body=np.array([0.0, 0.0, np.radians(30.0)]),
+        ))
+
+        self.assertAlmostEqual(evidence.cross_track_error_m, 3.0)
+        self.assertAlmostEqual(evidence.yaw_rate_tracking_error_deg_s, 30.0)
+        self.assertAlmostEqual(evidence.horizontal_motion_error_ratio, 1.5)
+        # Horizontal motion evidence is reserved for the AI corroboration
+        # gate and does not turn a distant mission target into stress alone.
+        self.assertEqual(evidence.tracking_error_ratio, 0.0)
 
     def test_local_hold_activates_horizontal_and_depth_limits(self):
         evidence = build_rule_based_ftc_evidence(evidence_log(
@@ -189,6 +208,38 @@ class SixDOFSafetyRecoveryTests(unittest.TestCase):
         np.testing.assert_allclose(first.target.linear_velocity_ned, np.zeros(3))
         self.assertAlmostEqual(first.target.euler_rpy[2], 0.7)
         self.assertEqual(first.target.guidance_context_id, 100004)
+
+    def test_validated_horizontal_fault_enters_reduced_demand_hold(self):
+        supervisor = FTCSafetySupervisor()
+        decision = supervisor.update(FTCEvidence(
+            time_s=1.0,
+            health_level=2,
+            confirmed_mode=2,
+            probable_group="horizontal",
+            horizontal_motion_error_ratio=1.2,
+            source="esc_rule+tracking_safety+validated_online_ai",
+        ))
+        state = SixDOFState(
+            position_ned=np.array([3.0, 4.0, 200.0]),
+            quaternion_nb=euler_to_quaternion(0.1, -0.1, 0.7),
+        )
+        requested = PoseTarget(
+            np.array([20.0, 5.0, 205.0]),
+            np.array([0.0, 0.0, 1.0]),
+            guidance_context_id=4,
+            linear_velocity_ned=np.array([1.0, 0.0, 0.2]),
+        )
+        manager = FTCGuidanceManager()
+
+        guidance = manager.update(requested, state, decision)
+
+        self.assertEqual(decision.action.value, "degraded_operation")
+        self.assertEqual(decision.guidance_mode, "horizontal_degraded_hold")
+        self.assertTrue(guidance.entered_mode)
+        np.testing.assert_allclose(guidance.target.position_ned, state.position_ned)
+        np.testing.assert_allclose(guidance.target.linear_velocity_ned, np.zeros(3))
+        self.assertAlmostEqual(guidance.target.euler_rpy[2], 0.7)
+        self.assertEqual(guidance.target.guidance_context_id, 200004)
 
     def test_distant_normal_waypoint_does_not_create_tracking_stress(self):
         simulator = SixDOFSimulator(ftc_supervisor=FTCSafetySupervisor())
