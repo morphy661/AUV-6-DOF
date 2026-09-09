@@ -100,6 +100,62 @@ def test_horizontal_motion_error_can_corroborate_without_isolation():
     assert decision.targeted_thruster_name is None
 
 
+def test_severe_horizontal_motion_uses_guarded_lower_saturation_path():
+    gate = AIControlEvidenceGate()
+    for time_s in (0.0, 0.5):
+        base = FTCEvidence(
+            time_s,
+            horizontal_motion_error_ratio=1.6,
+            control_saturation_ratio=0.55,
+        )
+        fused, report = gate.update(
+            base,
+            diagnosis(time_s, suspected_group="horizontal"),
+        )
+
+    assert report["accepted"]
+    assert report["supporting_control_signals"] == [
+        "control_saturation",
+        "horizontal_motion_error",
+        "severe_horizontal_motion",
+    ]
+    assert fused.probable_group == "horizontal"
+
+
+def test_severe_horizontal_path_still_rejects_weak_actuator_demand():
+    gate = AIControlEvidenceGate()
+    for time_s in (0.0, 0.5):
+        base = FTCEvidence(
+            time_s,
+            horizontal_motion_error_ratio=2.0,
+            control_saturation_ratio=0.54,
+        )
+        fused, report = gate.update(
+            base,
+            diagnosis(time_s, suspected_group="horizontal"),
+        )
+
+    assert fused is base
+    assert report["verdict"] == "record_only"
+
+
+def test_severe_horizontal_path_does_not_authorize_vertical_ai_group():
+    gate = AIControlEvidenceGate()
+    for time_s in (0.0, 0.5):
+        base = FTCEvidence(
+            time_s,
+            horizontal_motion_error_ratio=2.0,
+            control_saturation_ratio=0.7,
+        )
+        fused, report = gate.update(
+            base,
+            diagnosis(time_s, suspected_group="vertical"),
+        )
+
+    assert fused is base
+    assert report["verdict"] == "record_only"
+
+
 def test_direct_esc_path_wins_even_if_ai_is_unavailable_or_wrong():
     scores = np.array([0., .99, 0., 0., 0., 0.])
     base = evidence(0., no_output_scores=scores, excitation_ratios=np.ones(6))

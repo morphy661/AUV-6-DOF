@@ -106,11 +106,23 @@ class AIControlEvidenceGate:
         report["confirming_updates"] = self.confirming_updates
         if self.confirming_updates < self.config.minimum_confirming_updates:
             return reject("suspected", "Need distinct consecutive confirmed inference updates.", reset=False)
-        control_corroborated = bool(
+        standard_control_corroboration = bool(
             evidence.control_saturation_ratio >= cfg.degraded_control_saturation_ratio
             and ((evidence.tracking_error_available and evidence.tracking_error_ratio >= cfg.degraded_tracking_error_ratio)
                  or evidence.horizontal_motion_error_ratio >= cfg.horizontal_degraded_motion_ratio
                  or evidence.allocation_residual_ratio >= cfg.degraded_allocation_residual_ratio)
+        )
+        severe_horizontal_corroboration = bool(
+            str(diagnosis.get("suspected_group", "uncertain"))
+            == "horizontal"
+            and evidence.control_saturation_ratio
+            >= cfg.severe_horizontal_minimum_saturation_ratio
+            and evidence.horizontal_motion_error_ratio
+            >= cfg.severe_horizontal_motion_ratio
+        )
+        control_corroborated = bool(
+            standard_control_corroboration
+            or severe_horizontal_corroboration
         )
         report["control_corroborated"] = control_corroborated
         if control_corroborated:
@@ -124,12 +136,19 @@ class AIControlEvidenceGate:
                 report["supporting_control_signals"].append(
                     "horizontal_motion_error"
                 )
+            if severe_horizontal_corroboration:
+                report["supporting_control_signals"].append(
+                    "severe_horizontal_motion"
+                )
             if evidence.allocation_residual_ratio >= cfg.degraded_allocation_residual_ratio:
                 report["supporting_control_signals"].append("allocation_residual")
         if not control_corroborated:
             return reject("record_only", "Persistent model fault; control response does not justify added FTC authority.", reset=False)
         report.update(verdict="accepted_control_evidence", accepted=True,
-                      reason="Persistent model mode plus saturation and tracking/allocation stress.")
+                      reason=(
+                          "Persistent model mode plus corroborating actuator "
+                          "demand and motion/tracking/allocation stress."
+                      ))
         return replace(
             evidence, health_level=max(evidence.health_level, 2),
             confirmed_mode=mode, fault_probability=max(evidence.fault_probability, float(probabilities[mode])),

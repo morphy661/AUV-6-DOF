@@ -68,6 +68,8 @@ class FTCSupervisorConfig:
     horizontal_yaw_rate_error_limit_deg_s: float = 20.0
     horizontal_cross_track_limit_m: float = 2.0
     horizontal_degraded_motion_ratio: float = 1.0
+    severe_horizontal_motion_ratio: float = 1.5
+    severe_horizontal_minimum_saturation_ratio: float = 0.55
     vertical_fault_heave_weight: float = 0.10
     vertical_fault_pitch_weight: float = 5.0
     horizontal_fault_force_weight: float = 0.25
@@ -82,6 +84,7 @@ class FTCSupervisorConfig:
             "minimum_excitation_ratio",
             "degraded_control_saturation_ratio",
             "critical_control_saturation_ratio",
+            "severe_horizontal_minimum_saturation_ratio",
             "isolated_thruster_effectiveness",
             "degraded_wrench_scale",
             "safe_wrench_scale",
@@ -117,6 +120,7 @@ class FTCSupervisorConfig:
             "horizontal_yaw_rate_error_limit_deg_s",
             "horizontal_cross_track_limit_m",
             "horizontal_degraded_motion_ratio",
+            "severe_horizontal_motion_ratio",
             "vertical_fault_heave_weight",
             "vertical_fault_pitch_weight",
             "horizontal_fault_force_weight",
@@ -132,6 +136,7 @@ class FTCSupervisorConfig:
             "horizontal_yaw_rate_error_limit_deg_s",
             "horizontal_cross_track_limit_m",
             "horizontal_degraded_motion_ratio",
+            "severe_horizontal_motion_ratio",
             "vertical_fault_pitch_weight", "horizontal_fault_yaw_weight",
         ):
             if float(getattr(self, name)) <= 0.0:
@@ -145,6 +150,16 @@ class FTCSupervisorConfig:
             < self.degraded_allocation_residual_ratio
         ):
             raise ValueError("critical thresholds cannot be below degraded thresholds")
+        if (
+            self.severe_horizontal_motion_ratio
+            < self.horizontal_degraded_motion_ratio
+            or self.severe_horizontal_minimum_saturation_ratio
+            > self.degraded_control_saturation_ratio
+        ):
+            raise ValueError(
+                "severe horizontal motion must require at least as much motion "
+                "and may require no more saturation than the standard path"
+            )
 
     @property
     def minimum_excitation_ratios(self):
