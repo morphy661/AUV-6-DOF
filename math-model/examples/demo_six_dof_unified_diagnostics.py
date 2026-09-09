@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -36,6 +37,7 @@ from ftc.safety_supervisor import (
     FTCSafetySupervisor,
     build_rule_based_ftc_evidence,
 )
+from ftc.ai_evidence_gate import AIControlEvidenceGate, AIEvidenceGateConfig
 from presentation.six_dof_demo_adapter import (
     adapt_logs,
     extract_demo_events,
@@ -55,13 +57,13 @@ from simple_control.six_dof_controller import PoseTarget
 DEFAULT_CHECKPOINT = (
     MODEL_ROOT
     / "results"
-    / "six_dof_hybrid_telemetry_0_300m_focus_v3"
+    / "six_dof_v3_5_high_yaw_seed43_20260904"
     / "best_model.pth"
 )
 DEFAULT_TEMPORAL_CONFIG = (
     MODEL_ROOT
     / "results"
-    / "six_dof_hybrid_telemetry_0_300m_focus_v3_temporal"
+    / "six_dof_hybrid_telemetry_0_300m_focus_v3_4_seed43_calibrated_20260903"
     / "temporal_decision_config.json"
 )
 DEFAULT_ACCEPTANCE_SUMMARY = (
@@ -79,6 +81,14 @@ MISSION_TARGETS = (
     (15.0, (0.0, 0.0, 202.5), (0.0, 0.0, 0.0)),
     (20.0, (2.0, -1.0, 200.5), (0.0, 0.0, 0.3)),
 )
+
+
+def _sha256(path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as file:
+        for chunk in iter(lambda: file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
 
 
 def load_acceptance_badge(path):
@@ -315,8 +325,13 @@ def build_fault_scenario(seed, injection_mode):
 
 
 def run_demo(
-    duration, dt, seed, *, injection_mode="fixed", model_bridge=None
+    duration, dt, seed, *, injection_mode="fixed", model_bridge=None,
+    diagnosis_mode="shadow",
 ):
+    if diagnosis_mode not in ("shadow", "fusion"):
+        raise ValueError("diagnosis_mode must be shadow or fusion")
+    if diagnosis_mode == "fusion" and model_bridge is None:
+        raise ValueError("fusion requires an online model")
     sensor_suite, thruster_fault, manifest = build_fault_scenario(
         seed, injection_mode
     )
@@ -328,6 +343,15 @@ def run_demo(
         ftc_evidence_provider=build_esc_telemetry_evidence_provider(
             manifest["esc_telemetry_events"], supervisor.config
         ),
+        diagnostic_observer=model_bridge,
+        ai_ftc_fusion=(
+            AIControlEvidenceGate(
+                AIEvidenceGateConfig(
+                    minimum_mode_probability=model_bridge.decision.temporal.config.enter_fault_probability,
+                    maximum_result_age_s=1.2 * model_bridge.inference_stride * dt,
+                ), supervisor.config,
+            ) if diagnosis_mode == "fusion" else None
+        ),
     )
     simulator.reset(SixDOFState(
         position_ned=np.asarray(MISSION_TARGETS[0][1], dtype=float),
@@ -336,11 +360,67 @@ def run_demo(
         duration, dt, target_provider,
         disturbance_provider=disturbance_provider,
     )
-    if model_bridge is not None:
-        model_bridge.enrich_logs(logs)
     frames = adapt_logs(logs)
     events = extract_demo_events(frames)
     return logs, frames, events, manifest
+
+
+def summarize_online_diagnosis(logs, dt):
+    """Report measured synchronous timing, including first-inference startup."""
+    diagnoses = [log["maintenance_diagnosis"] for log in logs
+                 if "maintenance_diagnosis" in log]
+
+    def timing(values, budget_ms):
+        return {
+            "count": len(values),
+            "mean_ms": float(np.mean(values)) if values else None,
+            "p95_ms": float(np.percentile(values, 95)) if values else None,
+            "max_ms": float(np.max(values)) if values else None,
+            "budget_ms": budget_ms,
+            "over_budget_count": sum(value > budget_ms for value in values),
+        }
+
+    return {
+        "execution_mode": diagnoses[0]["execution_mode"] if diagnoses else "disabled",
+        "affects_ftc": any(d.get("affects_ftc", False) for d in diagnoses),
+        "fusion_verdict_counts": {
+            verdict: sum(log.get("ai_ftc_fusion", {}).get("verdict") == verdict for log in logs)
+            for verdict in sorted({log["ai_ftc_fusion"]["verdict"] for log in logs if "ai_ftc_fusion" in log})
+        },
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": ["normal", "no_output", "thrust_loss"],
+        "sample_count": len(diagnoses),
+        "inference_count": sum(bool(d.get("updated")) for d in diagnoses),
+        "available_count": sum(bool(d.get("available")) for d in diagnoses),
+        "observer_update": timing([d["update_wall_ms"] for d in diagnoses], dt * 1000),
+        "inference_updates": timing([d["update_wall_ms"] for d in diagnoses
+                                     if d.get("updated")], dt * 1000),
+        "full_simulation_step": timing([log["step_wall_ms"] for log in logs], dt * 1000),
+    }
+
+
+def save_online_trace(logs, path):
+    """Retain actual per-step scores, freshness, gating and FTC on one timeline."""
+    def json_safe(value):
+        if isinstance(value, dict):
+            return {key: json_safe(item) for key, item in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [json_safe(item) for item in value]
+        if isinstance(value, float) and not np.isfinite(value):
+            return None
+        return value
+
+    with path.open("w", encoding="utf-8") as output:
+        for log in logs:
+            output.write(json.dumps(json_safe({
+                "time_s": float(log["time"]),
+                "model": log.get("maintenance_diagnosis"),
+                "ftc_action": log.get("ftc_action"),
+                "ftc_applied_action": log.get("ftc_applied_action"),
+                "ftc_evidence_source": log.get("ftc_evidence_source"),
+                "fusion": log.get("ai_ftc_fusion"),
+                "step_wall_ms": log["step_wall_ms"],
+            }), ensure_ascii=False, allow_nan=False) + "\n")
 
 
 def save_json(
@@ -446,6 +526,7 @@ def main():
         "--injection-mode", choices=("fixed", "random"), default="fixed"
     )
     parser.add_argument("--disable-model", action="store_true")
+    parser.add_argument("--diagnosis-mode", choices=("shadow", "fusion"), default="shadow")
     parser.add_argument("--checkpoint", type=Path, default=DEFAULT_CHECKPOINT)
     parser.add_argument(
         "--temporal-config", type=Path, default=DEFAULT_TEMPORAL_CONFIG
@@ -473,6 +554,8 @@ def main():
         default=PROJECT_ROOT / "results" / "six_dof_unified_diagnostics_demo",
     )
     args = parser.parse_args()
+    if args.disable_model and args.diagnosis_mode == "fusion":
+        parser.error("--diagnosis-mode fusion requires the model")
     args.output_dir.mkdir(parents=True, exist_ok=True)
     acceptance_badge = (
         load_acceptance_badge(args.acceptance_summary)
@@ -491,12 +574,13 @@ def main():
             AUVSixDOFMultiTaskDetector,
             device=(None if args.model_device == "auto" else args.model_device),
         )
-    _, frames, events, manifest = run_demo(
+    logs, frames, events, manifest = run_demo(
         args.duration,
         args.dt,
         args.seed,
         injection_mode=args.injection_mode,
         model_bridge=model_bridge,
+        diagnosis_mode=args.diagnosis_mode,
     )
     summary = summarize_demo(frames, events)
     summary.update({
@@ -505,14 +589,24 @@ def main():
         "injected_thruster": manifest["thruster_fault"]["thruster_name"],
         "injected_thruster_mode": manifest["thruster_fault"]["mode"],
         "model_enabled": model_bridge is not None,
+        "online_diagnosis": summarize_online_diagnosis(logs, args.dt),
+        "model_runtime_preparation_ms": (
+            None if model_bridge is None else model_bridge.runtime_preparation_ms
+        ),
         "model_device": (
             None if model_bridge is None else str(model_bridge.device)
         ),
         "model_checkpoint": (
             None if model_bridge is None else str(args.checkpoint)
         ),
+        "model_checkpoint_sha256": (
+            None if model_bridge is None else _sha256(args.checkpoint)
+        ),
         "model_temporal_config": (
             None if model_bridge is None else str(args.temporal_config)
+        ),
+        "model_temporal_config_sha256": (
+            None if model_bridge is None else _sha256(args.temporal_config)
         ),
         "offline_acceptance_baseline": acceptance_badge,
     })
@@ -534,6 +628,7 @@ def main():
         json_path,
     )
     save_csv(frames, csv_path)
+    save_online_trace(logs, args.output_dir / "online_model_trace.jsonl")
 
     renderer = SixDOFDemoRenderer(
         frames,

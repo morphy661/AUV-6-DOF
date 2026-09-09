@@ -346,6 +346,8 @@ def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
         "thrusters": thrusters,
         "maintenance": maintenance,
         "ftc": {
+            "ai_fusion": dict(_mapping(log.get("ai_ftc_fusion"))),
+            "evidence_source": str(log.get("ftc_evidence_source", "unknown")),
             "tier": ftc_tier,
             "action": ftc_action,
             "applied_action": str(log.get("ftc_applied_action", "normal_control")),

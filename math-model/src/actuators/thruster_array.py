@@ -120,7 +120,12 @@ class ThrusterArray:
         forces = _vector(thruster_forces, len(self.thrusters), "thruster_forces")
         return self.allocation_matrix @ forces
 
-    def allocate(self, desired_wrench, thruster_effectiveness=None):
+    def allocate(
+        self,
+        desired_wrench,
+        thruster_effectiveness=None,
+        wrench_weights=None,
+    ):
         """Allocate wrench with bounded least squares and optional degradation.
 
         ``thruster_effectiveness`` maps commanded force to expected actual force.
@@ -145,7 +150,14 @@ class ThrusterArray:
         forces = np.zeros(count)
         free = list(range(count))
         fixed = []
-        weight_matrix = np.diag(self.wrench_weights)
+        weights = (
+            self.wrench_weights
+            if wrench_weights is None
+            else _vector(wrench_weights, 6, "wrench_weights")
+        )
+        if np.any(weights < 0.0) or not np.any(weights > 0.0):
+            raise ValueError("wrench_weights must contain a positive weight")
+        weight_matrix = np.diag(weights)
 
         for _ in range(count + 1):
             if not free:

@@ -62,7 +62,12 @@ CRUISE_SPEED_PROBABILITIES = np.array([0.30, 0.40, 0.30])
 VERTICAL_SPEED_RANGE_MPS = (0.15, 0.35)
 NOMINAL_VEHICLE_MASS_KG = 50.0
 DEFAULT_MASS_RELATIVE_ERROR = 0.02
+MAX_CENTER_COMMON_XY_OFFSET_M = 0.018
+MAX_CENTER_RELATIVE_XY_OFFSET_M = 0.002
 DIAGNOSTIC_FEATURE_PROFILE = "configured_generalized_mass_diagonal_v1"
+DYNAMICS_RANDOMIZATION_PROFILE = (
+    "small_mass_error_correlated_cg_cb_xy_v2"
+)
 
 
 @dataclass(frozen=True)
@@ -77,6 +82,9 @@ class MissionPlan:
     cruise_speed_mps: float
     vertical_speed_mps: float
     ramp_duration_s: float
+    maneuver_profile: str
+    heading_deltas_rad: tuple
+    heading_delta_abs_range_rad: tuple
 
     def to_metadata(self):
         return {
@@ -87,6 +95,11 @@ class MissionPlan:
             "cruise_speed_mps": self.cruise_speed_mps,
             "vertical_speed_mps": self.vertical_speed_mps,
             "ramp_duration_s": self.ramp_duration_s,
+            "maneuver_profile": self.maneuver_profile,
+            "heading_deltas_rad": list(self.heading_deltas_rad),
+            "heading_delta_abs_range_rad": list(
+                self.heading_delta_abs_range_rad
+            ),
             "waypoints": [
                 {
                     "time_s": float(time_s),
@@ -185,16 +198,28 @@ def _randomized_dynamics(
         raise ValueError("mass_kg_override must be finite and positive")
     weight = mass * 9.81
     buoyancy_ratio = rng.uniform(0.990, 1.010)
-    xy_offset = 0.018
+    # A trimmed AUV can have a common horizontal installation offset, but its
+    # CG and CB should remain closely aligned in x/y.  Sampling both points
+    # independently over the old +/-18 mm box allowed a 36 mm separation and
+    # produced nominal missions with persistent 20--30 degree bank angles.
+    # Preserve the same number/order of random draws so all later randomized
+    # mission parameters stay comparable with earlier audit seeds.
+    center_draws = rng.uniform(0.0, 1.0, size=6)
+    common_xy = (
+        2.0 * center_draws[:2] - 1.0
+    ) * MAX_CENTER_COMMON_XY_OFFSET_M
+    relative_xy = (
+        2.0 * center_draws[3:5] - 1.0
+    ) * MAX_CENTER_RELATIVE_XY_OFFSET_M
     cg = np.array([
-        rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(0.015, 0.035),
+        common_xy[0] + 0.5 * relative_xy[0],
+        common_xy[1] + 0.5 * relative_xy[1],
+        0.015 + 0.020 * center_draws[2],
     ])
     cb = np.array([
-        rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(-xy_offset, xy_offset),
-        rng.uniform(-0.035, -0.015),
+        common_xy[0] - 0.5 * relative_xy[0],
+        common_xy[1] - 0.5 * relative_xy[1],
+        -0.035 + 0.020 * center_draws[5],
     ])
     config = SixDOFConfig(
         mass=mass,
@@ -230,6 +255,13 @@ def _randomized_dynamics(
         "buoyancy_to_weight_ratio": buoyancy_ratio,
         "center_of_gravity_m": cg.tolist(),
         "center_of_buoyancy_m": cb.tolist(),
+        "center_common_xy_offset_limit_m": (
+            MAX_CENTER_COMMON_XY_OFFSET_M
+        ),
+        "center_relative_xy_offset_limit_m": (
+            MAX_CENTER_RELATIVE_XY_OFFSET_M
+        ),
+        "center_relative_xy_m": (cg[:2] - cb[:2]).tolist(),
     }
     return SixDOFDynamics(config=config), metadata
 
@@ -267,6 +299,32 @@ def _randomized_thrusters(
     }
 
 
+def _controller_metadata(controller):
+    """Record the active controller gains with every generated mission."""
+
+    config = controller.config
+    vector_names = (
+        "position_kp",
+        "position_ki",
+        "velocity_kp",
+        "linear_damping_feedforward",
+        "quadratic_damping_feedforward",
+        "attitude_kp",
+        "attitude_ki",
+        "angular_velocity_kp",
+        "max_velocity_ned",
+        "max_angular_velocity",
+        "position_integral_limit",
+        "attitude_integral_limit",
+    )
+    payload = {
+        name: np.asarray(getattr(config, name), dtype=float).tolist()
+        for name in vector_names
+    }
+    payload["max_horizontal_speed"] = float(config.max_horizontal_speed)
+    return payload
+
+
 def _depth_band_index_for_mission(
     scenario_index,
     repetition,
@@ -287,7 +345,12 @@ def _depth_band_index_for_mission(
     ]
 
 
-def _mission_schedule(duration, rng, depth_band_index=None):
+def _mission_schedule(
+    duration,
+    rng,
+    depth_band_index=None,
+    heading_delta_abs_range_rad=None,
+):
     """Build a local mission, with 300--500 m reserved for sparse stress runs."""
     duration = float(duration)
     if not np.isfinite(duration) or duration <= 0.0:
@@ -317,8 +380,33 @@ def _mission_schedule(duration, rng, depth_band_index=None):
     ramp_duration = min(4.0, 0.25 * cruise_duration)
     effective_travel_time = cruise_duration - ramp_duration
     headings = [float(rng.uniform(-np.pi, np.pi))]
-    for _ in range(3):
-        headings.append(headings[-1] + float(rng.uniform(-0.55, 0.55)))
+    if heading_delta_abs_range_rad is None:
+        heading_deltas = tuple(float(rng.uniform(-0.55, 0.55)) for _ in range(3))
+        heading_delta_abs_range = (0.0, 0.55)
+        maneuver_profile = "standard_local_turns"
+    else:
+        heading_delta_abs_range = tuple(
+            float(value) for value in heading_delta_abs_range_rad
+        )
+        if (
+            len(heading_delta_abs_range) != 2
+            or not np.all(np.isfinite(heading_delta_abs_range))
+            or heading_delta_abs_range[0] < 0.0
+            or heading_delta_abs_range[1] < heading_delta_abs_range[0]
+            or heading_delta_abs_range[1] > np.pi
+        ):
+            raise ValueError(
+                "heading_delta_abs_range_rad must be a finite increasing "
+                "range within [0, pi]"
+            )
+        heading_deltas = tuple(
+            float(rng.choice((-1.0, 1.0)))
+            * float(rng.uniform(*heading_delta_abs_range))
+            for _ in range(3)
+        )
+        maneuver_profile = "high_yaw_step_turns"
+    for heading_delta in heading_deltas:
+        headings.append(headings[-1] + heading_delta)
     initial_position = np.array([0.0, 0.0, initial_depth])
     waypoints = [(0.0, initial_position.copy(), np.array([
         0.0, 0.0, headings[0],
@@ -374,6 +462,9 @@ def _mission_schedule(duration, rng, depth_band_index=None):
         cruise_speed_mps=cruise_speed,
         vertical_speed_mps=vertical_speed,
         ramp_duration_s=ramp_duration,
+        maneuver_profile=maneuver_profile,
+        heading_deltas_rad=heading_deltas,
+        heading_delta_abs_range_rad=heading_delta_abs_range,
     )
 
 
@@ -496,6 +587,7 @@ def run_mission(
     vertical_force_limit_override=None,
     mass_kg_override=None,
     mass_relative_error=DEFAULT_MASS_RELATIVE_ERROR,
+    heading_delta_abs_range_rad=None,
 ):
     rng = np.random.default_rng(seed)
     dynamics, dynamics_metadata = _randomized_dynamics(
@@ -594,6 +686,7 @@ def run_mission(
         duration,
         rng,
         depth_band_index=depth_band_index,
+        heading_delta_abs_range_rad=heading_delta_abs_range_rad,
     )
     simulator.reset(SixDOFState(
         position_ned=mission_plan.initial_position_ned,
@@ -607,8 +700,9 @@ def run_mission(
     )
     metadata = {
         "split": split,
-        "domain": "small_mass_error_broad_hydrodynamic_domain",
+        "domain": DYNAMICS_RANDOMIZATION_PROFILE,
         "dynamics": dynamics_metadata,
+        "controller": _controller_metadata(simulator.controller),
         "thrusters": thruster_metadata,
         "sensors": {
             "depth_noise_std_m": depth_noise,
@@ -751,20 +845,21 @@ def fixed_split_indices(mission_ids, mission_metadata):
     return split_indices
 
 
-def _torch_payload(dataset, splits, mission_metadata):
+def _torch_payload(dataset, splits, mission_metadata, dataset_version):
     payload = {}
     for key, value in dataset.items():
         payload[key] = (
             torch.from_numpy(value) if isinstance(value, np.ndarray) else value
         )
     payload.update({
-        "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3_1",
+        "dataset_version": dataset_version,
         "label_format": "multitask_mode_and_location_with_joint_baseline",
         "split_policy": (
             "fixed mission seeds; 90% mission focus at 0-300 m and 10% "
             "deep-stress coverage at 300-500 m; calibrated vehicle mass with "
-            "a small relative error, parameter-conditioned response features, "
-            "and disjoint train/validation/test mission seeds"
+            "a small relative error; correlated CG/CB horizontal installation "
+            "offsets with a small relative mismatch; parameter-conditioned "
+            "response features; and disjoint train/validation/test mission seeds"
         ),
         "depth_bands_m": [list(band) for band in DEPTH_BANDS_M],
         "depth_band_probabilities": DEPTH_BAND_PROBABILITIES.tolist(),
@@ -789,6 +884,11 @@ def main():
     parser.add_argument("--seq-len", type=int, default=100)
     parser.add_argument("--stride", type=int, default=25)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--dataset-version",
+        default="six_dof_hybrid_telemetry_0_300m_focus_v3_1",
+        help="Version identifier stored inside the generated dataset.",
+    )
     parser.add_argument(
         "--mass-relative-error",
         type=float,
@@ -832,7 +932,15 @@ def main():
     )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(_torch_payload(dataset, splits, mission_metadata), args.output)
+    torch.save(
+        _torch_payload(
+            dataset,
+            splits,
+            mission_metadata,
+            args.dataset_version,
+        ),
+        args.output,
+    )
 
     summary = {
         "missions": len(mission_metadata),
@@ -862,7 +970,7 @@ def main():
             }
             for split in ("train", "validation", "test")
         },
-        "test_domain": "small_mass_error_broad_hydrodynamic_domain",
+        "dynamics_randomization_profile": DYNAMICS_RANDOMIZATION_PROFILE,
         "diagnostic_feature_profile": DIAGNOSTIC_FEATURE_PROFILE,
         "mass_range_kg": [
             NOMINAL_VEHICLE_MASS_KG * (1.0 - args.mass_relative_error),

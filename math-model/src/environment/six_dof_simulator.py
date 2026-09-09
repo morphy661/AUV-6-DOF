@@ -1,6 +1,8 @@
 """Six-DOF simulation chain with optional oracle fault-tolerant allocation."""
 
 from typing import Callable, Optional
+from copy import deepcopy
+from time import perf_counter
 
 import numpy as np
 
@@ -22,6 +24,7 @@ from ftc.safety_supervisor import (
     FTCEvidence,
     build_rule_based_ftc_evidence,
 )
+from ftc.degraded_guidance import FTCGuidanceManager
 
 
 class SixDOFSimulator:
@@ -42,6 +45,9 @@ class SixDOFSimulator:
         use_sensor_feedback: bool = True,
         ftc_supervisor=None,
         ftc_evidence_provider: Optional[Callable] = None,
+        diagnostic_observer=None,
+        ai_ftc_fusion=None,
+        vertical_fault_recovery: bool = True,
     ):
         self.dynamics = dynamics or SixDOFDynamics()
         self.thruster_array = thruster_array or default_six_thruster_array()
@@ -63,6 +69,13 @@ class SixDOFSimulator:
             )
         self.ftc_supervisor = ftc_supervisor
         self.ftc_evidence_provider = ftc_evidence_provider
+        # Shadow observer receives a detached current-step snapshot only.
+        self.diagnostic_observer = diagnostic_observer
+        if ai_ftc_fusion is not None and (diagnostic_observer is None or ftc_supervisor is None):
+            raise ValueError("AI FTC fusion requires an online observer and FTC supervisor")
+        self.ai_ftc_fusion = ai_ftc_fusion
+        self.vertical_fault_recovery = bool(vertical_fault_recovery)
+        self.ftc_guidance_manager = FTCGuidanceManager()
         self.ftc_decision = (
             None if self.ftc_supervisor is None else self.ftc_supervisor.reset()
         )
@@ -119,10 +132,28 @@ class SixDOFSimulator:
             self.state_estimate = self.state_estimator.reset(self.state)
         if self.ftc_supervisor is not None:
             self.ftc_decision = self.ftc_supervisor.reset()
+        if self.diagnostic_observer is not None:
+            self.diagnostic_observer.reset()
+        if self.ai_ftc_fusion is not None:
+            self.ai_ftc_fusion.reset()
+        self.ftc_guidance_manager.reset()
         self.logs = []
         return self.state.copy()
 
+    def _observe_diagnosis(self, log):
+        started = perf_counter()
+        diagnosis = dict(self.diagnostic_observer.update(deepcopy(log)))
+        diagnosis.update({
+            "execution_mode": "online_fusion" if self.ai_ftc_fusion is not None else "online_shadow",
+            "affects_ftc": False,
+            "update_wall_ms": (perf_counter() - started) * 1000.0,
+        })
+        log["maintenance_diagnosis"] = diagnosis
+        return diagnosis
+
     def step(self, target: PoseTarget, dt, disturbance_body=None):
+        step_started = perf_counter()
+        mission_target = target
         previous_velocity = self.state.body_velocity.copy()
         if self.sensor_feedback_enabled:
             controller_state = self.state_estimate.state.copy()
@@ -134,8 +165,19 @@ class SixDOFSimulator:
         else:
             controller_state = self.state.copy()
             controller_state_source = "simulator_truth"
-        control = self.controller.compute(controller_state, target, dt)
         applied_ftc_decision = self.ftc_decision
+        if self.vertical_fault_recovery:
+            guidance = self.ftc_guidance_manager.update(
+                mission_target,
+                controller_state,
+                applied_ftc_decision,
+            )
+            target = guidance.target
+            if guidance.entered_mode:
+                self.controller.reset()
+        else:
+            guidance = None
+        control = self.controller.compute(controller_state, target, dt)
         if self.ideal_fault_tolerant_allocation:
             allocation_effectiveness = (
                 self.actuator_bank.force_efficiencies_at(self.state.time)
@@ -156,6 +198,14 @@ class SixDOFSimulator:
         allocation = self.thruster_array.allocate(
             wrench_scale * control.desired_wrench_body,
             thruster_effectiveness=allocation_effectiveness,
+            wrench_weights=(
+                None
+                if (
+                    not self.vertical_fault_recovery
+                    or applied_ftc_decision is None
+                )
+                else applied_ftc_decision.allocation_wrench_weights
+            ),
         )
         actuation = self.actuator_bank.apply(
             allocation.thruster_forces,
@@ -248,6 +298,28 @@ class SixDOFSimulator:
             "target_euler_rpy": target.euler_rpy.copy(),
             "target_velocity_ned": target.linear_velocity_ned.copy(),
             "guidance_context_id": target.guidance_context_id,
+            "mission_target_position_ned": mission_target.position_ned.copy(),
+            "mission_target_euler_rpy": mission_target.euler_rpy.copy(),
+            "mission_target_velocity_ned": (
+                mission_target.linear_velocity_ned.copy()
+            ),
+            "mission_guidance_context_id": mission_target.guidance_context_id,
+            "vertical_fault_recovery_enabled": self.vertical_fault_recovery,
+            "ftc_guidance_mode_applied": (
+                "normal" if guidance is None else guidance.mode
+            ),
+            "ftc_guidance_transition": bool(
+                guidance is not None and guidance.entered_mode
+            ),
+            "ftc_allocation_wrench_weights_applied": (
+                self.thruster_array.wrench_weights.copy()
+                if (
+                    not self.vertical_fault_recovery
+                    or applied_ftc_decision is None
+                    or applied_ftc_decision.allocation_wrench_weights is None
+                )
+                else applied_ftc_decision.allocation_wrench_weights.copy()
+            ),
             "position_error_ned": control.position_error_ned.copy(),
             "attitude_error_body": control.attitude_error_body.copy(),
             "desired_velocity_ned": control.desired_velocity_ned.copy(),
@@ -351,6 +423,20 @@ class SixDOFSimulator:
             )
             if not isinstance(evidence, FTCEvidence):
                 raise TypeError("ftc_evidence_provider must return FTCEvidence")
+            if self.ai_ftc_fusion is not None:
+                # Current onboard evidence exists before AI inference; the
+                # supervisor is updated exactly once, after fusion.
+                log.update({
+                    "ftc_untrusted_esc_channels": evidence.untrusted_esc_channels,
+                    "ftc_tracking_error_ratio": evidence.tracking_error_ratio,
+                    "ftc_tracking_error_ratio_available": evidence.tracking_error_available,
+                    "ftc_control_saturation_ratio": evidence.control_saturation_ratio,
+                    "ftc_allocation_residual_ratio": evidence.allocation_residual_ratio,
+                })
+                diagnosis = self._observe_diagnosis(log)
+                evidence, fusion_report = self.ai_ftc_fusion.update(evidence, diagnosis)
+                diagnosis["affects_ftc"] = fusion_report["accepted"]
+                log["ai_ftc_fusion"] = fusion_report
             self.ftc_decision = self.ftc_supervisor.update(evidence)
             log.update({
                 "ftc_applied_action": applied_ftc_decision.action.value,
@@ -375,12 +461,28 @@ class SixDOFSimulator:
                     self.ftc_decision
                     .estimated_thruster_effectiveness.copy()
                 ),
+                "ftc_guidance_mode_next_step": self.ftc_decision.guidance_mode,
+                "ftc_allocation_wrench_weights_next_step": (
+                    None
+                    if self.ftc_decision.allocation_wrench_weights is None
+                    else self.ftc_decision.allocation_wrench_weights.copy()
+                ),
                 "ftc_evidence_source": evidence.source,
                 "ftc_no_output_scores": evidence.no_output_scores.copy(),
                 "ftc_untrusted_esc_channels": (
                     evidence.untrusted_esc_channels
                 ),
                 "ftc_tracking_error_ratio": evidence.tracking_error_ratio,
+                "ftc_tracking_error_ratio_available": evidence.tracking_error_available,
+                "ftc_horizontal_tracking_error_m": (
+                    evidence.horizontal_tracking_error_m
+                ),
+                "ftc_depth_tracking_error_m": evidence.depth_tracking_error_m,
+                "ftc_tilt_angle_deg": evidence.tilt_angle_deg,
+                "ftc_yaw_tracking_error_deg": evidence.yaw_tracking_error_deg,
+                "ftc_position_tracking_safety_active": (
+                    evidence.position_tracking_safety_active
+                ),
                 "ftc_control_saturation_ratio": (
                     evidence.control_saturation_ratio
                 ),
@@ -390,6 +492,9 @@ class SixDOFSimulator:
                 "ftc_sensor_guard_action": evidence.sensor_guard_action,
                 "ftc_untrusted_sensors": evidence.untrusted_sensors,
             })
+        if self.diagnostic_observer is not None and self.ai_ftc_fusion is None:
+            self._observe_diagnosis(log)
+        log["step_wall_ms"] = (perf_counter() - step_started) * 1000.0
         self.logs.append(log)
         return log
 

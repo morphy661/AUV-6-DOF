@@ -61,6 +61,11 @@ class FTCSupervisorConfig:
     isolated_thruster_effectiveness: float = 0.0
     degraded_wrench_scale: float = 0.65
     safe_wrench_scale: float = 0.35
+    horizontal_tracking_limit_m: float = 8.0
+    depth_tracking_limit_m: float = 3.0
+    tilt_limit_deg: float = 35.0
+    vertical_fault_heave_weight: float = 0.10
+    vertical_fault_pitch_weight: float = 5.0
 
     def __post_init__(self):
         if not isinstance(self.require_fresh_esc_telemetry, (bool, np.bool_)):
@@ -99,11 +104,22 @@ class FTCSupervisorConfig:
             "critical_confirmation_s",
             "stress_only_critical_confirmation_s",
             "recovery_confirmation_s",
+            "horizontal_tracking_limit_m",
+            "depth_tracking_limit_m",
+            "tilt_limit_deg",
+            "vertical_fault_heave_weight",
+            "vertical_fault_pitch_weight",
         )
         for name in non_negative:
             value = float(getattr(self, name))
             if not np.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and non-negative")
+        for name in (
+            "horizontal_tracking_limit_m", "depth_tracking_limit_m",
+            "tilt_limit_deg", "vertical_fault_pitch_weight",
+        ):
+            if float(getattr(self, name)) <= 0.0:
+                raise ValueError(f"{name} must be positive")
         if (
             self.critical_tracking_error_ratio
             < self.degraded_tracking_error_ratio
@@ -177,9 +193,29 @@ class FTCEvidence:
     sensor_guard_action: str = "none"
     untrusted_sensors: tuple[str, ...] = ()
     source: str = "unknown"
+    tracking_error_available: bool = True
+    horizontal_tracking_error_m: Optional[float] = None
+    depth_tracking_error_m: Optional[float] = None
+    tilt_angle_deg: Optional[float] = None
+    yaw_tracking_error_deg: Optional[float] = None
+    position_tracking_safety_active: bool = False
 
     def __post_init__(self):
         time_s = float(self.time_s)
+        if not isinstance(self.tracking_error_available, (bool, np.bool_)):
+            raise ValueError("tracking_error_available must be boolean")
+        object.__setattr__(
+            self, "tracking_error_available", bool(self.tracking_error_available)
+        )
+        if not isinstance(
+            self.position_tracking_safety_active, (bool, np.bool_)
+        ):
+            raise ValueError("position_tracking_safety_active must be boolean")
+        object.__setattr__(
+            self,
+            "position_tracking_safety_active",
+            bool(self.position_tracking_safety_active),
+        )
         if not np.isfinite(time_s):
             raise ValueError("time_s must be finite")
         object.__setattr__(self, "time_s", time_s)
@@ -196,6 +232,17 @@ class FTCEvidence:
             object.__setattr__(self, name, value)
         for name in ("tracking_error_ratio", "allocation_residual_ratio"):
             value = float(getattr(self, name))
+            if not np.isfinite(value) or value < 0.0:
+                raise ValueError(f"{name} must be finite and non-negative")
+            object.__setattr__(self, name, value)
+        for name in (
+            "horizontal_tracking_error_m", "depth_tracking_error_m",
+            "tilt_angle_deg", "yaw_tracking_error_deg",
+        ):
+            value = getattr(self, name)
+            if value is None:
+                continue
+            value = float(value)
             if not np.isfinite(value) or value < 0.0:
                 raise ValueError(f"{name} must be finite and non-negative")
             object.__setattr__(self, name, value)
@@ -242,6 +289,8 @@ class FTCDecision:
     mission_abort_requested: bool
     controlled_ascent_requested: bool
     stress_level: int
+    guidance_mode: str
+    allocation_wrench_weights: Optional[np.ndarray]
 
 
 class FTCSafetySupervisor:
@@ -288,6 +337,19 @@ class FTCSafetySupervisor:
             wrench_scale = self.config.safe_wrench_scale
             abort = True
             ascent = True
+        vertical_isolated = bool(self.isolated_thrusters.intersection({4, 5}))
+        guidance_mode = (
+            "vertical_thruster_hold" if vertical_isolated else "normal"
+        )
+        allocation_wrench_weights = None
+        if vertical_isolated:
+            allocation_wrench_weights = np.array([
+                1.0, 1.0,
+                self.config.vertical_fault_heave_weight,
+                0.0,
+                self.config.vertical_fault_pitch_weight,
+                1.0,
+            ])
         return FTCDecision(
             action=action,
             reason=reason,
@@ -307,6 +369,8 @@ class FTCSafetySupervisor:
             mission_abort_requested=abort,
             controlled_ascent_requested=ascent,
             stress_level=self.stress_level,
+            guidance_mode=guidance_mode,
+            allocation_wrench_weights=allocation_wrench_weights,
         )
 
     def _direct_no_output_candidate(self, evidence):
@@ -347,8 +411,9 @@ class FTCSafetySupervisor:
         return None
 
     def _instantaneous_stress_level(self, evidence):
+        tracking = evidence.tracking_error_ratio if evidence.tracking_error_available else 0.0
         if (
-            evidence.tracking_error_ratio
+            tracking
             >= self.config.critical_tracking_error_ratio
             or evidence.allocation_residual_ratio
             >= self.config.critical_allocation_residual_ratio
@@ -360,7 +425,7 @@ class FTCSafetySupervisor:
         ):
             return 2
         if (
-            evidence.tracking_error_ratio
+            tracking
             >= self.config.degraded_tracking_error_ratio
             or evidence.allocation_residual_ratio
             >= self.config.degraded_allocation_residual_ratio
@@ -383,7 +448,7 @@ class FTCSafetySupervisor:
     def _critical_stress_severity(self, evidence):
         config = self.config
         ratios = [
-            evidence.tracking_error_ratio
+            (evidence.tracking_error_ratio if evidence.tracking_error_available else 0.0)
             / max(config.critical_tracking_error_ratio, 1e-12),
             evidence.allocation_residual_ratio
             / max(config.critical_allocation_residual_ratio, 1e-12),
@@ -588,6 +653,114 @@ def _maintenance_value(result, name, default):
     return getattr(result, name, default)
 
 
+def _optional_vector(mapping, name, size):
+    value = mapping.get(name)
+    if value is None:
+        return None
+    try:
+        vector = np.asarray(value, dtype=float)
+    except (TypeError, ValueError):
+        return None
+    if vector.shape != (size,) or not np.all(np.isfinite(vector)):
+        return None
+    return vector.copy()
+
+
+def _authority_normalized_allocation_residual(log, residual, limits):
+    """Normalize residual by currently available actuator authority."""
+
+    matrix_value = log.get("thruster_allocation_matrix")
+    if matrix_value is None:
+        return None
+    try:
+        matrix = np.asarray(matrix_value, dtype=float)
+    except (TypeError, ValueError):
+        return None
+    if matrix.shape != (6, 6) or not np.all(np.isfinite(matrix)):
+        return None
+    effectiveness = _optional_vector(
+        log, "allocation_thruster_effectiveness", 6
+    )
+    if effectiveness is None:
+        effectiveness = np.ones(6, dtype=float)
+    if np.any(effectiveness < 0.0) or np.any(effectiveness > 1.0):
+        return None
+    effective_matrix = matrix * effectiveness[np.newaxis, :]
+    authority = np.abs(effective_matrix) @ limits
+    controlled_axes = np.array([0, 1, 2, 5])
+    priority = _optional_vector(
+        log, "ftc_allocation_wrench_weights_applied", 6
+    )
+    if priority is None:
+        priority = np.ones(6, dtype=float)
+    controlled_priority = priority[controlled_axes]
+    priority_scale = max(float(np.max(controlled_priority)), 1e-12)
+    controlled_priority = controlled_priority / priority_scale
+    available = (
+        (authority[controlled_axes] > 1e-9)
+        & (controlled_priority > 0.0)
+    )
+    if not np.any(available):
+        return None
+    normalized = (
+        np.abs(residual[controlled_axes][available])
+        / authority[controlled_axes][available]
+        * controlled_priority[available]
+    )
+    return float(np.max(normalized))
+
+
+def _wrap_angle(angle):
+    return float((float(angle) + np.pi) % (2.0 * np.pi) - np.pi)
+
+
+def _observable_tracking_metrics(log, config):
+    """Build safety errors from the same estimated state used for control."""
+
+    position = _optional_vector(log, "controller_position_ned", 3)
+    attitude = _optional_vector(log, "controller_euler_rpy", 3)
+    target_position = _optional_vector(log, "target_position_ned", 3)
+    target_attitude = _optional_vector(log, "target_euler_rpy", 3)
+    if (
+        position is None or attitude is None
+        or target_position is None or target_attitude is None
+    ):
+        return None
+    error = target_position - position
+    horizontal = float(np.linalg.norm(error[:2]))
+    depth = float(abs(error[2]))
+    # Angle between the body z-axis and NED down is invariant to yaw and
+    # remains meaningful near the Euler pitch singularity.
+    tilt = float(np.degrees(np.arccos(np.clip(
+        np.cos(attitude[0]) * np.cos(attitude[1]), -1.0, 1.0
+    ))))
+    yaw = float(abs(np.degrees(_wrap_angle(
+        target_attitude[2] - attitude[2]
+    ))))
+    # A distant mission waypoint is not itself a tracking failure. Position
+    # limits become safety evidence only after FTC has latched a local hold
+    # point; tilt remains meaningful in every mission mode.
+    position_safety_active = (
+        str(log.get("ftc_guidance_mode_applied", "normal"))
+        == "vertical_thruster_hold"
+    )
+    ratios = [tilt / config.tilt_limit_deg]
+    if position_safety_active:
+        ratios.extend((
+            horizontal / config.horizontal_tracking_limit_m,
+            depth / config.depth_tracking_limit_m,
+        ))
+    ratio = max(ratios)
+    return {
+        "tracking_error_ratio": float(ratio),
+        "horizontal_tracking_error_m": horizontal,
+        "depth_tracking_error_m": depth,
+        "tilt_angle_deg": tilt,
+        "yaw_tracking_error_deg": yaw,
+        "position_tracking_safety_active": position_safety_active,
+    }
+
+
 def build_rule_based_ftc_evidence(
     log: Mapping[str, Any],
     maintenance_result=None,
@@ -694,9 +867,17 @@ def build_rule_based_ftc_evidence(
             fault_probability, float(np.max(no_output_scores))
         )
 
-    tracking_error_ratio = float(
-        _mapping_value(log, "tracking_error_ratio", 0.0)
-    )
+    tracking_metrics = _observable_tracking_metrics(log, config)
+    explicit_tracking = _mapping_value(log, "tracking_error_ratio")
+    if explicit_tracking is not None:
+        tracking_error_ratio = float(explicit_tracking)
+        tracking_error_available = True
+    elif tracking_metrics is not None:
+        tracking_error_ratio = tracking_metrics["tracking_error_ratio"]
+        tracking_error_available = True
+    else:
+        tracking_error_ratio = 0.0
+        tracking_error_available = False
     control_saturation_ratio = float(np.max(excitation))
     desired = _six_vector(
         _mapping_value(log, "desired_wrench_body"),
@@ -706,11 +887,15 @@ def build_rule_based_ftc_evidence(
         _mapping_value(log, "allocation_residual_body"),
         "allocation_residual_body",
     )
-    controlled_axes = np.array([0, 1, 2, 5])
-    allocation_residual_ratio = float(
-        np.linalg.norm(residual[controlled_axes])
-        / max(np.linalg.norm(desired[controlled_axes]), 1.0)
+    allocation_residual_ratio = _authority_normalized_allocation_residual(
+        log, residual, limits
     )
+    if allocation_residual_ratio is None:
+        controlled_axes = np.array([0, 1, 2, 5])
+        allocation_residual_ratio = float(
+            np.linalg.norm(residual[controlled_axes])
+            / max(np.linalg.norm(desired[controlled_axes]), 1.0)
+        )
     vertical_unavailable = bool(np.all(
         no_output_scores[4:] >= config.no_output_score_threshold
     ))
@@ -746,6 +931,8 @@ def build_rule_based_ftc_evidence(
         evidence_source += "+state_estimator_guard"
     if untrusted_esc_channels:
         evidence_source += "+esc_telemetry_guard"
+    if tracking_metrics is not None:
+        evidence_source += "+tracking_safety"
     return FTCEvidence(
         time_s=time_s,
         health_level=health_level,
@@ -753,6 +940,27 @@ def build_rule_based_ftc_evidence(
         fault_probability=np.clip(fault_probability, 0.0, 1.0),
         probable_group=probable_group,
         tracking_error_ratio=tracking_error_ratio,
+        tracking_error_available=tracking_error_available,
+        horizontal_tracking_error_m=(
+            None if tracking_metrics is None
+            else tracking_metrics["horizontal_tracking_error_m"]
+        ),
+        depth_tracking_error_m=(
+            None if tracking_metrics is None
+            else tracking_metrics["depth_tracking_error_m"]
+        ),
+        tilt_angle_deg=(
+            None if tracking_metrics is None
+            else tracking_metrics["tilt_angle_deg"]
+        ),
+        yaw_tracking_error_deg=(
+            None if tracking_metrics is None
+            else tracking_metrics["yaw_tracking_error_deg"]
+        ),
+        position_tracking_safety_active=(
+            False if tracking_metrics is None
+            else tracking_metrics["position_tracking_safety_active"]
+        ),
         control_saturation_ratio=control_saturation_ratio,
         allocation_residual_ratio=allocation_residual_ratio,
         no_output_scores=no_output_scores,

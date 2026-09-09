@@ -1,0 +1,195 @@
+{
+  "case": {
+    "name": "normal_disturbance_200m",
+    "depth": 200.0,
+    "seed": 20260973,
+    "disturbance": true
+  },
+  "metrics": {
+    "rule": {
+      "actions": {
+        "normal_control": 800
+      },
+      "isolated_thrusters": [],
+      "first_intervention_s": null,
+      "first_ai_admission_s": null,
+      "ai_admitted_steps": 0,
+      "position_rmse_m": 2.3372130356477703,
+      "max_position_error_m": 2.5658494778764545,
+      "max_abs_roll_pitch_yaw_deg": [
+        1.1460885591236722,
+        3.3276951613203156,
+        56.29535843664063
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 0,
+      "online": {
+        "execution_mode": "disabled",
+        "affects_ftc": false,
+        "fusion_verdict_counts": {},
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 0,
+        "inference_count": 0,
+        "available_count": 0,
+        "observer_update": {
+          "count": 0,
+          "mean_ms": null,
+          "p95_ms": null,
+          "max_ms": null,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 0,
+          "mean_ms": null,
+          "p95_ms": null,
+          "max_ms": null,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 2.9458110009727534,
+          "p95_ms": 3.575964987976476,
+          "max_ms": 7.957200054079294,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    },
+    "shadow": {
+      "actions": {
+        "normal_control": 800
+      },
+      "isolated_thrusters": [],
+      "first_intervention_s": null,
+      "first_ai_admission_s": null,
+      "ai_admitted_steps": 0,
+      "position_rmse_m": 2.3372130356477703,
+      "max_position_error_m": 2.5658494778764545,
+      "max_abs_roll_pitch_yaw_deg": [
+        1.1460885591236722,
+        3.3276951613203156,
+        56.29535843664063
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 7,
+      "online": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "fusion_verdict_counts": {},
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 800,
+        "inference_count": 76,
+        "available_count": 751,
+        "observer_update": {
+          "count": 800,
+          "mean_ms": 1.9536518736276776,
+          "p95_ms": 13.658900035079567,
+          "max_ms": 20.941699971444905,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 76,
+          "mean_ms": 13.963928944002348,
+          "p95_ms": 15.423625009134412,
+          "max_ms": 20.941699971444905,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 4.96165224845754,
+          "p95_ms": 16.767705080565065,
+          "max_ms": 23.68520002346486,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    },
+    "fusion": {
+      "actions": {
+        "normal_control": 800
+      },
+      "isolated_thrusters": [],
+      "first_intervention_s": null,
+      "first_ai_admission_s": null,
+      "ai_admitted_steps": 0,
+      "position_rmse_m": 2.3372130356477703,
+      "max_position_error_m": 2.5658494778764545,
+      "max_abs_roll_pitch_yaw_deg": [
+        1.1460885591236722,
+        3.3276951613203156,
+        56.29535843664063
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 7,
+      "online": {
+        "execution_mode": "online_fusion",
+        "affects_ftc": false,
+        "fusion_verdict_counts": {
+          "normal": 651,
+          "probability_conflict": 10,
+          "record_only": 10,
+          "recovering": 30,
+          "suspected": 50,
+          "unavailable": 49
+        },
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 800,
+        "inference_count": 76,
+        "available_count": 751,
+        "observer_update": {
+          "count": 800,
+          "mean_ms": 1.8470995004463475,
+          "p95_ms": 13.152305025141686,
+          "max_ms": 17.349999980069697,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 76,
+          "mean_ms": 13.035151321673766,
+          "p95_ms": 14.665675029391423,
+          "max_ms": 17.349999980069697,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 4.8826248753175605,
+          "p95_ms": 16.255840013036504,
+          "max_ms": 20.666199969127774,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    }
+  },
+  "shadow_matches_rule": true,
+  "fusion_replay_matches_online": true,
+  "next_step_application_passed": true,
+  "action_difference_steps": 0,
+  "first_action_difference_s": null,
+  "additional_intervention_steps": 0,
+  "max_paired_position_difference_m": 0.0
+}

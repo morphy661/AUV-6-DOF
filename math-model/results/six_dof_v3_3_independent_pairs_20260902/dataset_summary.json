@@ -1,0 +1,960 @@
+{
+  "dataset_version": "six_dof_hybrid_telemetry_0_300m_focus_v3_3_independent_pairs",
+  "parent_dataset": "depth-sensor-fault-detection\\depth_fault_detection\\data\\simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3_1.pth",
+  "parent_dataset_sha256": "CB52EB270615CB1DA9BB293FEA6B4C0B16C047734C7FD6AD0CE9C4858E64A496",
+  "output": "depth-sensor-fault-detection\\depth_fault_detection\\data\\simulation_dataset_six_dof_hybrid_telemetry_0_300m_focus_v3_3_independent.pth",
+  "total_missions": 356,
+  "total_windows": 25395,
+  "split_missions": {
+    "train": 242,
+    "validation": 51,
+    "test": 63
+  },
+  "augmentation": {
+    "paired_environment_policy": "Each normal/thrust-loss pair shares every simulated environment parameter and remains in one mission split.",
+    "depth_band_m": [
+      150.0,
+      300.0
+    ],
+    "turns_per_mission": 3,
+    "requested_heading_delta_abs_range_rad": [
+      0.55,
+      1.05
+    ],
+    "requested_heading_delta_abs_range_deg": [
+      31.51267873219528,
+      60.160568488736445
+    ],
+    "realized_heading_delta_abs_rad": {
+      "count": 144,
+      "minimum": 0.5500169870000835,
+      "median": 0.8070119895157029,
+      "mean": 0.8080762120613437,
+      "maximum": 1.04951184714127
+    },
+    "realized_heading_delta_abs_deg": {
+      "count": 144,
+      "minimum": 31.51365201560665,
+      "median": 46.23838101570561,
+      "mean": 46.29935647603351,
+      "maximum": 60.13259939017397
+    },
+    "initial_depth_m": {
+      "count": 48,
+      "minimum": 158.85574309855605,
+      "median": 216.03864264614816,
+      "mean": 222.02558752992604,
+      "maximum": 292.55696924525944
+    },
+    "cruise_speed_mps": {
+      "count": 48,
+      "minimum": 1.2,
+      "median": 1.35,
+      "mean": 1.3,
+      "maximum": 1.5
+    },
+    "vertical_speed_mps": {
+      "count": 48,
+      "minimum": 0.15213293576554043,
+      "median": 0.2388526635131465,
+      "mean": 0.2440879262190232,
+      "maximum": 0.3462788638336998
+    },
+    "fault_start_time_s": {
+      "count": 48,
+      "minimum": 32.407213602695215,
+      "median": 45.98914972595965,
+      "mean": 45.20147550462792,
+      "maximum": 53.99554565811205
+    },
+    "thrust_efficiency": {
+      "count": 48,
+      "minimum": 0.3099629253558276,
+      "median": 0.48881442290205485,
+      "mean": 0.4962686385681963,
+      "maximum": 0.686626380170652
+    },
+    "pairs": 48,
+    "missions": 96,
+    "pairs_by_split": {
+      "train": 30,
+      "validation": 6,
+      "test": 12
+    },
+    "pairs_by_thruster": {
+      "H1": 8,
+      "H2": 8,
+      "H3": 8,
+      "H4": 8,
+      "V1": 8,
+      "V2": 8
+    },
+    "base_seed": 22000000
+  },
+  "pair_rows": [
+    {
+      "pair_id": "H1_rep00",
+      "split": "train",
+      "thruster": "H1",
+      "environment_seed": 22000000,
+      "normal_mission_id": 260,
+      "fault_mission_id": 261,
+      "initial_depth_m": 227.77598881887124,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2324687071282126,
+      "heading_deltas_rad": [
+        -0.5751907132824846,
+        0.8601312519717755,
+        -0.9523333256334626
+      ],
+      "fault_start_time_s": 37.80716198316659,
+      "thrust_efficiency": 0.6333582403315935
+    },
+    {
+      "pair_id": "H1_rep01",
+      "split": "train",
+      "thruster": "H1",
+      "environment_seed": 22000001,
+      "normal_mission_id": 262,
+      "fault_mission_id": 263,
+      "initial_depth_m": 181.23705218057137,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.23570222350196438,
+      "heading_deltas_rad": [
+        -0.8032677148491592,
+        0.8762732898355139,
+        -0.5500169870000835
+      ],
+      "fault_start_time_s": 51.79533692774812,
+      "thrust_efficiency": 0.6176414961047269
+    },
+    {
+      "pair_id": "H1_rep02",
+      "split": "train",
+      "thruster": "H1",
+      "environment_seed": 22000002,
+      "normal_mission_id": 264,
+      "fault_mission_id": 265,
+      "initial_depth_m": 182.99862029895533,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.1647827319051178,
+      "heading_deltas_rad": [
+        -0.8839801517672975,
+        -0.9356017101768712,
+        0.8962947649017892
+      ],
+      "fault_start_time_s": 51.16515949904261,
+      "thrust_efficiency": 0.4592496820665944
+    },
+    {
+      "pair_id": "H1_rep03",
+      "split": "train",
+      "thruster": "H1",
+      "environment_seed": 22000003,
+      "normal_mission_id": 266,
+      "fault_mission_id": 267,
+      "initial_depth_m": 174.58282408834975,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2517662287129218,
+      "heading_deltas_rad": [
+        -0.8095009172856602,
+        -0.9924351637444067,
+        -0.7815763392569282
+      ],
+      "fault_start_time_s": 42.278480123006375,
+      "thrust_efficiency": 0.3483849951230936
+    },
+    {
+      "pair_id": "H1_rep04",
+      "split": "train",
+      "thruster": "H1",
+      "environment_seed": 22000004,
+      "normal_mission_id": 268,
+      "fault_mission_id": 269,
+      "initial_depth_m": 271.2152509146884,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.22681055979943682,
+      "heading_deltas_rad": [
+        -1.026777551919883,
+        -0.7639659773747074,
+        0.6296585904200949
+      ],
+      "fault_start_time_s": 38.22452594125693,
+      "thrust_efficiency": 0.482369509350295
+    },
+    {
+      "pair_id": "H1_rep05",
+      "split": "validation",
+      "thruster": "H1",
+      "environment_seed": 23000005,
+      "normal_mission_id": 270,
+      "fault_mission_id": 271,
+      "initial_depth_m": 196.80197725746115,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.31778602324183586,
+      "heading_deltas_rad": [
+        0.7053167688496799,
+        -0.956458546783143,
+        -0.9401281658789049
+      ],
+      "fault_start_time_s": 47.98934309486946,
+      "thrust_efficiency": 0.3896002860319636
+    },
+    {
+      "pair_id": "H1_rep06",
+      "split": "test",
+      "thruster": "H1",
+      "environment_seed": 24000006,
+      "normal_mission_id": 272,
+      "fault_mission_id": 273,
+      "initial_depth_m": 249.61212308388244,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.28560916628390315,
+      "heading_deltas_rad": [
+        0.9074578551931296,
+        -0.6665897327326382,
+        0.9995690787242932
+      ],
+      "fault_start_time_s": 53.26698849136082,
+      "thrust_efficiency": 0.4952593364538147
+    },
+    {
+      "pair_id": "H1_rep07",
+      "split": "test",
+      "thruster": "H1",
+      "environment_seed": 24000007,
+      "normal_mission_id": 274,
+      "fault_mission_id": 275,
+      "initial_depth_m": 243.6381272462724,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.3329541582879393,
+      "heading_deltas_rad": [
+        -0.6409759963822761,
+        0.8532258596762917,
+        0.9357016298143864
+      ],
+      "fault_start_time_s": 51.203935522397586,
+      "thrust_efficiency": 0.3652466849512989
+    },
+    {
+      "pair_id": "H2_rep00",
+      "split": "train",
+      "thruster": "H2",
+      "environment_seed": 22010000,
+      "normal_mission_id": 276,
+      "fault_mission_id": 277,
+      "initial_depth_m": 208.21501041190876,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2179702071104795,
+      "heading_deltas_rad": [
+        0.7848032472775852,
+        -0.7504901662905984,
+        0.9829174318689484
+      ],
+      "fault_start_time_s": 41.95806542851919,
+      "thrust_efficiency": 0.38562858561790403
+    },
+    {
+      "pair_id": "H2_rep01",
+      "split": "train",
+      "thruster": "H2",
+      "environment_seed": 22010001,
+      "normal_mission_id": 278,
+      "fault_mission_id": 279,
+      "initial_depth_m": 254.5633824928518,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.34337598081294984,
+      "heading_deltas_rad": [
+        0.5614397768612465,
+        -0.7094234861792302,
+        -0.7511165631607258
+      ],
+      "fault_start_time_s": 34.48302512920577,
+      "thrust_efficiency": 0.6195175353532947
+    },
+    {
+      "pair_id": "H2_rep02",
+      "split": "train",
+      "thruster": "H2",
+      "environment_seed": 22010002,
+      "normal_mission_id": 280,
+      "fault_mission_id": 281,
+      "initial_depth_m": 196.25923092885319,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.22203474051127547,
+      "heading_deltas_rad": [
+        1.0223986116674224,
+        -1.04951184714127,
+        -0.8001983995833895
+      ],
+      "fault_start_time_s": 46.710244637419166,
+      "thrust_efficiency": 0.630482934777604
+    },
+    {
+      "pair_id": "H2_rep03",
+      "split": "train",
+      "thruster": "H2",
+      "environment_seed": 22010003,
+      "normal_mission_id": 282,
+      "fault_mission_id": 283,
+      "initial_depth_m": 276.4573879480167,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.165561328674436,
+      "heading_deltas_rad": [
+        0.7641320512670171,
+        -0.8080597974519127,
+        -0.5858378191651672
+      ],
+      "fault_start_time_s": 33.39642125982268,
+      "thrust_efficiency": 0.3099629253558276
+    },
+    {
+      "pair_id": "H2_rep04",
+      "split": "train",
+      "thruster": "H2",
+      "environment_seed": 22010004,
+      "normal_mission_id": 284,
+      "fault_mission_id": 285,
+      "initial_depth_m": 180.3395898461924,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.3346160780928022,
+      "heading_deltas_rad": [
+        0.5969484489579894,
+        -0.893826079339701,
+        -0.6692725858560591
+      ],
+      "fault_start_time_s": 51.14598868131732,
+      "thrust_efficiency": 0.6353076761381271
+    },
+    {
+      "pair_id": "H2_rep05",
+      "split": "validation",
+      "thruster": "H2",
+      "environment_seed": 23010005,
+      "normal_mission_id": 286,
+      "fault_mission_id": 287,
+      "initial_depth_m": 158.85574309855605,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.15220938376695387,
+      "heading_deltas_rad": [
+        0.7215355715773605,
+        -0.6133558995542521,
+        -0.9164344961931216
+      ],
+      "fault_start_time_s": 51.289237734066674,
+      "thrust_efficiency": 0.6346627260339563
+    },
+    {
+      "pair_id": "H2_rep06",
+      "split": "test",
+      "thruster": "H2",
+      "environment_seed": 24010006,
+      "normal_mission_id": 288,
+      "fault_mission_id": 289,
+      "initial_depth_m": 194.12084084177457,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.2411182303178751,
+      "heading_deltas_rad": [
+        -0.9751364020996119,
+        -1.0462781301088335,
+        -0.6928805171682557
+      ],
+      "fault_start_time_s": 52.117688240727254,
+      "thrust_efficiency": 0.3519981668107731
+    },
+    {
+      "pair_id": "H2_rep07",
+      "split": "test",
+      "thruster": "H2",
+      "environment_seed": 24010007,
+      "normal_mission_id": 290,
+      "fault_mission_id": 291,
+      "initial_depth_m": 208.33419729694688,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2022600353962652,
+      "heading_deltas_rad": [
+        -0.6757993201152975,
+        0.7580145846082714,
+        1.0456082653366194
+      ],
+      "fault_start_time_s": 49.18359583579647,
+      "thrust_efficiency": 0.43714739776606315
+    },
+    {
+      "pair_id": "H3_rep00",
+      "split": "train",
+      "thruster": "H3",
+      "environment_seed": 22020000,
+      "normal_mission_id": 292,
+      "fault_mission_id": 293,
+      "initial_depth_m": 231.99924145425447,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.24966533211582165,
+      "heading_deltas_rad": [
+        0.8572859458657172,
+        -0.8907233177810796,
+        -1.006453228938824
+      ],
+      "fault_start_time_s": 46.065903735422424,
+      "thrust_efficiency": 0.5139663843238386
+    },
+    {
+      "pair_id": "H3_rep01",
+      "split": "train",
+      "thruster": "H3",
+      "environment_seed": 22020001,
+      "normal_mission_id": 294,
+      "fault_mission_id": 295,
+      "initial_depth_m": 228.2433267769103,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2653001545340957,
+      "heading_deltas_rad": [
+        -0.7931745132291271,
+        -0.5875062671438687,
+        -0.9128701493283955
+      ],
+      "fault_start_time_s": 36.23640925732664,
+      "thrust_efficiency": 0.5423779388936653
+    },
+    {
+      "pair_id": "H3_rep02",
+      "split": "train",
+      "thruster": "H3",
+      "environment_seed": 22020002,
+      "normal_mission_id": 296,
+      "fault_mission_id": 297,
+      "initial_depth_m": 230.91790860046422,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.26102163117309773,
+      "heading_deltas_rad": [
+        -0.9582625092565089,
+        -0.9923289220960562,
+        0.9061564081938818
+      ],
+      "fault_start_time_s": 39.62701132685674,
+      "thrust_efficiency": 0.5093872407270235
+    },
+    {
+      "pair_id": "H3_rep03",
+      "split": "train",
+      "thruster": "H3",
+      "environment_seed": 22020003,
+      "normal_mission_id": 298,
+      "fault_mission_id": 299,
+      "initial_depth_m": 206.07312016645523,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.21134554446764509,
+      "heading_deltas_rad": [
+        0.9791673860697504,
+        -0.7692285186851249,
+        -0.8854645699233719
+      ],
+      "fault_start_time_s": 53.93937130708257,
+      "thrust_efficiency": 0.686626380170652
+    },
+    {
+      "pair_id": "H3_rep04",
+      "split": "train",
+      "thruster": "H3",
+      "environment_seed": 22020004,
+      "normal_mission_id": 300,
+      "fault_mission_id": 301,
+      "initial_depth_m": 192.42380544301483,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.20108374430945866,
+      "heading_deltas_rad": [
+        -1.0036393232007101,
+        -0.9454740855510825,
+        0.8382800210290794
+      ],
+      "fault_start_time_s": 43.41225043855441,
+      "thrust_efficiency": 0.5929124832260344
+    },
+    {
+      "pair_id": "H3_rep05",
+      "split": "validation",
+      "thruster": "H3",
+      "environment_seed": 23020005,
+      "normal_mission_id": 302,
+      "fault_mission_id": 303,
+      "initial_depth_m": 182.57092048794743,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.22858672540475633,
+      "heading_deltas_rad": [
+        -0.9902316033279769,
+        0.9323681689371008,
+        -0.9741672488222242
+      ],
+      "fault_start_time_s": 43.58552610318487,
+      "thrust_efficiency": 0.6516493333384408
+    },
+    {
+      "pair_id": "H3_rep06",
+      "split": "test",
+      "thruster": "H3",
+      "environment_seed": 24020006,
+      "normal_mission_id": 304,
+      "fault_mission_id": 305,
+      "initial_depth_m": 184.66160200594365,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.24345011893602442,
+      "heading_deltas_rad": [
+        -0.9360659728715557,
+        0.8990344090612161,
+        1.0254423829771784
+      ],
+      "fault_start_time_s": 49.42762899551943,
+      "thrust_efficiency": 0.3960089791526238
+    },
+    {
+      "pair_id": "H3_rep07",
+      "split": "test",
+      "thruster": "H3",
+      "environment_seed": 24020007,
+      "normal_mission_id": 306,
+      "fault_mission_id": 307,
+      "initial_depth_m": 180.7910747859386,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.1867304589103895,
+      "heading_deltas_rad": [
+        0.9948632443557657,
+        0.6332826928330162,
+        -0.7934053095284381
+      ],
+      "fault_start_time_s": 52.45348559059861,
+      "thrust_efficiency": 0.44691762516243727
+    },
+    {
+      "pair_id": "H4_rep00",
+      "split": "train",
+      "thruster": "H4",
+      "environment_seed": 22030000,
+      "normal_mission_id": 308,
+      "fault_mission_id": 309,
+      "initial_depth_m": 238.00791726321808,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.26138065755258216,
+      "heading_deltas_rad": [
+        -0.854931130330585,
+        -0.8090770288315725,
+        0.7950031709628167
+      ],
+      "fault_start_time_s": 45.912395716496874,
+      "thrust_efficiency": 0.3368742180448177
+    },
+    {
+      "pair_id": "H4_rep01",
+      "split": "train",
+      "thruster": "H4",
+      "environment_seed": 22030001,
+      "normal_mission_id": 310,
+      "fault_mission_id": 311,
+      "initial_depth_m": 265.8969376396919,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.15915579206679287,
+      "heading_deltas_rad": [
+        0.7927653427304315,
+        0.9111883051479824,
+        0.6390000245829672
+      ],
+      "fault_start_time_s": 47.721667575209594,
+      "thrust_efficiency": 0.3555446411912741
+    },
+    {
+      "pair_id": "H4_rep02",
+      "split": "train",
+      "thruster": "H4",
+      "environment_seed": 22030002,
+      "normal_mission_id": 312,
+      "fault_mission_id": 313,
+      "initial_depth_m": 227.4050049836319,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.2127926206357466,
+      "heading_deltas_rad": [
+        -0.8007231039697928,
+        0.8421898356638473,
+        -0.7930869610944622
+      ],
+      "fault_start_time_s": 47.09577078985974,
+      "thrust_efficiency": 0.3450166124923856
+    },
+    {
+      "pair_id": "H4_rep03",
+      "split": "train",
+      "thruster": "H4",
+      "environment_seed": 22030003,
+      "normal_mission_id": 314,
+      "fault_mission_id": 315,
+      "initial_depth_m": 223.74308799534944,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.32437307185018294,
+      "heading_deltas_rad": [
+        0.8236423291957516,
+        -0.8728287085738218,
+        0.8576800502398781
+      ],
+      "fault_start_time_s": 41.01805779911129,
+      "thrust_efficiency": 0.6220763886073241
+    },
+    {
+      "pair_id": "H4_rep04",
+      "split": "train",
+      "thruster": "H4",
+      "environment_seed": 22030004,
+      "normal_mission_id": 316,
+      "fault_mission_id": 317,
+      "initial_depth_m": 288.4985443311266,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.1945785550856586,
+      "heading_deltas_rad": [
+        -0.9554706032173171,
+        -0.7416278072429721,
+        0.9422176607279484
+      ],
+      "fault_start_time_s": 52.879280877313704,
+      "thrust_efficiency": 0.3157979549137985
+    },
+    {
+      "pair_id": "H4_rep05",
+      "split": "validation",
+      "thruster": "H4",
+      "environment_seed": 23030005,
+      "normal_mission_id": 318,
+      "fault_mission_id": 319,
+      "initial_depth_m": 292.55696924525944,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.2771186786321179,
+      "heading_deltas_rad": [
+        -0.7274860909807994,
+        0.9013388887121238,
+        0.6793127966986295
+      ],
+      "fault_start_time_s": 49.39452123977612,
+      "thrust_efficiency": 0.4027769658988936
+    },
+    {
+      "pair_id": "H4_rep06",
+      "split": "test",
+      "thruster": "H4",
+      "environment_seed": 24030006,
+      "normal_mission_id": 320,
+      "fault_mission_id": 321,
+      "initial_depth_m": 181.42410217755247,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.32262837782944803,
+      "heading_deltas_rad": [
+        0.8924948922673714,
+        0.6111178398709265,
+        0.8283606991573444
+      ],
+      "fault_start_time_s": 32.407213602695215,
+      "thrust_efficiency": 0.6456934471456401
+    },
+    {
+      "pair_id": "H4_rep07",
+      "split": "test",
+      "thruster": "H4",
+      "environment_seed": 24030007,
+      "normal_mission_id": 322,
+      "fault_mission_id": 323,
+      "initial_depth_m": 288.77459140433456,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.15213293576554043,
+      "heading_deltas_rad": [
+        -0.8384463942163247,
+        -0.7827849894770655,
+        -0.5969127610338568
+      ],
+      "fault_start_time_s": 43.48424950571699,
+      "thrust_efficiency": 0.68659750263372
+    },
+    {
+      "pair_id": "V1_rep00",
+      "split": "train",
+      "thruster": "V1",
+      "environment_seed": 22040000,
+      "normal_mission_id": 324,
+      "fault_mission_id": 325,
+      "initial_depth_m": 284.38137503774965,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.18056810097096443,
+      "heading_deltas_rad": [
+        -0.6946370507562818,
+        0.5575278792807344,
+        0.8614252807010198
+      ],
+      "fault_start_time_s": 47.262239527131726,
+      "thrust_efficiency": 0.5592158697788159
+    },
+    {
+      "pair_id": "V1_rep01",
+      "split": "train",
+      "thruster": "V1",
+      "environment_seed": 22040001,
+      "normal_mission_id": 326,
+      "fault_mission_id": 327,
+      "initial_depth_m": 281.36481760170966,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.3462788638336998,
+      "heading_deltas_rad": [
+        -0.6789244562672476,
+        -0.7825207059558055,
+        -0.9958430583804364
+      ],
+      "fault_start_time_s": 39.617550272796166,
+      "thrust_efficiency": 0.5377576844616772
+    },
+    {
+      "pair_id": "V1_rep02",
+      "split": "train",
+      "thruster": "V1",
+      "environment_seed": 22040002,
+      "normal_mission_id": 328,
+      "fault_mission_id": 329,
+      "initial_depth_m": 268.99702192125596,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.16703895666027063,
+      "heading_deltas_rad": [
+        0.6232753686208832,
+        -0.5595572876360073,
+        -0.7820812573508439
+      ],
+      "fault_start_time_s": 49.36062403971097,
+      "thrust_efficiency": 0.5913866373720628
+    },
+    {
+      "pair_id": "V1_rep03",
+      "split": "train",
+      "thruster": "V1",
+      "environment_seed": 22040003,
+      "normal_mission_id": 330,
+      "fault_mission_id": 331,
+      "initial_depth_m": 189.7059825983946,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2825586813151405,
+      "heading_deltas_rad": [
+        0.6820749105091186,
+        -0.6267183798154655,
+        0.6088529999613419
+      ],
+      "fault_start_time_s": 51.817264498146955,
+      "thrust_efficiency": 0.3454790283247789
+    },
+    {
+      "pair_id": "V1_rep04",
+      "split": "train",
+      "thruster": "V1",
+      "environment_seed": 22040004,
+      "normal_mission_id": 332,
+      "fault_mission_id": 333,
+      "initial_depth_m": 188.23182547555223,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2613503642972611,
+      "heading_deltas_rad": [
+        0.7800897837756228,
+        0.8059641815794929,
+        0.6383500072073838
+      ],
+      "fault_start_time_s": 45.69833851480628,
+      "thrust_efficiency": 0.36786816161471264
+    },
+    {
+      "pair_id": "V1_rep05",
+      "split": "validation",
+      "thruster": "V1",
+      "environment_seed": 23040005,
+      "normal_mission_id": 334,
+      "fault_mission_id": 335,
+      "initial_depth_m": 172.9454876181618,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.32372219720234785,
+      "heading_deltas_rad": [
+        0.7741540055804699,
+        0.8774931622970688,
+        -1.0332000640762296
+      ],
+      "fault_start_time_s": 53.080445033791605,
+      "thrust_efficiency": 0.4678784817000035
+    },
+    {
+      "pair_id": "V1_rep06",
+      "split": "test",
+      "thruster": "V1",
+      "environment_seed": 24040006,
+      "normal_mission_id": 336,
+      "fault_mission_id": 337,
+      "initial_depth_m": 251.14805100505163,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.24010226109769173,
+      "heading_deltas_rad": [
+        -0.9972481212930888,
+        0.9073456889645882,
+        0.6452136021694245
+      ],
+      "fault_start_time_s": 42.11399910502223,
+      "thrust_efficiency": 0.626016042123535
+    },
+    {
+      "pair_id": "V1_rep07",
+      "split": "test",
+      "thruster": "V1",
+      "environment_seed": 24040007,
+      "normal_mission_id": 338,
+      "fault_mission_id": 339,
+      "initial_depth_m": 290.77422040202936,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.18121041448113726,
+      "heading_deltas_rad": [
+        -0.85571237074537,
+        -0.5948537972828429,
+        -0.7804348210681429
+      ],
+      "fault_start_time_s": 45.47047684085526,
+      "thrust_efficiency": 0.6364332461449832
+    },
+    {
+      "pair_id": "V2_rep00",
+      "split": "train",
+      "thruster": "V2",
+      "environment_seed": 22050000,
+      "normal_mission_id": 340,
+      "fault_mission_id": 341,
+      "initial_depth_m": 167.97070436890712,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.31057111095832834,
+      "heading_deltas_rad": [
+        0.6105311118621157,
+        -0.6634318582194387,
+        0.8425364521934571
+      ],
+      "fault_start_time_s": 33.029945711438685,
+      "thrust_efficiency": 0.44709747177673265
+    },
+    {
+      "pair_id": "V2_rep01",
+      "split": "train",
+      "thruster": "V2",
+      "environment_seed": 22050001,
+      "normal_mission_id": 342,
+      "fault_mission_id": 343,
+      "initial_depth_m": 198.5527010938583,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.18113848590055442,
+      "heading_deltas_rad": [
+        -0.6851563790605821,
+        0.5680759421854289,
+        0.8124635275140493
+      ],
+      "fault_start_time_s": 53.99554565811205,
+      "thrust_efficiency": 0.6102386405992224
+    },
+    {
+      "pair_id": "V2_rep02",
+      "split": "train",
+      "thruster": "V2",
+      "environment_seed": 22050002,
+      "normal_mission_id": 344,
+      "fault_mission_id": 345,
+      "initial_depth_m": 172.8727923936291,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.3289795230149452,
+      "heading_deltas_rad": [
+        0.5745349417881729,
+        0.7496022952356357,
+        -0.6398092292614372
+      ],
+      "fault_start_time_s": 41.938507117761844,
+      "thrust_efficiency": 0.6085372539078906
+    },
+    {
+      "pair_id": "V2_rep03",
+      "split": "train",
+      "thruster": "V2",
+      "environment_seed": 22050003,
+      "normal_mission_id": 346,
+      "fault_mission_id": 347,
+      "initial_depth_m": 186.88342731317923,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.17398408277082233,
+      "heading_deltas_rad": [
+        0.9811116397621749,
+        0.7577639771600566,
+        -0.7217421445623365
+      ],
+      "fault_start_time_s": 36.74563537489536,
+      "thrust_efficiency": 0.3311282430652506
+    },
+    {
+      "pair_id": "V2_rep04",
+      "split": "train",
+      "thruster": "V2",
+      "environment_seed": 22050004,
+      "normal_mission_id": 348,
+      "fault_mission_id": 349,
+      "initial_depth_m": 268.4214750257035,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.23760306592860125,
+      "heading_deltas_rad": [
+        0.6941946125496993,
+        0.8045476326529903,
+        -0.5536595751171547
+      ],
+      "fault_start_time_s": 45.090097151492515,
+      "thrust_efficiency": 0.3669587632951593
+    },
+    {
+      "pair_id": "V2_rep05",
+      "split": "validation",
+      "thruster": "V2",
+      "environment_seed": 23050005,
+      "normal_mission_id": 350,
+      "fault_mission_id": 351,
+      "initial_depth_m": 269.4499491103714,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.3304302188813891,
+      "heading_deltas_rad": [
+        0.9511714581015556,
+        0.9084117634244854,
+        0.7079117559359294
+      ],
+      "fault_start_time_s": 50.18065054236614,
+      "thrust_efficiency": 0.45245729562376863
+    },
+    {
+      "pair_id": "V2_rep06",
+      "split": "test",
+      "thruster": "V2",
+      "environment_seed": 24050006,
+      "normal_mission_id": 352,
+      "fault_mission_id": 353,
+      "initial_depth_m": 175.8631740334992,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.1574361463190905,
+      "heading_deltas_rad": [
+        -0.7140265138385955,
+        1.0039130953151427,
+        -0.9020158493935524
+      ],
+      "fault_start_time_s": 38.43041271796892,
+      "thrust_efficiency": 0.36910511796737583
+    },
+    {
+      "pair_id": "V2_rep07",
+      "split": "test",
+      "thruster": "V2",
+      "environment_seed": 24050007,
+      "normal_mission_id": 354,
+      "fault_mission_id": 355,
+      "initial_depth_m": 240.6696949221528,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.33487780206714235,
+      "heading_deltas_rad": [
+        0.9427700695813022,
+        -0.9317240879997007,
+        -0.5859591866252065
+      ],
+      "fault_start_time_s": 37.16314972539551,
+      "thrust_efficiency": 0.6572944393279545
+    }
+  ]
+}

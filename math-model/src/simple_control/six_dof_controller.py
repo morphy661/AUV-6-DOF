@@ -89,20 +89,25 @@ class SixDOFControllerConfig:
         default_factory=lambda: 0.65 * np.array([8.0, 18.0, 22.0])
     )
     attitude_kp: np.ndarray = field(
-        default_factory=lambda: np.array([2.0, 3.0, 1.8])
+        # The yaw outer loop is deliberately slower than roll/pitch.  A gain
+        # of 1.8 drove the rate command into its limit after 50--60 degree
+        # turns and caused long nominal yaw oscillations.
+        default_factory=lambda: np.array([2.0, 3.0, 1.2])
     )
     attitude_ki: np.ndarray = field(
         default_factory=lambda: np.array([0.02, 0.02, 0.015])
     )
     angular_velocity_kp: np.ndarray = field(
-        default_factory=lambda: np.array([14.0, 30.0, 18.0])
+        # Higher yaw-rate feedback supplies damping without changing the
+        # commanded mission heading or the physical hydrodynamic damping.
+        default_factory=lambda: np.array([14.0, 30.0, 30.0])
     )
     max_velocity_ned: np.ndarray = field(
         default_factory=lambda: np.array([1.5, 1.5, 0.35])
     )
     max_horizontal_speed: float = 1.5
     max_angular_velocity: np.ndarray = field(
-        default_factory=lambda: np.array([0.5, 0.7, 0.65])
+        default_factory=lambda: np.array([0.5, 0.7, 0.5])
     )
     position_integral_limit: np.ndarray = field(
         default_factory=lambda: np.array([5.0, 5.0, 4.0])

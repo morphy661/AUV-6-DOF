@@ -1,0 +1,1291 @@
+{
+  "audit_id": "six_dof_nominal_trim_same_seed_20260902",
+  "policy": "Normal missions only; same 12 independent-test environment seeds and maneuver range used before the CG/CB trim change.",
+  "base_seed": 22000000,
+  "duration_s": 90.0,
+  "dt_s": 0.05,
+  "heading_delta_abs_range_rad": [
+    0.55,
+    1.05
+  ],
+  "aggregate": {
+    "mission_count": 12,
+    "mass_kg": {
+      "count": 12,
+      "minimum": 49.13126786057152,
+      "median": 49.87341843618827,
+      "mean": 49.97937125432865,
+      "p95": 50.76916023821516,
+      "maximum": 50.98927131351295
+    },
+    "center_relative_x_abs_mm": {
+      "count": 12,
+      "minimum": 0.04200841046014467,
+      "median": 0.7129306500850747,
+      "mean": 0.74953272765608,
+      "p95": 1.4546844991391323,
+      "maximum": 1.4553495116544184
+    },
+    "center_relative_y_abs_mm": {
+      "count": 12,
+      "minimum": 0.22740181906410506,
+      "median": 0.7148389647507296,
+      "mean": 0.8655043024282002,
+      "p95": 1.8323178121098562,
+      "maximum": 1.8658413482702183
+    },
+    "thruster_saturation_fraction": {
+      "count": 12,
+      "minimum": 0.0,
+      "median": 0.0,
+      "mean": 0.0,
+      "p95": 0.0,
+      "maximum": 0.0
+    },
+    "turn_response": {
+      "requested_abs_deg": {
+        "count": 36,
+        "minimum": 33.57298836054289,
+        "median": 48.9574740258583,
+        "mean": 47.57247272292265,
+        "p95": 59.04237566576846,
+        "maximum": 59.947321052075786
+      },
+      "measured_abs_at_command_end_deg": {
+        "count": 36,
+        "minimum": 30.3190408412593,
+        "median": 43.53159315304026,
+        "mean": 42.81111042528732,
+        "p95": 53.15500145152777,
+        "maximum": 54.32679482799734
+      },
+      "measured_abs_after_5s_deg": {
+        "count": 36,
+        "minimum": 32.84497299167326,
+        "median": 48.14345056574332,
+        "mean": 47.764535789327795,
+        "p95": 59.95780717167786,
+        "maximum": 61.345000157398324
+      },
+      "yaw_error_abs_after_5s_deg": {
+        "count": 36,
+        "minimum": 0.026067690954964477,
+        "median": 0.4860868897741628,
+        "mean": 0.6685167763116759,
+        "p95": 1.793836490068818,
+        "maximum": 2.600253622943973
+      }
+    },
+    "mission_roll_abs_deg_median": {
+      "count": 12,
+      "minimum": 0.28926462977078987,
+      "median": 0.724247640522581,
+      "mean": 0.9630072390731783,
+      "p95": 1.934087205255672,
+      "maximum": 2.1378758455830176
+    },
+    "mission_roll_abs_deg_maximum": {
+      "count": 12,
+      "minimum": 0.6724553171907729,
+      "median": 1.8280140889925445,
+      "mean": 1.9544061078082955,
+      "p95": 3.5192280372757034,
+      "maximum": 3.6449367868657094
+    },
+    "mission_pitch_abs_deg_median": {
+      "count": 12,
+      "minimum": 0.2334178482283974,
+      "median": 0.5293858448580328,
+      "mean": 0.5326289795967472,
+      "p95": 0.8425888100353209,
+      "maximum": 1.0403651044045494
+    },
+    "mission_pitch_abs_deg_maximum": {
+      "count": 12,
+      "minimum": 2.2517918808103192,
+      "median": 3.3090023154607175,
+      "mean": 4.1239269472669315,
+      "p95": 7.414654169129945,
+      "maximum": 8.979573531244835
+    },
+    "mission_yaw_error_abs_deg_median": {
+      "count": 12,
+      "minimum": 0.3083905112836699,
+      "median": 0.7807466800956105,
+      "mean": 1.138039190283915,
+      "p95": 2.330822705036501,
+      "maximum": 2.448365835810051
+    },
+    "mission_yaw_error_abs_deg_maximum": {
+      "count": 12,
+      "minimum": 15.36386299093145,
+      "median": 18.142363665598612,
+      "mean": 17.775819181623977,
+      "p95": 19.475818778810062,
+      "maximum": 19.637816461100307
+    },
+    "mission_depth_error_abs_m_median": {
+      "count": 12,
+      "minimum": 0.021352507236912288,
+      "median": 0.03407313939651857,
+      "mean": 0.05618646382452989,
+      "p95": 0.14007582337587365,
+      "maximum": 0.14153464587224107
+    },
+    "mission_depth_error_abs_m_maximum": {
+      "count": 12,
+      "minimum": 0.09066427546181899,
+      "median": 0.13172509445206515,
+      "mean": 0.2795263801431034,
+      "p95": 0.8379831717865911,
+      "maximum": 0.8885728427760284
+    },
+    "window_endpoint_sampling": {
+      "sequence_length": 100,
+      "stride": 25,
+      "note": "The main audit uses every 20 Hz simulator sample; the previous dataset report used overlapping-window endpoints."
+    }
+  },
+  "missions": [
+    {
+      "pair_name": "H1",
+      "repetition": 6,
+      "environment_seed": 24000006,
+      "initial_depth_m": 249.61212308388244,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.28560916628390315,
+      "mass_kg": 50.02466090097263,
+      "center_relative_xy_m": [
+        -0.0006149273581098835,
+        -0.0018658413482702182
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.017628373121946185,
+        "median": 2.1378758455830176,
+        "mean": 2.155224590410791,
+        "p95": 2.5280079287693717,
+        "maximum": 3.6449367868657094
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 4.686129602781414e-05,
+        "median": 1.0403651044045494,
+        "mean": 2.3646114894224963,
+        "p95": 5.381201615292161,
+        "maximum": 5.658300293087439
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0002087834184109087,
+        "median": 0.5146472437868164,
+        "mean": 1.8912846745871812,
+        "p95": 11.587046220858877,
+        "maximum": 17.57756135492343
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 6.959878602600689e-05,
+          "median": 0.27164925670690176,
+          "mean": 0.3739742702916067,
+          "p95": 0.9653514951692997,
+          "maximum": 4.653594684333612
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.0002250822103248361,
+          "median": 0.3570265880598562,
+          "mean": 0.548969908895425,
+          "p95": 2.0084026685838867,
+          "maximum": 3.3944800330665195
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 1.839888918040245e-05,
+          "median": 0.22128485257835995,
+          "mean": 1.8267774525980642,
+          "p95": 12.708524972883108,
+          "maximum": 18.88053643799188
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 4.23083851615047e-05,
+        "median": 0.05942561963546211,
+        "mean": 0.07255810512072139,
+        "p95": 0.19210984532582104,
+        "maximum": 0.2100225451838469
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": 51.99350518856014,
+          "measured_change_at_command_end_deg": 47.55674982448472,
+          "measured_change_after_5s_deg": 53.301325301258856,
+          "yaw_error_after_5s_deg": -1.248216016681455
+        },
+        {
+          "turn": 2,
+          "requested_deg": -38.19277835233371,
+          "measured_change_at_command_end_deg": -34.2043724333974,
+          "measured_change_after_5s_deg": -37.56356459851811,
+          "yaw_error_after_5s_deg": -0.026067690954964477
+        },
+        {
+          "turn": 3,
+          "requested_deg": 57.271089542681935,
+          "measured_change_at_command_end_deg": 52.958472405709585,
+          "measured_change_after_5s_deg": 59.36019910384549,
+          "yaw_error_after_5s_deg": -1.2891299780588839
+        }
+      ]
+    },
+    {
+      "pair_name": "H1",
+      "repetition": 7,
+      "environment_seed": 24000007,
+      "initial_depth_m": 243.6381272462724,
+      "cruise_speed_mps": 1.5,
+      "vertical_speed_mps": 0.3329541582879393,
+      "mass_kg": 49.67026912945186,
+      "center_relative_xy_m": [
+        -4.200841046014467e-05,
+        0.000294503011711085
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.001709334568320223,
+        "median": 0.44734356281390764,
+        "mean": 0.5597972888660735,
+        "p95": 1.4497380032802336,
+        "maximum": 2.268763638681987
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 6.4573820855177e-06,
+        "median": 0.5805026024277244,
+        "mean": 2.7602312531103346,
+        "p95": 8.316913989312495,
+        "maximum": 8.979573531244835
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.00020199533123554751,
+        "median": 2.1332295568246527,
+        "mean": 3.0242892657794584,
+        "p95": 11.480445034982989,
+        "maximum": 17.397624207157623
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.00013026653920131332,
+          "median": 0.37333887653938747,
+          "mean": 0.45467136697539345,
+          "p95": 1.1589127187228738,
+          "maximum": 2.990945856538949
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.0003318227964435503,
+          "median": 0.25325929212141196,
+          "mean": 0.5913074372844792,
+          "p95": 3.1868446326265354,
+          "maximum": 6.2465119260344535
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.0004378914396652886,
+          "median": 0.5427942293762842,
+          "mean": 2.072334590731218,
+          "p95": 12.121171821804685,
+          "maximum": 17.820985492702285
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 3.619210352212576e-05,
+        "median": 0.10510042801870156,
+        "mean": 0.15526576166064016,
+        "p95": 0.45039192344332263,
+        "maximum": 0.5403899215214665
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -36.725219361897146,
+          "measured_change_at_command_end_deg": -32.06472292128322,
+          "measured_change_after_5s_deg": -37.33170963869918,
+          "yaw_error_after_5s_deg": 2.0964113686451458
+        },
+        {
+          "turn": 2,
+          "requested_deg": 48.88624073087293,
+          "measured_change_at_command_end_deg": 42.093217953020286,
+          "measured_change_after_5s_deg": 47.158544570055355,
+          "yaw_error_after_5s_deg": -0.5250079756019386
+        },
+        {
+          "turn": 3,
+          "requested_deg": 53.61175427187686,
+          "measured_change_at_command_end_deg": 50.22283840722758,
+          "measured_change_after_5s_deg": 55.40937375774838,
+          "yaw_error_after_5s_deg": -0.25064651536760957
+        }
+      ]
+    },
+    {
+      "pair_name": "H2",
+      "repetition": 6,
+      "environment_seed": 24010006,
+      "initial_depth_m": 194.12084084177457,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.2411182303178751,
+      "mass_kg": 50.98927131351295,
+      "center_relative_xy_m": [
+        9.989494037587407e-05,
+        0.0018048894643422873
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.012118377248446364,
+        "median": 1.52811475353377,
+        "mean": 1.530693630601921,
+        "p95": 1.7709944266218496,
+        "maximum": 2.6276659613729665
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 0.00023757972148211333,
+        "median": 0.2334178482283974,
+        "mean": 0.661021659624689,
+        "p95": 2.069965533682288,
+        "maximum": 2.2768058877770274
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0002969070071751182,
+        "median": 0.48456176803424017,
+        "mean": 1.96383719801401,
+        "p95": 12.681893217225984,
+        "maximum": 19.34327522057259
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.00012105920309495856,
+          "median": 0.20026906353006252,
+          "mean": 0.29422928517991903,
+          "p95": 0.8679069154324933,
+          "maximum": 3.353142260779947
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.00011981455627602747,
+          "median": 0.22009147876885238,
+          "mean": 0.26715895087261016,
+          "p95": 0.6764621451621381,
+          "maximum": 1.4244932570638018
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 3.526974271622772e-05,
+          "median": 0.20208766447994975,
+          "mean": 1.901345032820067,
+          "p95": 12.992297289502867,
+          "maximum": 19.543320971329866
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 2.179507475830178e-05,
+        "median": 0.03333310380907051,
+        "mean": 0.03736055319084037,
+        "p95": 0.0863012046553976,
+        "maximum": 0.10868554851080603
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -55.87120028987975,
+          "measured_change_at_command_end_deg": -50.151676232646,
+          "measured_change_after_5s_deg": -56.21759888008478,
+          "yaw_error_after_5s_deg": 0.3504053672509046
+        },
+        {
+          "turn": 2,
+          "requested_deg": -59.947321052075786,
+          "measured_change_at_command_end_deg": -53.30647727799674,
+          "measured_change_after_5s_deg": -59.87664008908045,
+          "yaw_error_after_5s_deg": 0.516873215632151
+        },
+        {
+          "turn": 3,
+          "requested_deg": -39.69912934058283,
+          "measured_change_at_command_end_deg": -35.331278819976774,
+          "measured_change_after_5s_deg": -40.07674331992103,
+          "yaw_error_after_5s_deg": 0.7230653185699061
+        }
+      ]
+    },
+    {
+      "pair_name": "H2",
+      "repetition": 7,
+      "environment_seed": 24010007,
+      "initial_depth_m": 208.33419729694688,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.2022600353962652,
+      "mass_kg": 49.13126786057152,
+      "center_relative_xy_m": [
+        -0.0010149858929480796,
+        0.00022740181906410507
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0009303832929544698,
+        "median": 0.4053584280654568,
+        "mean": 0.5126720517486928,
+        "p95": 1.4229475545905275,
+        "maximum": 1.8685948399044126
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0023200978289047063,
+        "median": 0.6807718419150436,
+        "mean": 1.2385199042860824,
+        "p95": 2.7129541426431896,
+        "maximum": 3.042323718921404
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 7.036739161222903e-05,
+        "median": 2.448365835810051,
+        "mean": 3.867895659201188,
+        "p95": 10.751834730082198,
+        "maximum": 18.190667408808707
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 6.420555227924744e-05,
+          "median": 0.15178980199469586,
+          "mean": 0.2147158323915341,
+          "p95": 0.7035810328873656,
+          "maximum": 1.453977676152529
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.00029825219463923864,
+          "median": 0.2084297551199161,
+          "mean": 0.3060521868288719,
+          "p95": 0.9817787474046495,
+          "maximum": 1.5805268831447465
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.002117367151911904,
+          "median": 1.1077771647031793,
+          "mean": 2.4191134147746287,
+          "p95": 12.081858930976956,
+          "maximum": 19.66608179782281
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 1.86015608960588e-05,
+        "median": 0.023740856974782787,
+        "mean": 0.03469380634532784,
+        "p95": 0.11233832129558431,
+        "maximum": 0.14644741406652884
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -38.72044884041703,
+          "measured_change_at_command_end_deg": -35.26717407974649,
+          "measured_change_after_5s_deg": -39.56466911522448,
+          "yaw_error_after_5s_deg": 0.9195940298175292
+        },
+        {
+          "turn": 2,
+          "requested_deg": 43.4310365074162,
+          "measured_change_at_command_end_deg": 38.378031462841214,
+          "measured_change_after_5s_deg": 42.49026850364564,
+          "yaw_error_after_5s_deg": -0.2001339021196595
+        },
+        {
+          "turn": 3,
+          "requested_deg": 59.90894062778342,
+          "measured_change_at_command_end_deg": 54.32679482799734,
+          "measured_change_after_5s_deg": 61.345000157398324,
+          "yaw_error_after_5s_deg": -1.2952106287858254
+        }
+      ]
+    },
+    {
+      "pair_name": "H3",
+      "repetition": 6,
+      "environment_seed": 24020006,
+      "initial_depth_m": 184.66160200594365,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.24345011893602442,
+      "mass_kg": 49.30959540574978,
+      "center_relative_xy_m": [
+        -0.0011209188293290796,
+        -0.001650715305277644
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.013655170657410592,
+        "median": 1.767351044987844,
+        "mean": 1.7638517931064603,
+        "p95": 2.174260856636302,
+        "maximum": 3.2649482604773787
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0004024259486275848,
+        "median": 0.4379845472457219,
+        "mean": 1.119372270973606,
+        "p95": 2.8952643628102988,
+        "maximum": 3.2093960442446505
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.00016620297051408363,
+        "median": 0.42610504573468394,
+        "mean": 2.035537508047088,
+        "p95": 14.546203130929655,
+        "maximum": 19.180092434289868
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.00036110650839210417,
+          "median": 0.3351434021390973,
+          "mean": 0.5346852406395256,
+          "p95": 1.8898093893942807,
+          "maximum": 3.967250377975764
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 5.984428238920397e-05,
+          "median": 0.26128451910061856,
+          "mean": 0.3563359961544314,
+          "p95": 1.0445006026026096,
+          "maximum": 1.6066110897905967
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 4.714324649380921e-05,
+          "median": 0.21731617873000747,
+          "mean": 1.9987166776146728,
+          "p95": 15.170682980333437,
+          "maximum": 19.414021894757173
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 9.738303788253688e-06,
+        "median": 0.02764589927664929,
+        "mean": 0.03313059210166835,
+        "p95": 0.0905816210739175,
+        "maximum": 0.10831824856484218
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -53.63262959134755,
+          "measured_change_at_command_end_deg": -48.57470326335894,
+          "measured_change_after_5s_deg": -54.04168758984076,
+          "yaw_error_after_5s_deg": 0.437665573962324
+        },
+        {
+          "turn": 2,
+          "requested_deg": 51.5108772762457,
+          "measured_change_at_command_end_deg": 46.91100419835156,
+          "measured_change_after_5s_deg": 51.99010343407243,
+          "yaw_error_after_5s_deg": -0.2179353206973149
+        },
+        {
+          "turn": 3,
+          "requested_deg": 58.753520678430135,
+          "measured_change_at_command_end_deg": 53.10450950937144,
+          "measured_change_after_5s_deg": 58.65750653306403,
+          "yaw_error_after_5s_deg": -0.05242696211799145
+        }
+      ]
+    },
+    {
+      "pair_name": "H3",
+      "repetition": 7,
+      "environment_seed": 24020007,
+      "initial_depth_m": 180.7910747859386,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.1867304589103895,
+      "mass_kg": 50.50246179369684,
+      "center_relative_xy_m": [
+        -0.00074104630169778,
+        -0.0007422066624928822
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.005539455825647637,
+        "median": 0.8947703038807354,
+        "mean": 0.9042670672479225,
+        "p95": 1.1145758424400232,
+        "maximum": 1.7874333380806762
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 9.174605393569945e-07,
+        "median": 0.5257707240398387,
+        "mean": 1.398437056032894,
+        "p95": 3.4268123591723785,
+        "maximum": 4.014894982039617
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 6.082254740357009e-05,
+        "median": 0.673069053093776,
+        "mean": 1.9080751575232109,
+        "p95": 11.159267520018116,
+        "maximum": 18.117852271505505
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.00019796585360347708,
+          "median": 0.13734993100114068,
+          "mean": 0.1940664955427304,
+          "p95": 0.5401090833703487,
+          "maximum": 1.8972670394994307
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.0003394449200705641,
+          "median": 0.2211520975488675,
+          "mean": 0.353145220752847,
+          "p95": 1.2723283975448438,
+          "maximum": 1.909495810053719
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.0005375265152935388,
+          "median": 0.22063661781330496,
+          "mean": 1.74363227895291,
+          "p95": 12.151520544071122,
+          "maximum": 19.292072547575458
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 1.3179881193536858e-05,
+        "median": 0.021352507236912288,
+        "mean": 0.032615331187044724,
+        "p95": 0.09798644436864232,
+        "maximum": 0.12815459361556236
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": 57.00146509427769,
+          "measured_change_at_command_end_deg": 53.08091918626406,
+          "measured_change_after_5s_deg": 58.21452217624259,
+          "yaw_error_after_5s_deg": -0.6102039174569208
+        },
+        {
+          "turn": 2,
+          "requested_deg": 36.28442553801153,
+          "measured_change_at_command_end_deg": 33.81394020174724,
+          "measured_change_after_5s_deg": 37.287446662693135,
+          "yaw_error_after_5s_deg": -0.6722686191591982
+        },
+        {
+          "turn": 3,
+          "requested_deg": -45.45877567925022,
+          "measured_change_at_command_end_deg": -41.38999491796017,
+          "measured_change_after_5s_deg": -44.88618707273661,
+          "yaw_error_after_5s_deg": -0.36170538477694897
+        }
+      ]
+    },
+    {
+      "pair_name": "H4",
+      "repetition": 6,
+      "environment_seed": 24030006,
+      "initial_depth_m": 181.42410217755247,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.32262837782944803,
+      "mass_kg": 49.57235466055933,
+      "center_relative_xy_m": [
+        -0.0005646673573478913,
+        0.0002519153960607798
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0021241081922562513,
+        "median": 0.28926462977078987,
+        "mean": 0.2926069730874447,
+        "p95": 0.4484108480871936,
+        "maximum": 0.6724553171907729
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 3.2683936687664174e-07,
+        "median": 0.35566227430977426,
+        "mean": 1.2577288154254926,
+        "p95": 3.931679058221907,
+        "maximum": 4.310437963729577
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0002261098187294242,
+        "median": 0.7805201660334897,
+        "mean": 1.90117958111115,
+        "p95": 10.662215785449092,
+        "maximum": 16.511359644410398
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.00028608131996026546,
+          "median": 0.12425335185193555,
+          "mean": 0.15203137724458266,
+          "p95": 0.38068988420338445,
+          "maximum": 0.659397083386512
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 5.155135590326477e-05,
+          "median": 0.13109309108805484,
+          "mean": 0.27777546159329547,
+          "p95": 1.1624879348512576,
+          "maximum": 1.9472466442076914
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.00026499766727012706,
+          "median": 0.18763630352922142,
+          "mean": 1.604217839046027,
+          "p95": 10.821767349371049,
+          "maximum": 16.42914494460293
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 7.447864874166044e-06,
+        "median": 0.14153464587224107,
+        "mean": 0.24729706508943058,
+        "p95": 0.7359272142336095,
+        "maximum": 0.7965916227952334
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": 51.136190563903476,
+          "measured_change_at_command_end_deg": 45.17736262138214,
+          "measured_change_after_5s_deg": 50.50556339844938,
+          "yaw_error_after_5s_deg": 0.2319449030399175
+        },
+        {
+          "turn": 2,
+          "requested_deg": 35.014473009755754,
+          "measured_change_at_command_end_deg": 30.646700510778945,
+          "measured_change_after_5s_deg": 34.19897259936445,
+          "yaw_error_after_5s_deg": 0.19386613014681545
+        },
+        {
+          "turn": 3,
+          "requested_deg": 47.461571976221926,
+          "measured_change_at_command_end_deg": 41.559660809821985,
+          "measured_change_after_5s_deg": 46.345426852172984,
+          "yaw_error_after_5s_deg": 0.3741061885142903
+        }
+      ]
+    },
+    {
+      "pair_name": "H4",
+      "repetition": 7,
+      "environment_seed": 24030007,
+      "initial_depth_m": 288.77459140433456,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.15213293576554043,
+      "mass_kg": 50.23435328947031,
+      "center_relative_xy_m": [
+        0.0003821112445284505,
+        -0.000320091320402581
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0023508685169643193,
+        "median": 0.5482389577054935,
+        "mean": 0.5544139645082025,
+        "p95": 0.7227973559217031,
+        "maximum": 0.9350063690328179
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 9.912419240944548e-06,
+        "median": 0.5421538839567648,
+        "mean": 1.2223406806923958,
+        "p95": 2.944408390133153,
+        "maximum": 3.408608586676785
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 3.549367148538416e-05,
+        "median": 0.8088962460411,
+        "mean": 2.092438175390063,
+        "p95": 10.568003483254266,
+        "maximum": 15.36386299093145
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 1.5200132373621894e-05,
+          "median": 0.08199321139513377,
+          "mean": 0.10813112910839032,
+          "p95": 0.2706238162785288,
+          "maximum": 0.9700106979877272
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.00048559298322959444,
+          "median": 0.22769541773852497,
+          "mean": 0.3347687913649975,
+          "p95": 1.037946691593398,
+          "maximum": 1.6933312340579871
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.000124527848830599,
+          "median": 0.23679785135711445,
+          "mean": 1.6120716364828618,
+          "p95": 11.179376102515578,
+          "maximum": 16.022768832436235
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 9.194348649543826e-06,
+        "median": 0.035386534961475036,
+        "mean": 0.03469205915406516,
+        "p95": 0.08277893961594884,
+        "maximum": 0.10052780576330633
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -48.03943973655744,
+          "measured_change_at_command_end_deg": -43.281835225337666,
+          "measured_change_after_5s_deg": -47.828133300934404,
+          "yaw_error_after_5s_deg": 0.19445149630290035
+        },
+        {
+          "turn": 2,
+          "requested_deg": -44.850276163228415,
+          "measured_change_at_command_end_deg": -40.13989630919614,
+          "measured_change_after_5s_deg": -44.15448324445923,
+          "yaw_error_after_5s_deg": 0.028845340313637176
+        },
+        {
+          "turn": 3,
+          "requested_deg": -34.20058194474106,
+          "measured_change_at_command_end_deg": -30.3190408412593,
+          "measured_change_after_5s_deg": -32.84497299167326,
+          "yaw_error_after_5s_deg": -0.4460780028848886
+        }
+      ]
+    },
+    {
+      "pair_name": "V1",
+      "repetition": 6,
+      "environment_seed": 24040006,
+      "initial_depth_m": 251.14805100505163,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.24010226109769173,
+      "mass_kg": 49.431679406565124,
+      "center_relative_xy_m": [
+        -0.0008195274889587264,
+        -0.0014475605165046018
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.015299513394133782,
+        "median": 1.6620950047877918,
+        "mean": 1.8322609710233682,
+        "p95": 2.8938208171599897,
+        "maximum": 3.41637542397479
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0014404693774366826,
+        "median": 0.5330009656762268,
+        "mean": 1.207958778310461,
+        "p95": 2.8545679244260027,
+        "maximum": 3.208014919019169
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.00048533627206627663,
+        "median": 2.0630606100213544,
+        "mean": 3.773508873281456,
+        "p95": 12.578989794628917,
+        "maximum": 18.23124132807444
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 1.1180200709109933e-07,
+          "median": 0.13795389694837096,
+          "mean": 0.2836380887804198,
+          "p95": 1.0340412473345122,
+          "maximum": 3.949778287738474
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 8.211230101795473e-05,
+          "median": 0.21055126776956518,
+          "mean": 0.30675893349406097,
+          "p95": 1.0255878224832986,
+          "maximum": 1.5902306395375747
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.00040644780280644756,
+          "median": 0.825583092543283,
+          "mean": 2.269830570526072,
+          "p95": 11.902627063530652,
+          "maximum": 18.294949096149963
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 3.3526286529195204e-05,
+        "median": 0.03481317498396663,
+        "mean": 0.041506659671163154,
+        "p95": 0.09943158274676164,
+        "maximum": 0.13529559528856794
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -57.13810847744439,
+          "measured_change_at_command_end_deg": -49.881212897055036,
+          "measured_change_after_5s_deg": -57.01902295573236,
+          "yaw_error_after_5s_deg": 0.7532876215756603
+        },
+        {
+          "turn": 2,
+          "requested_deg": 51.98707853706082,
+          "measured_change_at_command_end_deg": 46.84400376372737,
+          "measured_change_after_5s_deg": 55.129568450077954,
+          "yaw_error_after_5s_deg": -2.600253622943973
+        },
+        {
+          "turn": 3,
+          "requested_deg": 36.96801628874096,
+          "measured_change_at_command_end_deg": 31.741802060542504,
+          "measured_change_after_5s_deg": 36.89104715127048,
+          "yaw_error_after_5s_deg": -0.82642600045145
+        }
+      ]
+    },
+    {
+      "pair_name": "V1",
+      "repetition": 7,
+      "environment_seed": 24040007,
+      "initial_depth_m": 290.77422040202936,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.18121041448113726,
+      "mass_kg": 50.58906935842605,
+      "center_relative_xy_m": [
+        0.0014541403979902619,
+        -0.000687471267008577
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.004224281509073531,
+        "median": 0.6602359073303521,
+        "mean": 0.6522155579902362,
+        "p95": 0.9205338302884597,
+        "maximum": 1.016219892984818
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 3.372602001798738e-05,
+        "median": 0.36055163913317134,
+        "mean": 0.8065950361797856,
+        "p95": 2.4920061010323975,
+        "maximum": 2.9927099595255005
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 1.3248376786336656e-05,
+        "median": 0.3083905112836699,
+        "mean": 1.541321571245774,
+        "p95": 10.323728495756871,
+        "maximum": 15.591601798021657
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.000440460021886348,
+          "median": 0.27286130416749205,
+          "mean": 0.3222747440819933,
+          "p95": 0.7531764929788936,
+          "maximum": 1.417234197992727
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.00016033662663653,
+          "median": 0.2393753413614992,
+          "mean": 0.29710571305234307,
+          "p95": 0.8294202170203584,
+          "maximum": 1.266866816562644
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 3.174569945851313e-05,
+          "median": 0.182831518697847,
+          "mean": 1.5501031835588155,
+          "p95": 10.943167071712402,
+          "maximum": 16.011128430225565
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 6.35701043734116e-05,
+        "median": 0.03066649501096208,
+        "mean": 0.0366995474355757,
+        "p95": 0.0869352510223905,
+        "maximum": 0.10064614816923267
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -49.02870732084367,
+          "measured_change_at_command_end_deg": -43.781351080742866,
+          "measured_change_after_5s_deg": -48.45876783055224,
+          "yaw_error_after_5s_deg": -0.32251582441231863
+        },
+        {
+          "turn": 2,
+          "requested_deg": -34.082612011637536,
+          "measured_change_at_command_end_deg": -30.57498967950111,
+          "measured_change_after_5s_deg": -34.31507875658528,
+          "yaw_error_after_5s_deg": 0.45530056391617457
+        },
+        {
+          "turn": 3,
+          "requested_deg": -44.71562143225217,
+          "measured_change_at_command_end_deg": -40.020306485905216,
+          "measured_change_after_5s_deg": -44.506020516967226,
+          "yaw_error_after_5s_deg": -0.05031942306729373
+        }
+      ]
+    },
+    {
+      "pair_name": "V2",
+      "repetition": 6,
+      "environment_seed": 24050006,
+      "initial_depth_m": 175.8631740334992,
+      "cruise_speed_mps": 1.2,
+      "vertical_speed_mps": 0.1574361463190905,
+      "mass_kg": 49.72217597140391,
+      "center_relative_xy_m": [
+        0.0014553495116544184,
+        -0.0002783621712473053
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0019224206292218784,
+        "median": 0.42717905670417067,
+        "mean": 0.42474740806557126,
+        "p95": 0.6770300758293394,
+        "maximum": 0.7608871621099463
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 0.0004973097839196142,
+        "median": 0.6498868618660515,
+        "mean": 0.9076486532433685,
+        "p95": 2.0055971113372437,
+        "maximum": 2.2517918808103192
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 1.2861381287886665e-05,
+        "median": 0.7809731941577314,
+        "mean": 2.231258067891306,
+        "p95": 13.152179153277691,
+        "maximum": 19.637816461100307
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 0.0002549656308028012,
+          "median": 0.19137238068250162,
+          "mean": 0.22701895623937812,
+          "p95": 0.5336576595905458,
+          "maximum": 0.9707740518298682
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 5.590010284913965e-05,
+          "median": 0.17182126387343924,
+          "mean": 0.23186673079647033,
+          "p95": 0.6911937883924305,
+          "maximum": 1.209588719891329
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.0005094775299877653,
+          "median": 0.27963746045868965,
+          "mean": 1.9035805009014886,
+          "p95": 13.27416661822171,
+          "maximum": 19.03813468982463
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 4.344986209048329e-05,
+        "median": 0.022356058780744092,
+        "mean": 0.02663480570936236,
+        "p95": 0.06871682874841126,
+        "maximum": 0.09066427546181899
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": -40.91070570339099,
+          "measured_change_at_command_end_deg": -36.77457502250726,
+          "measured_change_after_5s_deg": -39.94514205972308,
+          "yaw_error_after_5s_deg": -0.7318934540198776
+        },
+        {
+          "turn": 2,
+          "requested_deg": 57.51998335947241,
+          "measured_change_at_command_end_deg": 52.69132030076196,
+          "measured_change_after_5s_deg": 60.201308419470074,
+          "yaw_error_after_5s_deg": -1.692978197210042
+        },
+        {
+          "turn": 3,
+          "requested_deg": -51.68170122415865,
+          "measured_change_at_command_end_deg": -46.207400983511036,
+          "measured_change_after_5s_deg": -50.75701603987735,
+          "yaw_error_after_5s_deg": -0.4422961144094682
+        }
+      ]
+    },
+    {
+      "pair_name": "V2",
+      "repetition": 7,
+      "environment_seed": 24050007,
+      "initial_depth_m": 240.6696949221528,
+      "cruise_speed_mps": 1.35,
+      "vertical_speed_mps": 0.33487780206714235,
+      "mass_kg": 50.57529596156354,
+      "center_relative_xy_m": [
+        -0.0006848149984723696,
+        0.0008150933467563348
+      ],
+      "roll_abs_deg": {
+        "count": 1800,
+        "minimum": 0.007540788318192835,
+        "median": 0.7882593737148098,
+        "mean": 0.785699089493085,
+        "p95": 1.04795025423578,
+        "maximum": 1.1895863030232714
+      },
+      "pitch_abs_deg": {
+        "count": 1800,
+        "minimum": 6.952151151759122e-05,
+        "median": 0.45147946195770094,
+        "mean": 1.8679904305161397,
+        "p95": 5.724540076590021,
+        "maximum": 6.134265600126858
+      },
+      "yaw_error_abs_deg": {
+        "count": 1800,
+        "minimum": 0.00017714480809761767,
+        "median": 2.2346510525854155,
+        "mean": 3.7597766523945793,
+        "p95": 11.235099812997088,
+        "maximum": 18.16687505969172
+      },
+      "body_rate_abs_degps": {
+        "p": {
+          "count": 1800,
+          "minimum": 9.999692404329376e-05,
+          "median": 0.2349345739541444,
+          "mean": 0.2971484106563345,
+          "p95": 0.7600324732959827,
+          "maximum": 1.987741165358182
+        },
+        "q": {
+          "count": 1800,
+          "minimum": 0.00041129274563401255,
+          "median": 0.2714711597318178,
+          "mean": 0.4513053109636823,
+          "p95": 1.8368502381308498,
+          "maximum": 2.712015033713608
+        },
+        "r": {
+          "count": 1800,
+          "minimum": 0.0010575163411732568,
+          "median": 0.6753349331752789,
+          "mean": 2.1715028012725353,
+          "p95": 12.113770430225175,
+          "maximum": 18.292978098637494
+        }
+      },
+      "depth_error_abs_m": {
+        "count": 1800,
+        "minimum": 4.471383726922795e-05,
+        "median": 0.13888224133339122,
+        "mean": 0.23185048296003805,
+        "p95": 0.7628122741548508,
+        "maximum": 0.8885728427760284
+      },
+      "thruster_saturation_fraction": 0.0,
+      "turns": [
+        {
+          "turn": 1,
+          "requested_deg": 54.01674603826357,
+          "measured_change_at_command_end_deg": 49.78005786340167,
+          "measured_change_after_5s_deg": 55.857382645591294,
+          "yaw_error_after_5s_deg": -1.2540470116815499
+        },
+        {
+          "turn": 2,
+          "requested_deg": -53.38385791305856,
+          "measured_change_at_command_end_deg": -48.36731201861736,
+          "measured_change_after_5s_deg": -51.94592775268547,
+          "yaw_error_after_5s_deg": -1.1388373963331295
+        },
+        {
+          "turn": 3,
+          "requested_deg": -33.57298836054289,
+          "measured_change_at_command_end_deg": -30.67426891291291,
+          "measured_change_after_5s_deg": -33.84636294608441,
+          "yaw_error_after_5s_deg": 0.5361888703402726
+        }
+      ]
+    }
+  ]
+}

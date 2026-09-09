@@ -245,20 +245,55 @@ class SixDOFDemoRenderer:
         ]
         return active, " | ".join(labels)
 
+    def _maintenance_records(self, index, *, min_time_s=None):
+        records = []
+        for candidate_index in range(int(index) + 1):
+            frame = self.frames[candidate_index]
+            time_s = float(frame.get("time_s", self.times[candidate_index]))
+            if min_time_s is not None and time_s < float(min_time_s):
+                continue
+            maintenance = frame.get("maintenance", {})
+            if maintenance.get("tier", "normal") not in {
+                "log_only", "possible"
+            }:
+                continue
+            if maintenance.get("probable_mode", "normal") == "normal":
+                continue
+            records.append((time_s, maintenance))
+        return records
+
     @staticmethod
-    def _primary_diagnosis(frame):
+    def _maintenance_text(time_s, maintenance, *, historical):
+        mode = str(
+            maintenance.get("probable_mode", "unknown")
+        ).replace("_", " ").upper()
+        group = str(
+            maintenance.get("suspected_group", "unknown")
+        ).replace("_", " ").upper()
+        candidates = list(maintenance.get("candidates", ()))[:2]
+        candidate_text = ", ".join(
+            f"{candidate.get('name', '?')} "
+            f"{100.0 * float(candidate.get('probability', 0.0)):.0f}%"
+            for candidate in candidates
+        ) or "none"
+        if historical:
+            return (
+                f"RECORDED MODEL ADVICE @ {float(time_s):.2f} s\n"
+                f"{mode} / {group} | Last Top-2: {candidate_text}"
+            )
+        return (
+            f"MODEL ADVISORY | {mode} / {group}\n"
+            f"Top-2: {candidate_text}"
+        )
+
+    def _primary_diagnosis(self, index):
+        frame = self.frames[index]
         ftc = frame["ftc"]
         target = ftc.get("target_thruster")
         if target:
             return (
                 f"{target}: PHYSICAL FAULT CONFIRMED",
                 TIER_COLORS["confirmed"],
-            )
-        untrusted = tuple(ftc.get("untrusted_esc_channels", ()))
-        if untrusted:
-            return (
-                f"{', '.join(untrusted)} ESC: LINK ANOMALY / LOG ONLY",
-                TIER_COLORS["log_only"],
             )
         tier_rank = {
             "normal": 0, "log_only": 1, "possible": 2, "confirmed": 3,
@@ -268,10 +303,43 @@ class SixDOFDemoRenderer:
             key=lambda item: tier_rank.get(item[1]["tier"], 0),
         )
         tier = sensor_card["tier"]
+        if tier == "confirmed":
+            return (
+                f"{sensor_name.upper()}: CONFIRMED",
+                TIER_COLORS["confirmed"],
+            )
+        maintenance = frame.get("maintenance", {})
+        if (
+            maintenance.get("tier", "normal") in {"log_only", "possible"}
+            and maintenance.get("probable_mode", "normal") != "normal"
+        ):
+            return (
+                self._maintenance_text(
+                    float(frame.get("time_s", self.times[index])),
+                    maintenance,
+                    historical=False,
+                ),
+                TIER_COLORS[maintenance.get("tier", "possible")],
+            )
+        untrusted = tuple(ftc.get("untrusted_esc_channels", ()))
+        if untrusted:
+            return (
+                f"{', '.join(untrusted)} ESC: LINK ANOMALY / LOG ONLY",
+                TIER_COLORS["log_only"],
+            )
         if tier != "normal":
             return (
                 f"{sensor_name.upper()}: {tier.replace('_', ' ').upper()}",
                 TIER_COLORS[tier],
+            )
+        maintenance_records = self._maintenance_records(index)
+        if maintenance_records:
+            time_s, maintenance = maintenance_records[-1]
+            return (
+                self._maintenance_text(
+                    time_s, maintenance, historical=True
+                ),
+                TIER_COLORS["log_only"],
             )
         return "NORMAL | no actionable fault", TIER_COLORS["normal"]
 
@@ -294,6 +362,49 @@ class SixDOFDemoRenderer:
                 return (
                     f"MATCH / CORRECT | confirmation delay {delay:.2f} s",
                     TIER_COLORS["normal"],
+                )
+            records = self._maintenance_records(
+                index, min_time_s=float(event["start_time_s"])
+            )
+            expected_mode = str(event["mode"])
+            matching = [
+                record for record in records
+                if str(record[1].get("probable_mode", "normal"))
+                == expected_mode
+            ]
+            if matching:
+                first_time = matching[0][0]
+                _, latest = matching[-1]
+                candidate_names = {
+                    str(candidate.get("name", ""))
+                    for candidate in latest.get("candidates", ())[:2]
+                }
+                expected_group = (
+                    "horizontal"
+                    if str(event["source"]).startswith("H")
+                    else "vertical"
+                )
+                delay = first_time - float(event["start_time_s"])
+                if str(event["source"]) in candidate_names:
+                    detail = "mode + Top-2"
+                    color = TIER_COLORS["normal"]
+                    outcome = "RECORDED MATCH"
+                elif latest.get("suspected_group") == expected_group:
+                    detail = "mode + group; exact source uncertain"
+                    color = TIER_COLORS["possible"]
+                    outcome = "RECORDED PARTIAL"
+                else:
+                    detail = "mode only; location uncertain"
+                    color = TIER_COLORS["possible"]
+                    outcome = "RECORDED PARTIAL"
+                return (
+                    f"{outcome} | {detail} | first delay {delay:.2f} s",
+                    color,
+                )
+            if records:
+                return (
+                    "MODEL DISAGREES | recorded mode differs from truth",
+                    TIER_COLORS["possible"],
                 )
             return "PENDING | collecting causal evidence", TIER_COLORS["possible"]
         if event["kind"] == "esc_link":
@@ -348,9 +459,7 @@ class SixDOFDemoRenderer:
         _configure_axis(axis, "Injected truth vs system output")
         axis.axis("off")
         active, truth_text = self._truth_text(index)
-        diagnosis_text, diagnosis_color = self._primary_diagnosis(
-            self.frames[index]
-        )
+        diagnosis_text, diagnosis_color = self._primary_diagnosis(index)
         comparison_text, comparison_color = self._comparison_text(
             index, active
         )
@@ -389,8 +498,13 @@ class SixDOFDemoRenderer:
                   transform=axis.transAxes)
         axis.text(0.20, 0.50, target, color=FOREGROUND, fontsize=9.5,
                   fontweight="bold", transform=axis.transAxes)
+        fusion = ftc.get("ai_fusion", {})
+        note = (
+            "AI + rules: " + fusion.get("verdict", "unavailable").replace("_", " ").upper()
+            if fusion else "Rule FTC is authoritative; model output is advisory only."
+        )
         axis.text(
-            0.02, 0.18, "Rule FTC is authoritative; model output is advisory only.",
+            0.02, 0.18, note,
             color=MUTED, fontsize=7.8, transform=axis.transAxes,
         )
 

@@ -1,10 +1,11 @@
-"""Causal bridge from the frozen six-DOF model to presentation fields."""
+"""Causal model inference for online shadow diagnosis and reference replay."""
 
 from __future__ import annotations
 
 from collections import deque
 import json
 from pathlib import Path
+from time import perf_counter
 
 import numpy as np
 
@@ -111,10 +112,26 @@ class SixDOFModelBridge:
         self.context_gate = AdvisoryContextGate(AdvisoryGateConfig(
             stabilization_time_s=float(advisory_stabilization_time_s)
         ))
+        self.runtime_preparation_ms = self._prepare_runtime()
         self.reset()
+
+    def _prepare_runtime(self):
+        """Initialize device kernels before mission time without adding samples."""
+        started = perf_counter()
+        dummy = self.torch.zeros(
+            (1, self.sequence_length, SIX_DOF_MODEL_INPUT_DIM),
+            dtype=self.torch.float32, device=self.device,
+        )
+        with self.torch.no_grad():
+            for _ in range(3):
+                self.model(dummy)
+        if self.device.type == "cuda":
+            self.torch.cuda.synchronize(self.device)
+        return (perf_counter() - started) * 1000.0
 
     def reset(self):
         self.features = deque(maxlen=self.sequence_length)
+        self.feature_times = deque(maxlen=self.sequence_length)
         self.previous_log = None
         self.sample_index = 0
         self.decision.reset()
@@ -125,6 +142,7 @@ class SixDOFModelBridge:
         """Discard model history contaminated by a causal context transition."""
 
         self.features.clear()
+        self.feature_times.clear()
         self.previous_log = None
         self.sample_index = 0
         self.decision.reset()
@@ -156,6 +174,12 @@ class SixDOFModelBridge:
             "action": "none",
             "record_event": False,
             "requires_ftc": False,
+            "raw_mode_probabilities": None,
+            "raw_location_probabilities": None,
+            "mode_entropy_normalized": None,
+            "location_entropy_normalized": None,
+            "inference_time_s": None,
+            "result_age_s": None,
         }
 
     @staticmethod
@@ -257,6 +281,15 @@ class SixDOFModelBridge:
             "updated": True,
             "time_s": float(log.get("time", 0.0)),
             "status": "model_inference",
+            "inference_time_s": float(log.get("time", 0.0)),
+            "result_age_s": 0.0,
+            "window_start_time_s": float(self.feature_times[0]),
+            "window_end_time_s": float(self.feature_times[-1]),
+            "raw_mode_probabilities": [float(value) for value in mode],
+            "raw_location_probabilities": [float(value) for value in location],
+            # Entropy measures output dispersion, not calibrated error risk.
+            "mode_entropy_normalized": self._entropy(mode),
+            "location_entropy_normalized": self._entropy(location),
             "warmup_samples": self.sequence_length,
             "required_samples": self.sequence_length,
             "health_level": int(result.health_level),
@@ -290,6 +323,12 @@ class SixDOFModelBridge:
             "requires_ftc": bool(result.requires_ftc),
         }
 
+    @staticmethod
+    def _entropy(probabilities):
+        values = np.asarray(probabilities, dtype=float)
+        return float(-np.sum(values * np.log(np.maximum(values, 1e-12)))
+                     / np.log(len(values)))
+
     def update(self, log):
         gate = self.context_gate.update(log)
         if gate.reset_model_context:
@@ -303,6 +342,7 @@ class SixDOFModelBridge:
         )
         self.previous_log = log
         self.features.append(feature)
+        self.feature_times.append(float(log.get("time", 0.0)))
         self.sample_index += 1
         time_s = float(log.get("time", 0.0))
         if len(self.features) < self.sequence_length:
@@ -323,6 +363,7 @@ class SixDOFModelBridge:
             return self._apply_context_gate(self.last_result, gate)
         held = dict(self.last_result)
         held.update({"updated": False, "time_s": time_s, "status": "held"})
+        held["result_age_s"] = time_s - held["inference_time_s"]
         return self._apply_context_gate(held, gate)
 
     def enrich_logs(self, logs):

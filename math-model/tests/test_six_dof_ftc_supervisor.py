@@ -555,7 +555,10 @@ class SixDOFFTCSupervisorTests(unittest.TestCase):
         )
 
         self.assertEqual(intervention["ftc_targeted_thruster_name"], "H1")
-        self.assertEqual(intervention["ftc_evidence_source"], "esc_rule")
+        self.assertEqual(
+            intervention["ftc_evidence_source"],
+            "esc_rule+tracking_safety",
+        )
         self.assertTrue(any(
             log["allocation_thruster_effectiveness"][0] == 0.0
             for log in logs

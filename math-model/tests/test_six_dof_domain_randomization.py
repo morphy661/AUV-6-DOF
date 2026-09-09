@@ -15,6 +15,7 @@ for path in (EXAMPLES_ROOT, SRC_ROOT):
 from generate_six_dof_fault_dataset import (
     DEPTH_BAND_PROBABILITIES,
     DEPTH_BANDS_M,
+    MAX_CENTER_RELATIVE_XY_OFFSET_M,
     _depth_band_index_for_mission,
     _disturbance_provider,
     _mission_schedule,
@@ -100,6 +101,27 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
             plan.vertical_speed_mps + 1e-3,
         )
 
+    def test_high_yaw_step_profile_records_requested_turn_range(self):
+        requested_range = (0.55, 1.05)
+        plan = _mission_schedule(
+            duration=90.0,
+            rng=np.random.default_rng(321),
+            depth_band_index=2,
+            heading_delta_abs_range_rad=requested_range,
+        )
+
+        self.assertEqual(plan.maneuver_profile, "high_yaw_step_turns")
+        self.assertEqual(plan.heading_delta_abs_range_rad, requested_range)
+        self.assertEqual(len(plan.heading_deltas_rad), 3)
+        for delta in plan.heading_deltas_rad:
+            self.assertGreaterEqual(abs(delta), requested_range[0])
+            self.assertLessEqual(abs(delta), requested_range[1])
+        metadata = plan.to_metadata()
+        self.assertEqual(
+            metadata["heading_deltas_rad"],
+            list(plan.heading_deltas_rad),
+        )
+
     def test_twenty_missions_give_fourteen_three_three_split(self):
         self.assertEqual(
             _split_counts(20),
@@ -140,6 +162,33 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
             np.diag(dynamics.config.total_mass_matrix),
         )
         self.assertEqual(metadata["mass_relative_error_limit"], 0.02)
+
+    def test_cg_cb_horizontal_relative_offset_is_trimmed(self):
+        for seed in range(100):
+            dynamics, metadata = _randomized_dynamics(
+                np.random.default_rng(seed), "test"
+            )
+            relative_xy = (
+                dynamics.config.center_of_gravity[:2]
+                - dynamics.config.center_of_buoyancy[:2]
+            )
+            self.assertTrue(np.all(
+                np.abs(relative_xy)
+                <= MAX_CENTER_RELATIVE_XY_OFFSET_M + 1e-12
+            ))
+            np.testing.assert_allclose(
+                metadata["center_relative_xy_m"], relative_xy
+            )
+            self.assertEqual(
+                metadata["center_relative_xy_offset_limit_m"],
+                MAX_CENTER_RELATIVE_XY_OFFSET_M,
+            )
+            self.assertGreater(
+                dynamics.config.center_of_gravity[2], 0.0
+            )
+            self.assertLess(
+                dynamics.config.center_of_buoyancy[2], 0.0
+            )
 
     def test_rigid_mass_uncertainty_cannot_restore_broad_v3_range(self):
         with self.assertRaises(ValueError):
@@ -203,6 +252,7 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
 
         for key in (
             "dynamics",
+            "controller",
             "thrusters",
             "sensors",
             "disturbance",
@@ -213,6 +263,26 @@ class SixDOFDomainRandomizationTests(unittest.TestCase):
         self.assertIsNone(normal["thrust_efficiency"])
         self.assertIsNotNone(fault["fault_start_time_s"])
         self.assertIsNotNone(fault["thrust_efficiency"])
+
+    def test_mission_metadata_records_active_yaw_controller(self):
+        _, metadata = run_mission(
+            thruster_name=None,
+            fault_mode=None,
+            duration=2.0,
+            dt=0.1,
+            seed=12345,
+            split="test",
+            depth_band_index=2,
+        )
+
+        controller = metadata["controller"]
+        self.assertEqual(controller["attitude_kp"], [2.0, 3.0, 1.2])
+        self.assertEqual(
+            controller["angular_velocity_kp"], [14.0, 30.0, 30.0]
+        )
+        self.assertEqual(
+            controller["max_angular_velocity"], [0.5, 0.7, 0.5]
+        )
 
     def test_rpm_override_changes_only_rpm_metadata(self):
         common = {

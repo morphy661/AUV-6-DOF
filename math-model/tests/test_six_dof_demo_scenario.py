@@ -18,6 +18,40 @@ from demo_six_dof_unified_diagnostics import (
     run_demo,
 )
 from presentation.six_dof_demo_renderer import active_injected_truth
+from presentation.six_dof_demo_renderer import SixDOFDemoRenderer
+
+
+def _renderer_frame(time_s, maintenance, *, sensor_tier="normal"):
+    return {
+        "time_s": float(time_s),
+        "overall_tier": sensor_tier,
+        "ftc": {
+            "target_thruster": None,
+            "untrusted_esc_channels": [],
+        },
+        "sensors": {
+            "depth": {"tier": "normal"},
+            "imu": {"tier": "normal"},
+            "dvl": {"tier": sensor_tier},
+        },
+        "maintenance": maintenance,
+    }
+
+
+def _maintenance(tier="normal", mode="normal", group="none", candidates=()):
+    return {
+        "tier": tier,
+        "probable_mode": mode,
+        "suspected_group": group,
+        "candidates": list(candidates),
+    }
+
+
+def _renderer_without_figure(frames):
+    renderer = SixDOFDemoRenderer.__new__(SixDOFDemoRenderer)
+    renderer.frames = list(frames)
+    renderer.times = [float(frame["time_s"]) for frame in frames]
+    return renderer
 
 
 def _manifest(seed, mode="random"):
@@ -84,6 +118,68 @@ def test_display_truth_tracks_injections_without_entering_diagnosis_frames():
     assert [(item["kind"], item["source"]) for item in thruster_truth] == [
         ("thruster", "V1")
     ]
+
+
+def test_summary_prioritizes_current_model_advice_over_possible_sensor():
+    advice = _maintenance(
+        "possible", "thrust_loss", "vertical",
+        ({"name": "V2", "probability": 0.70},
+         {"name": "V1", "probability": 0.20}),
+    )
+    renderer = _renderer_without_figure([
+        _renderer_frame(20.0, advice, sensor_tier="possible")
+    ])
+
+    diagnosis, _ = renderer._primary_diagnosis(0)
+    comparison, _ = renderer._comparison_text(0, [{
+        "kind": "thruster", "source": "V2", "mode": "thrust_loss",
+        "start_time_s": 16.8,
+    }])
+
+    assert "MODEL ADVISORY" in diagnosis
+    assert "V2 70%" in diagnosis
+    assert "RECORDED MATCH" in comparison
+    assert "mode + Top-2" in comparison
+
+
+def test_summary_retains_recovered_model_advice_as_history():
+    advice = _maintenance(
+        "possible", "thrust_loss", "vertical",
+        ({"name": "V2", "probability": 0.74},
+         {"name": "H4", "probability": 0.12}),
+    )
+    renderer = _renderer_without_figure([
+        _renderer_frame(20.0, advice),
+        _renderer_frame(30.0, _maintenance()),
+    ])
+
+    diagnosis, _ = renderer._primary_diagnosis(1)
+    comparison, _ = renderer._comparison_text(1, [{
+        "kind": "thruster", "source": "V2", "mode": "thrust_loss",
+        "start_time_s": 16.8,
+    }])
+
+    assert "RECORDED MODEL ADVICE @ 20.00 s" in diagnosis
+    assert "Last Top-2: V2 74%, H4 12%" in diagnosis
+    assert "RECORDED MATCH" in comparison
+
+
+def test_thruster_comparison_does_not_credit_prefault_model_advice():
+    advice = _maintenance(
+        "possible", "thrust_loss", "vertical",
+        ({"name": "V2", "probability": 0.80},),
+    )
+    renderer = _renderer_without_figure([
+        _renderer_frame(15.0, advice),
+        _renderer_frame(20.0, _maintenance()),
+    ])
+
+    comparison, _ = renderer._comparison_text(1, [{
+        "kind": "thruster", "source": "V2", "mode": "thrust_loss",
+        "start_time_s": 16.8,
+    }])
+
+    assert comparison == "PENDING | collecting causal evidence"
 
 
 def test_fixed_demo_logs_esc_loss_without_isolation_then_targets_real_fault():

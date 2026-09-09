@@ -1,0 +1,211 @@
+{
+  "case": {
+    "name": "V1_no_output_200m",
+    "depth": 200.0,
+    "seed": 20260975,
+    "thruster": "V1",
+    "fault_mode": "no_output",
+    "efficiency": 0.35
+  },
+  "metrics": {
+    "rule": {
+      "actions": {
+        "normal_control": 200,
+        "log_only": 10,
+        "targeted_reallocation": 590
+      },
+      "isolated_thrusters": [
+        "V1"
+      ],
+      "first_intervention_s": 10.550000000000015,
+      "first_ai_admission_s": null,
+      "ai_admitted_steps": 0,
+      "position_rmse_m": 4.100102720856105,
+      "max_position_error_m": 5.926447186218344,
+      "max_abs_roll_pitch_yaw_deg": [
+        175.90778533874584,
+        88.90191798904937,
+        179.98731180485075
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 0,
+      "online": {
+        "execution_mode": "disabled",
+        "affects_ftc": false,
+        "fusion_verdict_counts": {},
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 0,
+        "inference_count": 0,
+        "available_count": 0,
+        "observer_update": {
+          "count": 0,
+          "mean_ms": null,
+          "p95_ms": null,
+          "max_ms": null,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 0,
+          "mean_ms": null,
+          "p95_ms": null,
+          "max_ms": null,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 2.7922321276855655,
+          "p95_ms": 3.567579924128949,
+          "max_ms": 8.935300051234663,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    },
+    "shadow": {
+      "actions": {
+        "normal_control": 200,
+        "log_only": 10,
+        "targeted_reallocation": 590
+      },
+      "isolated_thrusters": [
+        "V1"
+      ],
+      "first_intervention_s": 10.550000000000015,
+      "first_ai_admission_s": null,
+      "ai_admitted_steps": 0,
+      "position_rmse_m": 4.100102720856105,
+      "max_position_error_m": 5.926447186218344,
+      "max_abs_roll_pitch_yaw_deg": [
+        175.90778533874584,
+        88.90191798904937,
+        179.98731180485075
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 44,
+      "online": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "fusion_verdict_counts": {},
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 800,
+        "inference_count": 60,
+        "available_count": 587,
+        "observer_update": {
+          "count": 800,
+          "mean_ms": 1.6964633722091094,
+          "p95_ms": 13.58527494012378,
+          "max_ms": 16.761599923484027,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 60,
+          "mean_ms": 14.148568319311986,
+          "p95_ms": 15.907374978996813,
+          "max_ms": 16.761599923484027,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 4.674888251611264,
+          "p95_ms": 16.609784931642935,
+          "max_ms": 19.914799951948225,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    },
+    "fusion": {
+      "actions": {
+        "normal_control": 200,
+        "log_only": 10,
+        "targeted_reallocation": 590
+      },
+      "isolated_thrusters": [
+        "V1"
+      ],
+      "first_intervention_s": 10.550000000000015,
+      "first_ai_admission_s": 11.950000000000035,
+      "ai_admitted_steps": 39,
+      "position_rmse_m": 4.100102720856105,
+      "max_position_error_m": 5.926447186218344,
+      "max_abs_roll_pitch_yaw_deg": [
+        175.90778533874584,
+        88.90191798904937,
+        179.98731180485075
+      ],
+      "max_tracking_error_ratio": null,
+      "tracking_error_available_steps": 0,
+      "raw_model_fault_predictions": 44,
+      "online": {
+        "execution_mode": "online_fusion",
+        "affects_ftc": true,
+        "fusion_verdict_counts": {
+          "accepted_control_evidence": 39,
+          "context_blocked": 40,
+          "direct_rule_priority": 11,
+          "normal": 151,
+          "probability_conflict": 85,
+          "record_only": 213,
+          "suspected": 48,
+          "unavailable": 213
+        },
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 800,
+        "inference_count": 60,
+        "available_count": 587,
+        "observer_update": {
+          "count": 800,
+          "mean_ms": 1.6512979991966859,
+          "p95_ms": 13.045644923113286,
+          "max_ms": 16.66670001577586,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 60,
+          "mean_ms": 13.529536663554609,
+          "p95_ms": 15.058554970892144,
+          "max_ms": 16.66670001577586,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 800,
+          "mean_ms": 4.77045650157379,
+          "p95_ms": 16.269540012581274,
+          "max_ms": 91.8381999945268,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        }
+      }
+    }
+  },
+  "shadow_matches_rule": true,
+  "fusion_replay_matches_online": true,
+  "next_step_application_passed": true,
+  "action_difference_steps": 0,
+  "first_action_difference_s": null,
+  "additional_intervention_steps": 0,
+  "max_paired_position_difference_m": 0.0
+}

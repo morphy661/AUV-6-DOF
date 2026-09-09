@@ -1,0 +1,398 @@
+{
+  "checkpoint": "C:\\Users\\Administrator\\PycharmProjects\\AUV-Project\\depth-sensor-fault-detection\\depth_fault_detection\\results\\six_dof_v3_5_high_yaw_seed43_20260904\\best_model.pth",
+  "checkpoint_sha256": "8B9223A512534151F31FAD681AD5B572C1437FDE9B7ED77D2792782CE5B928C6",
+  "temporal_config_sha256": "BA7BF4438155CCCCABA419F70DECB6D30AA0386FA104A87214402D5DDCCA67CD",
+  "device": "cuda",
+  "dt_s": 0.05,
+  "sequence_length": 50,
+  "inference_stride": 10,
+  "functional_checks_passed": true,
+  "cases": [
+    {
+      "case": "normal",
+      "seed": 20260907,
+      "steps": 600,
+      "physical_and_ftc_logs_exactly_equal": true,
+      "online_and_replay_diagnoses_exactly_equal": true,
+      "truth_removed_prefix_exactly_equal": true,
+      "manifest": null,
+      "timing": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 600,
+        "inference_count": 39,
+        "available_count": 355,
+        "observer_update": {
+          "count": 600,
+          "mean_ms": 1.6717088313695665,
+          "p95_ms": 4.676124936668196,
+          "max_ms": 400.94600000884384,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        },
+        "inference_updates": {
+          "count": 39,
+          "mean_ms": 15.317502571866871,
+          "p95_ms": 7.119930034969006,
+          "max_ms": 400.94600000884384,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        },
+        "full_simulation_step": {
+          "count": 600,
+          "mean_ms": 4.764936664141715,
+          "p95_ms": 8.065139944665134,
+          "max_ms": 404.1078999871388,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        }
+      }
+    },
+    {
+      "case": "fixed",
+      "seed": 20260907,
+      "steps": 600,
+      "physical_and_ftc_logs_exactly_equal": true,
+      "online_and_replay_diagnoses_exactly_equal": true,
+      "truth_removed_prefix_exactly_equal": true,
+      "manifest": {
+        "injection_mode": "fixed",
+        "seed": 20260907,
+        "sensor_events": [
+          {
+            "event_id": "depth_weak_spike",
+            "sensor": "depth",
+            "mode": "spike",
+            "start_time_s": 3.0,
+            "end_time_s": 3.5,
+            "channels": [],
+            "magnitude": 0.3
+          },
+          {
+            "event_id": "dvl_bias",
+            "sensor": "dvl",
+            "mode": "bias",
+            "start_time_s": 5.0,
+            "end_time_s": 11.0,
+            "channels": [
+              0
+            ],
+            "magnitude": 0.3
+          },
+          {
+            "event_id": "imu_dropout_1",
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 12.0,
+            "end_time_s": 12.15,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "imu_dropout_2",
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 13.0,
+            "end_time_s": 13.15,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "imu_dropout_3",
+            "sensor": "imu",
+            "mode": "unavailable",
+            "start_time_s": 14.0,
+            "end_time_s": 14.15,
+            "channels": [],
+            "magnitude": 0.0
+          }
+        ],
+        "esc_telemetry_events": [
+          {
+            "event_id": "v2_esc_packet_loss",
+            "thruster_name": "V2",
+            "mode": "continuous_packet_loss",
+            "start_time_s": 15.35,
+            "end_time_s": 16.35
+          }
+        ],
+        "thruster_fault": {
+          "thruster_name": "V1",
+          "mode": "no_output",
+          "start_time_s": 17.0,
+          "thrust_efficiency": 0.45
+        }
+      },
+      "timing": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 600,
+        "inference_count": 26,
+        "available_count": 228,
+        "observer_update": {
+          "count": 600,
+          "mean_ms": 1.2425925010271992,
+          "p95_ms": 1.530765014467761,
+          "max_ms": 21.107699954882264,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 26,
+          "mean_ms": 13.485153845977038,
+          "p95_ms": 18.321125011425465,
+          "max_ms": 21.107699954882264,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 600,
+          "mean_ms": 4.283753000781871,
+          "p95_ms": 5.706564983120169,
+          "max_ms": 24.37710005324334,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        }
+      }
+    },
+    {
+      "case": "random",
+      "seed": 20260911,
+      "steps": 600,
+      "physical_and_ftc_logs_exactly_equal": true,
+      "online_and_replay_diagnoses_exactly_equal": true,
+      "truth_removed_prefix_exactly_equal": true,
+      "manifest": {
+        "injection_mode": "random",
+        "seed": 20260911,
+        "sensor_events": [
+          {
+            "event_id": "random_imu_weak_spike",
+            "sensor": "imu",
+            "mode": "spike",
+            "start_time_s": 3.049981930135708,
+            "end_time_s": 3.549981930135708,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.15
+          },
+          {
+            "event_id": "random_depth_bias",
+            "sensor": "depth",
+            "mode": "bias",
+            "start_time_s": 5.646472594950168,
+            "end_time_s": 11.646472594950168,
+            "channels": [],
+            "magnitude": 0.35
+          },
+          {
+            "event_id": "random_dvl_dropout_1",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 12.091133269587841,
+            "end_time_s": 12.241133269587841,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "random_dvl_dropout_2",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 13.091133269587841,
+            "end_time_s": 13.241133269587841,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "random_dvl_dropout_3",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 14.091133269587841,
+            "end_time_s": 14.241133269587841,
+            "channels": [],
+            "magnitude": 0.0
+          }
+        ],
+        "esc_telemetry_events": [
+          {
+            "event_id": "random_esc_link_anomaly",
+            "thruster_name": "H4",
+            "mode": "communication_freeze",
+            "start_time_s": 14.988961664435147,
+            "end_time_s": 15.956227659704771
+          }
+        ],
+        "thruster_fault": {
+          "thruster_name": "V2",
+          "mode": "thrust_loss",
+          "start_time_s": 16.801998663639505,
+          "thrust_efficiency": 0.45651737050200775
+        }
+      },
+      "timing": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 600,
+        "inference_count": 27,
+        "available_count": 235,
+        "observer_update": {
+          "count": 600,
+          "mean_ms": 1.523681999145386,
+          "p95_ms": 1.7393350077327245,
+          "max_ms": 25.805999990552664,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 27,
+          "mean_ms": 17.35935925885483,
+          "p95_ms": 24.620010005310178,
+          "max_ms": 25.805999990552664,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 600,
+          "mean_ms": 5.071470664697699,
+          "p95_ms": 7.687079906463587,
+          "max_ms": 71.2857999606058,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        }
+      }
+    },
+    {
+      "case": "random",
+      "seed": 20260922,
+      "steps": 600,
+      "physical_and_ftc_logs_exactly_equal": true,
+      "online_and_replay_diagnoses_exactly_equal": true,
+      "truth_removed_prefix_exactly_equal": true,
+      "manifest": {
+        "injection_mode": "random",
+        "seed": 20260922,
+        "sensor_events": [
+          {
+            "event_id": "random_depth_weak_spike",
+            "sensor": "depth",
+            "mode": "spike",
+            "start_time_s": 2.874656966494704,
+            "end_time_s": 3.374656966494704,
+            "channels": [],
+            "magnitude": 0.3
+          },
+          {
+            "event_id": "random_imu_drift",
+            "sensor": "imu",
+            "mode": "drift",
+            "start_time_s": 5.524447015221515,
+            "end_time_s": 11.524447015221515,
+            "channels": [
+              2
+            ],
+            "magnitude": 0.02
+          },
+          {
+            "event_id": "random_dvl_dropout_1",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 12.050279357173372,
+            "end_time_s": 12.200279357173372,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "random_dvl_dropout_2",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 13.050279357173372,
+            "end_time_s": 13.200279357173372,
+            "channels": [],
+            "magnitude": 0.0
+          },
+          {
+            "event_id": "random_dvl_dropout_3",
+            "sensor": "dvl",
+            "mode": "unavailable",
+            "start_time_s": 14.050279357173372,
+            "end_time_s": 14.200279357173372,
+            "channels": [],
+            "magnitude": 0.0
+          }
+        ],
+        "esc_telemetry_events": [
+          {
+            "event_id": "random_esc_link_anomaly",
+            "thruster_name": "V2",
+            "mode": "continuous_packet_loss",
+            "start_time_s": 14.760418350170514,
+            "end_time_s": 15.697116674022901
+          }
+        ],
+        "thruster_fault": {
+          "thruster_name": "V1",
+          "mode": "thrust_loss",
+          "start_time_s": 16.97096259373343,
+          "thrust_efficiency": 0.5531949551671079
+        }
+      },
+      "timing": {
+        "execution_mode": "online_shadow",
+        "affects_ftc": false,
+        "probability_note": "Raw softmax scores; entropy is not calibrated error probability.",
+        "scope": [
+          "normal",
+          "no_output",
+          "thrust_loss"
+        ],
+        "sample_count": 600,
+        "inference_count": 31,
+        "available_count": 275,
+        "observer_update": {
+          "count": 600,
+          "mean_ms": 1.5341648341078933,
+          "p95_ms": 10.811150062363586,
+          "max_ms": 36.408100044354796,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "inference_updates": {
+          "count": 31,
+          "mean_ms": 16.665783872257077,
+          "p95_ms": 28.123449999839067,
+          "max_ms": 36.408100044354796,
+          "budget_ms": 50.0,
+          "over_budget_count": 0
+        },
+        "full_simulation_step": {
+          "count": 600,
+          "mean_ms": 4.744159834032568,
+          "p95_ms": 14.288900076644483,
+          "max_ms": 66.46400003228337,
+          "budget_ms": 50.0,
+          "over_budget_count": 1
+        }
+      }
+    }
+  ],
+  "note": "Synchronous simulation timing is measured, not a hard real-time guarantee. Includes first model inference and OS scheduling delays."
+}

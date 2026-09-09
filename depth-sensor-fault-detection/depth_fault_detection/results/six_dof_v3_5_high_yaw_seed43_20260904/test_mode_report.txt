@@ -1,0 +1,9 @@
+              precision    recall  f1-score   support
+
+      normal     0.9250    0.9691    0.9465      2494
+   no_output     0.9986    0.9929    0.9957       705
+ thrust_loss     0.9336    0.8503    0.8900      1289
+
+    accuracy                         0.9387      4488
+   macro avg     0.9524    0.9374    0.9441      4488
+weighted avg     0.9390    0.9387    0.9380      4488

@@ -1,0 +1,924 @@
+{
+  "validation_type": "paired corrective engineering validation",
+  "checkpoint_sha256": "8B9223A512534151F31FAD681AD5B572C1437FDE9B7ED77D2792782CE5B928C6",
+  "temporal_policy_sha256": "BA7BF4438155CCCCABA419F70DECB6D30AA0386FA104A87214402D5DDCCA67CD",
+  "ai_gate_config": {
+    "minimum_mode_probability": 0.85,
+    "maximum_result_age_s": 0.6,
+    "minimum_confirming_updates": 2
+  },
+  "dt_s": 0.05,
+  "duration_s": 40.0,
+  "cases": [
+    {
+      "case": {
+        "name": "normal_50m",
+        "depth_m": 50.0,
+        "seed": 20260990
+      },
+      "normal_paired_trajectory_identical": true,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.4415631310336825,
+          "final_tilt_deg": 2.0195707071842115,
+          "max_abs_rpy_deg": [
+            0.605787844181877,
+            2.439117512560089,
+            46.96199724463118
+          ],
+          "max_effective_target_error_m": 0.6646774453931662,
+          "max_mission_target_error_m": 0.6646774453931662,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 53.996604470273276,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07302269229310153,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.4415631310336825,
+          "final_tilt_deg": 2.0195707071842115,
+          "max_abs_rpy_deg": [
+            0.605787844181877,
+            2.439117512560089,
+            46.96199724463118
+          ],
+          "max_effective_target_error_m": 0.6646774453931662,
+          "max_mission_target_error_m": 0.6646774453931662,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 53.996604470273276,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07302269229310153,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        }
+      }
+    },
+    {
+      "case": {
+        "name": "normal_200m",
+        "depth_m": 200.0,
+        "seed": 20260991
+      },
+      "normal_paired_trajectory_identical": true,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.50953902268065,
+          "final_tilt_deg": 1.794350527649917,
+          "max_abs_rpy_deg": [
+            0.589593497712481,
+            2.5094936088402244,
+            47.10761798104546
+          ],
+          "max_effective_target_error_m": 0.6617044778746588,
+          "max_mission_target_error_m": 0.6617044778746588,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 203.98931725497596,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07575271310198262,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.50953902268065,
+          "final_tilt_deg": 1.794350527649917,
+          "max_abs_rpy_deg": [
+            0.589593497712481,
+            2.5094936088402244,
+            47.10761798104546
+          ],
+          "max_effective_target_error_m": 0.6617044778746588,
+          "max_mission_target_error_m": 0.6617044778746588,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 203.98931725497596,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07575271310198262,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        }
+      }
+    },
+    {
+      "case": {
+        "name": "normal_280m",
+        "depth_m": 280.0,
+        "seed": 20260992
+      },
+      "normal_paired_trajectory_identical": true,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.430605189916557,
+          "final_tilt_deg": 1.8926654639291127,
+          "max_abs_rpy_deg": [
+            0.6047636180141415,
+            2.4299013784294523,
+            47.079458126695386
+          ],
+          "max_effective_target_error_m": 0.6689869884650382,
+          "max_mission_target_error_m": 0.6689869884650382,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 283.9717079666969,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07745857130078954,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.430605189916557,
+          "final_tilt_deg": 1.8926654639291127,
+          "max_abs_rpy_deg": [
+            0.6047636180141415,
+            2.4299013784294523,
+            47.079458126695386
+          ],
+          "max_effective_target_error_m": 0.6689869884650382,
+          "max_mission_target_error_m": 0.6689869884650382,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 283.9717079666969,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.07745857130078954,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        }
+      }
+    },
+    {
+      "case": {
+        "name": "normal_transient_200m",
+        "depth_m": 200.0,
+        "seed": 20260993,
+        "transient": true
+      },
+      "normal_paired_trajectory_identical": true,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 3.680092334241132,
+          "final_tilt_deg": 1.8081435714610414,
+          "max_abs_rpy_deg": [
+            1.1729774992373379,
+            3.5114080354759416,
+            47.31599174856575
+          ],
+          "max_effective_target_error_m": 0.6692313342694302,
+          "max_mission_target_error_m": 0.6692313342694302,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 203.98680472305892,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.10780766474213214,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 800
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 3.680092334241132,
+          "final_tilt_deg": 1.8081435714610414,
+          "max_abs_rpy_deg": [
+            1.1729774992373379,
+            3.5114080354759416,
+            47.31599174856575
+          ],
+          "max_effective_target_error_m": 0.6692313342694302,
+          "max_mission_target_error_m": 0.6692313342694302,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 203.98680472305892,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.10780766474213214,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.0
+          }
+        }
+      }
+    },
+    {
+      "case": {
+        "name": "V1_no_output_200m",
+        "depth_m": 200.0,
+        "seed": 20260994,
+        "thruster": "V1"
+      },
+      "normal_paired_trajectory_identical": null,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 200,
+            "log_only": 10,
+            "targeted_reallocation": 590
+          },
+          "targeted_thrusters": [
+            "V1"
+          ],
+          "first_targeted_reallocation_s": 10.550000000000015,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 141.6954762389121,
+          "final_tilt_deg": 60.486049748728796,
+          "max_abs_rpy_deg": [
+            179.52495982713452,
+            89.51629615836347,
+            179.96280316817658
+          ],
+          "max_effective_target_error_m": 4.914260275200779,
+          "max_mission_target_error_m": 4.914260275200779,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 204.187164469055,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 4.05001111573074,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.97,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 11,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.55,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 200,
+            "log_only": 10,
+            "targeted_reallocation": 590
+          },
+          "targeted_thrusters": [
+            "V1"
+          ],
+          "first_targeted_reallocation_s": 10.550000000000015,
+          "first_vertical_hold_s": 10.600000000000016,
+          "vertical_hold_steps": 589,
+          "max_tilt_deg": 4.603155708492074,
+          "final_tilt_deg": 0.0319928850591142,
+          "max_abs_rpy_deg": [
+            0.11837633388359069,
+            4.603054751147833,
+            0.5471103124259219
+          ],
+          "max_effective_target_error_m": 0.6618925785355005,
+          "max_mission_target_error_m": 38.99753466037092,
+          "max_hold_horizontal_error_m": 0.5401367874248931,
+          "max_hold_depth_error_m": 0.06053093134042342,
+          "final_depth_m": 201.06817318087877,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 589,
+          "max_tracking_error_ratio": 0.13394872369841876,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.97,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 11,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.55,
+            "V2": 0.0
+          }
+        },
+        "recovery_fusion": {
+          "actions": {
+            "normal_control": 200,
+            "log_only": 10,
+            "targeted_reallocation": 590
+          },
+          "targeted_thrusters": [
+            "V1"
+          ],
+          "first_targeted_reallocation_s": 10.550000000000015,
+          "first_vertical_hold_s": 10.600000000000016,
+          "vertical_hold_steps": 589,
+          "max_tilt_deg": 4.603155708492074,
+          "final_tilt_deg": 0.0319928850591142,
+          "max_abs_rpy_deg": [
+            0.11837633388359069,
+            4.603054751147833,
+            0.5471103124259219
+          ],
+          "max_effective_target_error_m": 0.6618925785355005,
+          "max_mission_target_error_m": 38.99753466037092,
+          "max_hold_horizontal_error_m": 0.5401367874248931,
+          "max_hold_depth_error_m": 0.06053093134042342,
+          "final_depth_m": 201.06817318087877,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 589,
+          "max_tracking_error_ratio": 0.13394872369841876,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 71,
+          "raw_model_fault_updates": 3,
+          "max_raw_model_fault_probability": 0.9999999999614735,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.97,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 11,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.55,
+            "V2": 0.0
+          }
+        }
+      },
+      "fusion_matches_recovery_rule_trajectory": true,
+      "fusion_matches_recovery_rule_actions": true
+    },
+    {
+      "case": {
+        "name": "V1_no_output_transient_200m",
+        "depth_m": 200.0,
+        "seed": 20260995,
+        "thruster": "V1",
+        "transient": true
+      },
+      "normal_paired_trajectory_identical": null,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 200,
+            "log_only": 10,
+            "targeted_reallocation": 590
+          },
+          "targeted_thrusters": [
+            "V1"
+          ],
+          "first_targeted_reallocation_s": 10.550000000000015,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 130.22239580549254,
+          "final_tilt_deg": 35.164417027590225,
+          "max_abs_rpy_deg": [
+            168.57156472745783,
+            88.78073798916587,
+            179.91147094370123
+          ],
+          "max_effective_target_error_m": 3.3093476493900544,
+          "max_mission_target_error_m": 3.3093476493900544,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 203.82024439514328,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 3.721540541448398,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.97,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 11,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.55,
+            "V2": 0.0
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 200,
+            "log_only": 10,
+            "targeted_reallocation": 590
+          },
+          "targeted_thrusters": [
+            "V1"
+          ],
+          "first_targeted_reallocation_s": 10.550000000000015,
+          "first_vertical_hold_s": 10.600000000000016,
+          "vertical_hold_steps": 589,
+          "max_tilt_deg": 6.090581621135797,
+          "final_tilt_deg": 0.05965049383869405,
+          "max_abs_rpy_deg": [
+            1.0968879134007488,
+            5.9981962012832435,
+            6.433219929383376
+          ],
+          "max_effective_target_error_m": 1.0681679962839568,
+          "max_mission_target_error_m": 38.359158424147104,
+          "max_hold_horizontal_error_m": 1.0628805333577103,
+          "max_hold_depth_error_m": 0.35980046668018417,
+          "final_depth_m": 201.3273677548125,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 589,
+          "max_tracking_error_ratio": 0.1723323335028645,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.97,
+            "V2": 0.0
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 11,
+            "V2": 0
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.55,
+            "V2": 0.0
+          }
+        }
+      }
+    },
+    {
+      "case": {
+        "name": "V2_no_output_200m",
+        "depth_m": 200.0,
+        "seed": 20260996,
+        "thruster": "V2",
+        "vertical_speed_mps": -0.1
+      },
+      "normal_paired_trajectory_identical": null,
+      "metrics": {
+        "legacy_rule": {
+          "actions": {
+            "normal_control": 750,
+            "log_only": 50
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.820144079831752,
+          "final_tilt_deg": 2.54103720182469,
+          "max_abs_rpy_deg": [
+            0.9708897069197165,
+            2.820112165448396,
+            47.08948595531271
+          ],
+          "max_effective_target_error_m": 0.6643162735200496,
+          "max_mission_target_error_m": 0.6643162735200496,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 195.97510824344334,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.08496196424769253,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.97
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 50
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.1
+          }
+        },
+        "recovery_rule": {
+          "actions": {
+            "normal_control": 750,
+            "log_only": 50
+          },
+          "targeted_thrusters": [],
+          "first_targeted_reallocation_s": null,
+          "first_vertical_hold_s": null,
+          "vertical_hold_steps": 0,
+          "max_tilt_deg": 2.820144079831752,
+          "final_tilt_deg": 2.54103720182469,
+          "max_abs_rpy_deg": [
+            0.9708897069197165,
+            2.820112165448396,
+            47.08948595531271
+          ],
+          "max_effective_target_error_m": 0.6643162735200496,
+          "max_mission_target_error_m": 0.6643162735200496,
+          "max_hold_horizontal_error_m": null,
+          "max_hold_depth_error_m": null,
+          "final_depth_m": 195.97510824344334,
+          "tracking_evidence_available_steps": 800,
+          "position_safety_active_steps": 0,
+          "max_tracking_error_ratio": 0.08496196424769253,
+          "safe_hold_or_abort_steps": 0,
+          "ai_accepted_steps": 0,
+          "model_updates": 0,
+          "raw_model_fault_updates": 0,
+          "max_raw_model_fault_probability": null,
+          "max_no_output_score_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.97
+          },
+          "no_output_evidence_steps_by_thruster": {
+            "H1": 0,
+            "H2": 0,
+            "H3": 0,
+            "H4": 0,
+            "V1": 0,
+            "V2": 50
+          },
+          "longest_continuous_no_output_evidence_s_by_thruster": {
+            "H1": 0.0,
+            "H2": 0.0,
+            "H3": 0.0,
+            "H4": 0.0,
+            "V1": 0.0,
+            "V2": 0.1
+          }
+        }
+      }
+    }
+  ],
+  "acceptance": {
+    "normal_trajectories_unchanged": true,
+    "normal_cases_no_intervention": true,
+    "tracking_evidence_available_every_step": true,
+    "v1_hold_entered": true,
+    "v1_recovery_max_tilt_below_10_deg": true,
+    "v1_recovery_reduces_peak_tilt_by_80_percent": true,
+    "v1_hold_errors_within_configured_limits": true,
+    "v1_no_spurious_safe_abort": true,
+    "v2_low_excitation_case_remains_attitude_safe": true,
+    "fusion_model_executed_online": true,
+    "fusion_preserves_direct_esc_recovery": true
+  },
+  "all_acceptance_checks_passed": true,
+  "scope": "Simulator engineering validation only; not a blind model-accuracy claim and not evidence of real-sea certification."
+}
