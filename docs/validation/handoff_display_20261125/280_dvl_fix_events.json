@@ -1,0 +1,50 @@
+[
+  {
+    "time_s": 14.000000000000064,
+    "category": "mission",
+    "source": "mission_handoff",
+    "level": "log_only",
+    "episode": 1,
+    "message": "Pause/abort requested | not yet applied",
+    "state": "pause_pending",
+    "label": "Pause/abort requested | not yet applied",
+    "recovery_phase": "inactive",
+    "pause_abort_requested": true,
+    "original_mission_aborted": false,
+    "external_recovery_required": false,
+    "external_request_sent": null,
+    "external_takeover_confirmed": null
+  },
+  {
+    "time_s": 14.050000000000065,
+    "category": "mission",
+    "source": "mission_handoff",
+    "level": "log_only",
+    "episode": 1,
+    "message": "Navigation paused",
+    "state": "navigation_pause",
+    "label": "Navigation paused",
+    "recovery_phase": "pause",
+    "pause_abort_requested": true,
+    "original_mission_aborted": false,
+    "external_recovery_required": false,
+    "external_request_sent": null,
+    "external_takeover_confirmed": null
+  },
+  {
+    "time_s": 21.250000000000167,
+    "category": "mission",
+    "source": "mission_handoff",
+    "level": "log_only",
+    "episode": 1,
+    "message": "Relocalized | await authorization",
+    "state": "relocalized_wait",
+    "label": "Relocalized | await authorization",
+    "recovery_phase": "relocalized_wait",
+    "pause_abort_requested": true,
+    "original_mission_aborted": true,
+    "external_recovery_required": false,
+    "external_request_sent": null,
+    "external_takeover_confirmed": null
+  }
+]

@@ -459,6 +459,8 @@ def save_json(
 
 
 def save_csv(frames, path):
+    handoff_keys = ("state", "recovery_phase", "pause_abort_requested", "original_mission_aborted",
+                    "external_recovery_required", "external_request_sent", "external_takeover_confirmed")
     fields = [
         "time_s", "north_m", "east_m", "depth_m", "roll_deg",
         "pitch_deg", "yaw_deg", "overall_tier", "depth_tier",
@@ -478,6 +480,7 @@ def save_csv(frames, path):
             f"{name}_telemetry_status"
             for name in ("H1", "H2", "H3", "H4", "V1", "V2")
         ],
+        *["mission_" + key for key in handoff_keys],
     ]
     with path.open("w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(file, fieldnames=fields)
@@ -533,6 +536,9 @@ def save_csv(frames, path):
                 f"{card['name']}_telemetry_status": card["telemetry_status"]
                 for card in frame["thrusters"]
             })
+            for key in handoff_keys:
+                value = frame.get("mission_handoff", {}).get(key)
+                row["mission_" + key] = "not_reported" if value is None else value
             writer.writerow(row)
 
 

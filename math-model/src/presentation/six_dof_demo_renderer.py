@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import shutil
+import textwrap
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
@@ -13,6 +14,8 @@ import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 import numpy as np
+
+from presentation.six_dof_observability import safety_display_lines
 
 
 TIER_COLORS = {
@@ -255,7 +258,7 @@ class SixDOFDemoRenderer:
             text.set_color(FOREGROUND)
         axis.text2D(
             0.02, 0.02,
-            "Roll {:+5.1f}°   Pitch {:+5.1f}°   Yaw {:+5.1f}°".format(
+            "SIM TRUE | Roll {:+5.1f}°  Pitch {:+5.1f}°  Yaw {:+5.1f}°".format(
                 *np.rad2deg(rpy)
             ),
             transform=axis.transAxes, color=FOREGROUND, fontsize=9,
@@ -580,16 +583,11 @@ class SixDOFDemoRenderer:
             )[2]
         )
         initial_depth = float(self.positions[0, 2])
-        guidance = str(
-            frame["ftc"].get("guidance_mode_applied", "normal")
-        )
-        mission_state = (
-            "PAUSED / LOCAL HOLD"
-            if guidance in {
-                "vertical_thruster_hold", "horizontal_degraded_hold",
-            }
-            else "ACTIVE"
-        )
+        handoff = frame.get("mission_handoff", {})
+        mission_state = handoff.get("label", "State unavailable")
+        recovery = handoff.get("external_recovery_required")
+        handoff_text = ("Required | takeover unconfirmed" if recovery is True
+                        else "Not required" if recovery is False else "Not reported")
         mode = str(
             self.injection_manifest.get("injection_mode", "unspecified")
         ).upper()
@@ -600,12 +598,13 @@ class SixDOFDemoRenderer:
                 f"Depth          {depth:7.2f} m | control {control_depth:7.2f} m "
                 f"| mission {mission_depth:7.2f} m"
             ),
-            f"Mission        {mission_state} | guidance {guidance.replace('_', ' ')}",
+            f"Mission        {mission_state}",
+            f"External recovery   {handoff_text}",
             f"Injection      {mode}   | environmental disturbance ON",
         )
         for row, line in enumerate(lines):
             axis.text(
-                0.02, 0.88 - 0.18 * row, line,
+                0.02, 0.91 - 0.16 * row, line,
                 color=FOREGROUND if row < 4 else MUTED,
                 fontsize=9.4 if row == 0 else 8.3,
                 fontweight="bold" if row == 0 else "normal",
@@ -635,8 +634,8 @@ class SixDOFDemoRenderer:
                 transform=axis.transAxes, va="top",
             )
             axis.text(
-                0.25, y, str(value)[:78], color=color, fontsize=7.7,
-                fontweight="bold", transform=axis.transAxes, va="top",
+                0.25, y, textwrap.fill(str(value), width=48), color=color, fontsize=7.4,
+                fontweight="bold", transform=axis.transAxes, va="top", linespacing=1.15,
             )
 
     def _draw_summary_ftc(self, index):
@@ -672,52 +671,16 @@ class SixDOFDemoRenderer:
             color=FTC_COLOR if guidance != "normal" else FOREGROUND,
             fontsize=8.4, fontweight="bold", transform=axis.transAxes,
         )
-        tracking_available = bool(ftc.get("tracking_error_available", False))
-        ratio = float(ftc.get("tracking_error_ratio", 0.0))
-        if not tracking_available:
-            safety_text = "UNAVAILABLE"
-            safety_color = TIER_COLORS["log_only"]
-        else:
-            tilt = float(ftc.get("tilt_angle_deg", 0.0))
-            depth_error = float(ftc.get("depth_tracking_error_m", 0.0))
-            horizontal = float(ftc.get("horizontal_tracking_error_m", 0.0))
-            safety_ratio = ratio
-            if guidance == "horizontal_degraded_hold":
-                motion_ratio = float(
-                    ftc.get("horizontal_motion_error_ratio", 0.0)
-                )
-                safety_ratio = motion_ratio
-                yaw = float(ftc.get("yaw_tracking_error_deg", 0.0))
-                yaw_rate = float(
-                    ftc.get("yaw_rate_tracking_error_deg_s", 0.0)
-                )
-                cross_track = float(ftc.get("cross_track_error_m", 0.0))
-                safety_text = (
-                    f"HOLD | yaw {yaw:.1f}/25 deg | "
-                    f"dr {yaw_rate:.1f}/20 deg/s | "
-                    f"xtrack {cross_track:.2f}/2 m | r {motion_ratio:.2f}"
-                )
-            else:
-                safety_text = (
-                    f"{'SAFE' if ratio < 1.0 else 'LIMIT EXCEEDED'} | "
-                    f"tilt {tilt:.1f}/35 deg | dz {depth_error:.2f}/3 m | "
-                    f"dxy {horizontal:.2f}/8 m"
-                )
-            safety_color = (
-                TIER_COLORS["normal"]
-                if safety_ratio < 0.60
-                else (
-                    TIER_COLORS["possible"]
-                    if safety_ratio < 1.0
-                    else TIER_COLORS["confirmed"]
-                )
-            )
+        safety_text, provenance_text, safety_tier = safety_display_lines(self.frames[index])
+        safety_color = TIER_COLORS[safety_tier]
         axis.text(0.02, 0.18, "Safety", color=MUTED, fontsize=8,
                   transform=axis.transAxes)
         axis.text(
             0.22, 0.18, safety_text,
             color=safety_color, fontsize=7.6, transform=axis.transAxes,
         )
+        axis.text(0.02, 0.02, provenance_text, color=MUTED, fontsize=7.2,
+                  transform=axis.transAxes)
 
     def _draw_sensors(self, index):
         axis = self.sensor_axis
@@ -792,7 +755,7 @@ class SixDOFDemoRenderer:
     def _draw_status(self, index):
         axis = self.status_axis
         axis.clear()
-        _configure_axis(axis, "Current-frame FTC, model advice and safety")
+        _configure_axis(axis, self.frames[index].get("mission_handoff", {}).get("label", "Mission state unavailable"))
         axis.axis("off")
         frame = self.frames[index]
         ftc = frame["ftc"]
@@ -849,25 +812,12 @@ class SixDOFDemoRenderer:
             0.16, 0.25, f"{group} | Top-2 {candidate_text}",
             color=FOREGROUND, fontsize=8.2, va="top",
         )
-        guidance = str(ftc.get("guidance_mode_applied", "normal")).replace(
-            "_", " "
-        )
-        ratio = float(ftc.get("tracking_error_ratio", 0.0))
-        safety_text = (
-            f"{guidance} | ratio {ratio:.2f} | "
-            f"tilt {float(ftc.get('tilt_angle_deg', 0.0)):.1f} deg | "
-            f"yaw {float(ftc.get('yaw_tracking_error_deg', 0.0)):.1f} deg | "
-            f"hm {float(ftc.get('horizontal_motion_error_ratio', 0.0)):.2f}"
-        )
-        safety_color = (
-            TIER_COLORS["normal"]
-            if ftc.get("tracking_error_available", False) and ratio < 0.60
-            else TIER_COLORS["possible"]
-        )
-        axis.text(0.01, 0.07, "Safety", color=MUTED, fontsize=8, va="top")
+        safety_text, provenance_text, safety_tier = safety_display_lines(self.frames[index])
+        safety_color = TIER_COLORS[safety_tier]
+        axis.text(0.01, 0.10, "Safety", color=MUTED, fontsize=8, va="top")
         axis.text(
-            0.16, 0.07, safety_text,
-            color=safety_color, fontsize=7.5, va="top",
+            0.16, 0.10, safety_text + "\n" + provenance_text,
+            color=safety_color, fontsize=7.1, va="top", linespacing=1.5,
         )
 
     def _truth_intervals(self):

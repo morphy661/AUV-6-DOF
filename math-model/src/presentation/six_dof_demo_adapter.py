@@ -13,6 +13,8 @@ from typing import Any
 
 import numpy as np
 
+from presentation.six_dof_observability import display_observability
+
 
 SENSOR_NAMES = ("depth", "imu", "dvl")
 DEFAULT_THRUSTER_NAMES = ("H1", "H2", "H3", "H4", "V1", "V2")
@@ -303,6 +305,51 @@ def _maintenance_card(log: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def mission_handoff(log, obs):
+    """Applied guidance and recovery facts only. A local request is not an acknowledgement."""
+    rec = _mapping(log.get("mission_recovery"))
+    phase = rec.get("phase")
+    mode = log.get("ftc_guidance_mode_applied")
+    states = {
+        "pause": ("navigation_pause", "Navigation paused"),
+        "abort_external_recovery": ("external_recovery", "Aborted | external recovery required"),
+        "relocalized_wait": ("relocalized_wait", "Relocalized | await authorization"),
+        "abort_ascent": ("abort_ascent", "Aborted | powered ascent"),
+        "abort_near_surface": ("rendezvous", "Near surface | await recovery"),
+        "abort_sensor_guard": ("abort_guard", "Aborted | sensor guard"),
+    }
+    if phase == "relocalized_wait" and rec.get("reason") == "relocalized_wait_feedback_temporarily_restricted":
+        code, label = "relocalized_guard", "Relocalized | feedback restricted"
+    elif phase in states:
+        code, label = states[phase]
+    elif phase not in (None, "inactive"):
+        code, label = "unknown", "Recovery state unavailable"
+    elif mode == "attitude_feedback_guard":
+        code, label = "temporary_guard", "Temporary attitude guard"
+    elif mode == "safety_pause_untrusted_attitude":
+        code, label = "paused_untrusted", "Paused | attitude untrusted"
+    elif mode == "safety_pause":
+        att = obs["current_estimate"]
+        if all(att[k]["status"] == "measured" for k in ("attitude", "angular_rate")):
+            code, label = "paused_trusted", "Paused | attitude OK; await reset"
+        else:
+            code, label = "safety_pause", "Safety pause | not authorized"
+    elif mode in ("vertical_thruster_hold", "horizontal_degraded_hold"):
+        code, label = "degraded_guidance", "Degraded guidance | route paused"
+    elif mode == "normal" and log.get("ftc_mission_abort_requested"):
+        code, label = "pause_pending", "Pause/abort requested | not yet applied"
+    elif mode == "normal":
+        code, label = "active", "Active"
+    else:
+        code, label = "unknown", "Guidance state unavailable"
+    return dict(state=code, label=label, recovery_phase=phase,
+                pause_abort_requested=log.get("ftc_mission_abort_requested"),
+                original_mission_aborted=rec.get("mission_aborted"),
+                external_recovery_required=rec.get("external_recovery_required"),
+                # No transport or receiver acknowledgement exists in this interface.
+                external_request_sent=None, external_takeover_confirmed=None)
+
+
 def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
     """Adapt one simulator log without using privileged diagnosis labels."""
 
@@ -331,8 +378,11 @@ def adapt_log(log: Mapping[str, Any]) -> dict[str, Any]:
     )
     position = _vector(log.get("position_ned"), 3)
     estimated_position = _vector(log.get("estimated_position_ned", position), 3)
+    obs = display_observability(log)
     return {
         "time_s": _finite_float(log.get("time"), 0.0),
+        "observability": obs,
+        "mission_handoff": mission_handoff(log, obs),
         "pose": {
             "position_ned_m": position,
             "estimated_position_ned_m": estimated_position,
@@ -471,8 +521,32 @@ def extract_demo_events(frames: Sequence[Mapping[str, Any]]) -> list[dict[str, A
     seen_thruster_evidence = set()
     previous_ftc = ("normal_control", None)
     previous_maintenance = ("normal", "normal", "none")
+    previous_handoff = None
+    episode = 0
+    episode_open = False
     for frame in frames:
         time_s = _finite_float(frame.get("time_s"), 0.0)
+        h = _mapping(frame.get("mission_handoff"))
+        if h:
+            state = h["state"]
+            signature = (state, h["pause_abort_requested"], h["external_recovery_required"],
+                         h["external_request_sent"], h["external_takeover_confirmed"])
+            if signature != previous_handoff:
+                if state not in {"active", "unknown"} and not episode_open:
+                    episode += 1
+                    episode_open = True
+                if previous_handoff is not None or state not in {"active", "unknown"} or h["pause_abort_requested"]:
+                    message = h["label"]
+                    if state != "pause_pending" and h["pause_abort_requested"] and (not previous_handoff or not previous_handoff[1]):
+                        message += " | pause/abort requested"
+                    if h["external_recovery_required"]:
+                        message += " | takeover unconfirmed"
+                    events.append(dict(time_s=time_s, category="mission", source="mission_handoff",
+                                       level="normal" if state == "active" else "log_only",
+                                       episode=episode if episode_open else None, message=message, **h))
+                if state == "active":
+                    episode_open = False
+                previous_handoff = signature
         sensors = _mapping(frame.get("sensors"))
         for name in SENSOR_NAMES:
             card = _mapping(sensors.get(name))

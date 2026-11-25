@@ -1,0 +1,21 @@
+AUV operator-display and handoff evidence | 2026-11-25
+
+Scope: operator-facing mission state, observability, event episodes and CSV/JSON
+export. No new control authority. This is NOT a freeze of the development
+simulator, model, recovery manager or FTC. Missing recovery provenance in older
+inputs must not be read as confirmation of recovery or an external acknowledgement.
+
+The frozen examples are from the 2026-11-24 development working tree, not a
+claim that the older controller in this Git baseline can regenerate them.
+210/280 m, one seed per depth, 46 s at 20 Hz, healthy and paired IMU/DVL arms.
+For DVL, 14.00 s is the local pause request (previous guidance still applies);
+14.05 s is applied navigation pause. With a fix, 21.25 s is relocalization,
+not route resumption. Without a fix, 34.05 s is external recovery required,
+not takeover confirmation. The IMU recurrence stays in one paused episode.
+Human-readable report: see example event JSONs and the demonstration video.
+The 17 s MP4 compresses 46 s of simulated time; use the mission clock or the
+20 Hz CSV for timing. Log timestamps, not video frames, are authoritative.
+
+Verify archived bytes with SHA256SUMS. From the repository root run the four
+math-model/tests modules test_mission_handoff_display, test_display_observability,
+test_six_dof_demo_adapter, and test_six_dof_demo_scenario with pytest.

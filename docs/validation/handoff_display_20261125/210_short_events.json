@@ -1,0 +1,34 @@
+[
+  {
+    "time_s": 12.050000000000036,
+    "category": "mission",
+    "source": "mission_handoff",
+    "level": "log_only",
+    "episode": 1,
+    "message": "Temporary attitude guard",
+    "state": "temporary_guard",
+    "label": "Temporary attitude guard",
+    "recovery_phase": "inactive",
+    "pause_abort_requested": false,
+    "original_mission_aborted": false,
+    "external_recovery_required": false,
+    "external_request_sent": null,
+    "external_takeover_confirmed": null
+  },
+  {
+    "time_s": 12.200000000000038,
+    "category": "mission",
+    "source": "mission_handoff",
+    "level": "normal",
+    "episode": 1,
+    "message": "Active",
+    "state": "active",
+    "label": "Active",
+    "recovery_phase": "inactive",
+    "pause_abort_requested": false,
+    "original_mission_aborted": false,
+    "external_recovery_required": false,
+    "external_request_sent": null,
+    "external_takeover_confirmed": null
+  }
+]

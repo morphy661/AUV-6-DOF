@@ -1,0 +1,6 @@
+# Keep the reference payload byte-identical on Windows and Unix.
+*.csv -text whitespace=cr-at-eol
+*.json -text whitespace=cr-at-eol
+*.mp4 -text
+BASELINE.txt -text
+SHA256SUMS text eol=lf
