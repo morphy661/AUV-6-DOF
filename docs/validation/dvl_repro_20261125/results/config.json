@@ -1,0 +1,48 @@
+{
+  "frames": 920,
+  "actions": [
+    [
+      0.05,
+      "normal_control"
+    ],
+    [
+      12.0,
+      "degraded_operation"
+    ]
+  ],
+  "guidance": [
+    [
+      0.05,
+      "normal"
+    ]
+  ],
+  "phases": [
+    [
+      0.05,
+      null
+    ]
+  ],
+  "ai_updates": 83,
+  "ai_admissions": 0,
+  "isolations": [],
+  "hashes": {
+    "pre_inj": "01419d7137238202b64eb6e127990992859a50d0a87ce4e7ef59c38c8cc64eec",
+    "pre_fix": "1a3e23cc113ad2fae8755eecf423081a2c9c471d078e8e44b535afe7ea0c2c5c"
+  },
+  "max_tilt_deg": 3.2056472389637807,
+  "final_xy_est_error_m": 0.03715335274911535,
+  "differences": [
+    "actions",
+    "guidance",
+    "phases",
+    "ai_updates",
+    "hashes",
+    "max_tilt_deg",
+    "final_xy_est_error_m"
+  ],
+  "environment": {
+    "python": "3.11.15",
+    "torch": "2.5.1+cu121",
+    "numpy": "2.4.4"
+  }
+}

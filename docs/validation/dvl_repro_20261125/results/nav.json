@@ -1,0 +1,59 @@
+{
+  "frames": 920,
+  "actions": [
+    [
+      0.05,
+      "normal_control"
+    ],
+    [
+      12.0,
+      "degraded_operation"
+    ],
+    [
+      14.0,
+      "safe_hold_or_abort"
+    ]
+  ],
+  "guidance": [
+    [
+      0.05,
+      "normal"
+    ],
+    [
+      14.05,
+      "safety_pause"
+    ]
+  ],
+  "phases": [
+    [
+      0.05,
+      "inactive"
+    ],
+    [
+      14.05,
+      "pause"
+    ],
+    [
+      34.05,
+      "abort_external_recovery"
+    ]
+  ],
+  "ai_updates": 79,
+  "ai_admissions": 0,
+  "isolations": [],
+  "hashes": {
+    "pre_inj": "4a21fd768ca491a421ffb4aa9fe5996ce510b7eee998054a2a99f1d45d6f776c",
+    "pre_fix": "944f85af09a746853efb3dc56be66ff74bc5b2492ea5252a0cf325ccccde1b6e"
+  },
+  "max_tilt_deg": 3.1826008710649356,
+  "final_xy_est_error_m": 0.07343147348673522,
+  "differences": [
+    "ai_updates",
+    "hashes"
+  ],
+  "environment": {
+    "python": "3.11.15",
+    "torch": "2.5.1+cu121",
+    "numpy": "2.4.4"
+  }
+}

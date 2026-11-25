@@ -1,0 +1,610 @@
+--- a/math-model/src/diagnosis/maintenance_ticket_policy.py
++++ b/math-model/src/diagnosis/maintenance_ticket_policy.py
+@@ -6,7 +6,7 @@
+ """
+ 
+ from collections import Counter
+-from dataclasses import dataclass
++from dataclasses import dataclass, field
+ from typing import Any, Mapping
+ 
+ import numpy as np
+@@ -28,11 +28,20 @@
+     ticket_recovery_s: float = 2.50
+     merge_gap_s: float = 30.0
+     evidence_tail_steps: int = 20
++    minimum_current_mode_probability: float = 0.85
++    # The legacy local-anomaly threshold is retained for config loading only.
++    # Voltage/temperature anomalies cannot establish mechanical no-output.
++    minimum_no_output_score: float = field(default=0.80, kw_only=True)
++    maximum_no_output_evidence_age_s: float = field(default=1.0, kw_only=True)
++    maximum_motion_sample_gap_s: float = field(default=0.20, kw_only=True)
++    maximum_motion_evidence_age_s: float = field(default=1.0, kw_only=True)
+ 
+     def __post_init__(self):
+         probabilities = (
+             "minimum_excitation_ratio",
+             "minimum_no_output_local_anomaly",
++            "minimum_current_mode_probability",
++            "minimum_no_output_score",
+         )
+         for name in probabilities:
+             value = float(getattr(self, name))
+@@ -52,6 +61,9 @@
+             "thrust_loss_recurrence_window_s",
+             "ticket_recovery_s",
+             "merge_gap_s",
++            "maximum_no_output_evidence_age_s",
++            "maximum_motion_sample_gap_s",
++            "maximum_motion_evidence_age_s",
+         ):
+             value = float(getattr(self, name))
+             if not np.isfinite(value) or value < 0.0:
+@@ -114,6 +126,20 @@
+         "local_anomaly_scores": local_anomaly,
+         "motion_loss_evidence": motion_evidence,
+         "saturation_fraction": saturation_fraction,
++        # Optional observable metadata, not a learned feature or truth label.
++        # Legacy datasets without freshness-aware proof fail closed for mode 1.
++        "no_output_scores": (
++            _as_numpy(dataset["maintenance_no_output_scores"])[indices]
++            if "maintenance_no_output_scores" in dataset
++            else np.zeros((len(indices), 6))
++        ),
++        # Optional integrity side channel. Legacy batch data remains explicitly
++        # unverified; online review always supplies this mask from raw packets.
++        "motion_evidence_valid": (
++            _as_numpy(dataset["maintenance_motion_evidence_valid"])[indices]
++            if "maintenance_motion_evidence_valid" in dataset
++            else np.ones((len(indices), 6), dtype=bool)
++        ),
+     }
+ 
+ 
+@@ -137,6 +163,16 @@
+             f"saturation_fraction must have shape ({sample_count}, 6)"
+         )
+     result["saturation_fraction"] = saturation
++    scores = np.asarray(evidence.get("no_output_scores", np.zeros((sample_count, 6))), dtype=float)
++    if (scores.shape != (sample_count, 6) or not np.all(np.isfinite(scores))
++            or np.any(scores < 0.) or np.any(scores > 1.)):
++        raise ValueError(f"no_output_scores must have shape ({sample_count}, 6) and lie in [0, 1]")
++    result["no_output_scores"] = scores
++    valid = np.asarray(evidence.get("motion_evidence_valid", np.ones((sample_count, 6))), dtype=float)
++    if (valid.shape != (sample_count, 6) or not np.all(np.isfinite(valid))
++            or np.any((valid != 0.) & (valid != 1.))):
++        raise ValueError(f"motion_evidence_valid must have shape ({sample_count}, 6) and contain booleans")
++    result["motion_evidence_valid"] = valid.astype(bool)
+     return result
+ 
+ 
+@@ -199,6 +235,15 @@
+     qualified_mode = np.zeros(sample_count, dtype=np.int64)
+     excitation = np.zeros(sample_count, dtype=float)
+     independent = np.zeros(sample_count, dtype=float)
++    current_probabilities = decisions.get("mode_probabilities")
++    if current_probabilities is not None:
++        current_probabilities = np.asarray(current_probabilities, dtype=float)
++        if (current_probabilities.shape != (sample_count, 3)
++                or not np.all(np.isfinite(current_probabilities))
++                or np.any(current_probabilities < 0.)
++                or np.any(current_probabilities > 1.)
++                or not np.allclose(current_probabilities.sum(axis=1), 1., atol=1e-5)):
++            raise ValueError("mode_probabilities must contain normalized finite 3-class probabilities")
+     for position in range(sample_count):
+         health_level = int(decisions["health_level_pred"][position])
+         mode = int(decisions["mode_pred"][position])
+@@ -207,20 +252,44 @@
+         )
+         excitation[position] = command_evidence
+         if mode == 1:
+-            independent[position] = local
++            indices = np.asarray(decisions["candidate_indices"])[position]
++            indices = indices[indices > 0] - 1
++            if not len(indices):
++                indices = np.argsort(-np.asarray(decisions["smoothed_location_probabilities"])[position], kind="stable")[:2]
++            scores = np.asarray(evidence.get("no_output_scores", np.zeros((sample_count, 6))))[position, indices]
++            # Excitation and proof must refer to the SAME candidate channel.
++            supported = evidence["excitation_ratios"][position, indices] >= config.minimum_excitation_ratio
++            independent[position] = float(np.max(np.where(supported, scores, 0.)))
+             qualified[position] = (
+                 health_level >= 3
+-                and command_evidence >= config.minimum_excitation_ratio
+-                and local >= config.minimum_no_output_local_anomaly
++                and independent[position] >= config.minimum_no_output_score
+             )
+         elif mode == 2:
+-            independent[position] = motion
++            indices = np.asarray(decisions["candidate_indices"])[position]
++            indices = indices[indices > 0] - 1
++            if not len(indices):
++                indices = np.argsort(-np.asarray(decisions["smoothed_location_probabilities"])[position], kind="stable")[:2]
++            valid = np.asarray(evidence.get("motion_evidence_valid", np.ones((sample_count, 6), dtype=bool)))[position, indices]
++            supported = valid & (evidence["excitation_ratios"][position, indices] >= config.minimum_excitation_ratio)
++            independent[position] = float(np.max(np.where(supported, evidence["motion_loss_evidence"][position, indices], 0.)))
+             qualified[position] = (
+                 health_level >= 2
+-                and command_evidence >= config.minimum_excitation_ratio
+-                and motion
++                and np.any(supported)
++                and independent[position]
+                 >= config.minimum_thrust_loss_motion_evidence
+             )
++            # A hysteresis-held diagnosis is history, not fresh supporting
++            # evidence. Do not accumulate formal-ticket time while the current
++            # model output disagrees or has already entered recovery.
++            if current_probabilities is not None:
++                qualified[position] &= bool(
++                    np.argmax(current_probabilities[position]) == 2
++                    and current_probabilities[position, 2]
++                    >= config.minimum_current_mode_probability
++                )
++            states = decisions.get("temporal_state_pred")
++            if states is not None:
++                qualified[position] &= str(states[position]) == "confirmed"
+         if qualified[position]:
+             qualified_mode[position] = mode
+     return qualified, qualified_mode, excitation, independent
+@@ -403,6 +472,12 @@
+     )
+     ticket_qualified = qualified.copy()
+     ticket_qualified[(candidate_mode == 2) & ~context_stable] = False
++    groups = decisions.get("suspected_groups")
++    if groups is None:
++        groups = [
++            _group_and_candidates(p)[0]
++            for p in decisions["smoothed_location_probabilities"]
++        ]
+     ticket_active = np.zeros(sample_count, dtype=bool)
+     ticket_mode = np.zeros(sample_count, dtype=np.int64)
+     ticket_pending = np.zeros(sample_count, dtype=bool)
+@@ -455,6 +530,22 @@
+                     )
+                     pending = None
+             last_context_id = context_id
++
++            # A change between horizontal and vertical fault hypotheses must
++            # not join two separate suspicions into one persistent diagnosis.
++            # Exact thruster identity is deliberately NOT required to persist.
++            if (pending is not None and pending["mode"] == 2
++                    and is_qualified and mode == 2
++                    and groups[position] in ("horizontal", "vertical")
++                    and pending["group"] in ("horizontal", "vertical")
++                    and groups[position] != pending["group"]):
++                pending_observations.append(_pending_observation_record(
++                    mission_id, pending["positions"], end_times, decisions,
++                    excitation, independent, "group_transition_observation",
++                    guidance_context_id=pending["context_id"],
++                    qualified_duration_s=pending["qualified_duration_s"],
++                ))
++                pending = None
+ 
+             if active:
+                 if raw_is_qualified:
+@@ -642,6 +733,7 @@
+                     "last_window_time_s": time_s,
+                     "previous_qualified": True,
+                     "context_id": context_id,
++                    "group": str(groups[position]),
+                 }
+                 if config.thrust_loss_pending_confirmation_s <= 0.0:
+                     active = True
+--- /dev/null
++++ b/math-model/src/diagnosis/online_maintenance_review.py
+@@ -0,0 +1,257 @@
++"""Causal formal-maintenance review, independent of AI evidence used by FTC.
++
++The existing evidence qualifier is shared with the batch policy. A bounded
++online state tracks confirmation and recovery; parity with the batch policy is
++checked on identical observation streams. No truth or future sample is read.
++"""
++from collections import deque
++from collections.abc import Mapping
++from copy import deepcopy
++import numpy as np
++from diagnosis.maintenance_ticket_policy import MaintenanceTicketConfig,_qualify_windows,_group_and_candidates
++from diagnosis.thruster_health_monitor import extract_thruster_health_features,resolve_generalized_mass_diagonal
++from ftc.safety_supervisor import build_rule_based_ftc_evidence, FTCSupervisorConfig
++
++
++def _telemetry_proof(log):
++    """Fresh joint current/RPM proof; missing/malformed packets fail closed."""
++    fields=("commanded_thruster_forces","thruster_force_limits","thruster_expected_currents",
++        "thruster_measured_currents","thruster_expected_rpms","thruster_measured_rpms",
++        "thruster_telemetry_valid","thruster_telemetry_age_s")
++    try:
++        values={k:np.asarray(log[k],dtype=float) for k in fields}
++        if any(a.shape!=(6,) or not np.all(np.isfinite(a)) for a in values.values()):
++            raise ValueError("Invalid packet")
++        if np.any(values["thruster_force_limits"]<=0.) or np.any(values["thruster_telemetry_age_s"]<0.):
++            raise ValueError("Invalid limits or age")
++        fresh=(values["thruster_telemetry_valid"]==1.) & (values["thruster_telemetry_age_s"]<=.20)
++        supplied=log.get("maintenance_no_output_scores")
++        if supplied is not None:
++            scores=np.asarray(supplied,dtype=float)
++            if (scores.shape!=(6,) or not np.all(np.isfinite(scores)) or np.any(scores<0.)
++                    or np.any(scores>1.) or abs(float(log["maintenance_no_output_evidence_time_s"])-float(log["time"]))>1e-9):
++                raise ValueError("Invalid same-step proof")
++        else:
++            scores=build_rule_based_ftc_evidence(log,config=FTCSupervisorConfig()).no_output_scores
++        return np.where(fresh,scores,0.),fresh
++    except (KeyError,TypeError,ValueError):
++        return np.zeros(6),np.zeros(6,dtype=bool)
++
++
++def _electrical_observations(log,fresh):
++    """Keep observable electrical alerts without claiming a mechanical cause."""
++    observations=[]
++    for field,kind,threshold in (("thruster_measured_voltages","undervoltage",.85*float(log.get("thruster_nominal_voltage",48.))),
++            ("thruster_measured_temperatures","overtemperature",float(log.get("thruster_ambient_temperature",20.))+45.)):
++        try: values=np.asarray(log[field],dtype=float)
++        except (KeyError,TypeError,ValueError):continue
++        if values.shape!=(6,):continue
++        anomaly=values<threshold if kind=="undervoltage" else values>threshold
++        for i in np.flatnonzero(fresh & np.isfinite(values) & anomaly):
++            observations.append(dict(thruster=("H1","H2","H3","H4","V1","V2")[i],kind=kind,
++                measured_value=float(values[i]),threshold=float(threshold),requires_inspection=True,
++                mechanical_no_output_confirmed=False))
++    return observations
++
++
++def _motion_sample_support(log,previous,maximum_gap_s):
++    """Integrity of body acceleration and rate derivative, NOT absolute XY."""
++    reasons=[]
++    if previous is None:return False,["no_previous_imu_sample"]
++    dt=float(log["time"])-float(previous["time"])
++    if not 0.<dt<=maximum_gap_s+1e-9:reasons.append("imu_sample_gap")
++    for packet,label,fields in ((log,"current",("linear_acceleration","angular_velocity")),
++            (previous,"previous",("angular_velocity",))):
++        imu=packet.get("imu",{})
++        if not isinstance(imu,Mapping):reasons.append(label+"_imu_missing");continue
++        validity=imu.get("valid",True)
++        if not isinstance(validity,(bool,np.bool_)) or not bool(validity):reasons.append(label+"_imu_invalid")
++        if imu.get("frame","body")!="body":reasons.append(label+"_imu_frame")
++        for field in fields:
++            try:a=np.asarray(imu[field],dtype=float)
++            except (KeyError,TypeError,ValueError):a=np.array([])
++            if a.shape!=(3,) or not np.all(np.isfinite(a)):reasons.append(label+"_imu_"+field+"_invalid")
++        health=packet.get("sensor_health",{}).get("imu",{})
++        if health.get("trust_level","trusted")!="trusted":reasons.append(label+"_imu_not_trusted")
++        source=packet.get("state_estimate_sources",{}).get("angular_velocity")
++        if source is not None and source!="imu":reasons.append(label+"_angular_rate_fallback")
++    return not reasons,reasons
++
++
++class OnlineMaintenanceReview:
++    def __init__(self,config=None,*,generalized_mass_diagonal=None,sequence_length=50,maximum_result_age_s=.6):
++        self.config=config or MaintenanceTicketConfig()
++        self.mass=resolve_generalized_mass_diagonal(generalized_mass_diagonal)
++        self.sequence_length=int(sequence_length)
++        self.maximum_result_age_s=float(maximum_result_age_s)
++        if self.sequence_length<2 or not np.isfinite(self.maximum_result_age_s) or self.maximum_result_age_s<=0:
++            raise ValueError("Invalid review window or result age")
++        self.reset()
++
++    def reset(self):
++        self.previous_log=None
++        self.tail=deque(maxlen=self.config.evidence_tail_steps)
++        self.contexts=deque(maxlen=self.sequence_length)
++        self.rows=[];self.last_inference=None;self.last_time=None
++        self.last_active=False;self.created_count=0;self.closed_count=0;self.events=[]
++        self.last_status=dict(active=False,pending=False,created=False,closed=False,qualified=False,
++            mode="normal",status="observing",inspection_candidates=[],
++            minimum_probability=self.config.minimum_current_mode_probability,
++            affects_ftc=False,created_count=0,closed_count=0)
++        self.last_usable=False
++        self.active_mode=0;self.pending_state=None;self.recovery_start=None
++        self.previous_context=None;self.location_sum=np.zeros(6);self.location_count=0
++
++    def _advance(self,row):
++        decisions=dict(health_level_pred=[row["level"]],mode_pred=[row["mode"]],
++            temporal_state_pred=[row["state"]],mode_probabilities=np.array([row["prob"]]),
++            smoothed_location_probabilities=np.array([row["location"]]),candidate_indices=np.array([row["candidates"]]))
++        evidence=dict(excitation_ratios=np.array([row["excitation"]]),
++            local_anomaly_scores=np.array([row["local"]]),motion_loss_evidence=np.array([row["motion"]]),
++            no_output_scores=np.array([row.get("no_output",np.zeros(6))]))
++        evidence["motion_evidence_valid"]=np.array([row.get("motion_valid",np.ones(6,dtype=bool))])
++        raw,mode,_,_=_qualify_windows(decisions,evidence,self.config)
++        raw=bool(raw[0]);mode=int(mode[0]);qualified=raw and (mode!=2 or row["stable"])
++        t=row["time"];context=row["context"];pending=self.pending_state
++        if self.previous_context is not None and context!=self.previous_context and pending is not None and pending["mode"]==2:
++            pending=None
++        self.previous_context=context
++        if pending is not None and pending["mode"]==2 and qualified and mode==2 and row["group"] in ("horizontal","vertical") and pending["group"] in ("horizontal","vertical") and row["group"]!=pending["group"]:
++            pending=None
++        if self.last_active:
++            if raw:
++                self.recovery_start=None
++                if mode==1:self.active_mode=1
++            else:
++                if self.recovery_start is None:self.recovery_start=t
++                if t-self.recovery_start>=self.config.ticket_recovery_s:
++                    self.active_mode=0;self.recovery_start=None
++            self.pending_state=pending
++            return self.active_mode>0,False,qualified,self.active_mode
++        if pending is not None and pending["mode"]==2 and raw and mode==1:pending=None
++        if pending is not None and pending["mode"]==2:
++            if qualified and mode==2:
++                if pending["previous_qualified"]:pending["duration"]+=max(0.,t-pending["last_time"])
++                pending.update(previous_qualified=True,last_time=t,recovery=None)
++                if pending["duration"]>=self.config.thrust_loss_pending_confirmation_s:
++                    self.active_mode=2;pending=None
++            else:
++                pending.update(previous_qualified=False,last_time=t)
++                if pending["recovery"] is None:pending["recovery"]=t
++                if t-pending["recovery"]>=self.config.thrust_loss_recovery_cancel_s:pending=None
++            if self.active_mode or pending is not None:
++                self.pending_state=pending
++                return self.active_mode>0,pending is not None,qualified,self.active_mode
++        if pending is not None and pending["mode"]==1:
++            if raw and mode==1:
++                if t-pending["start"]>=self.config.ticket_confirmation_s:self.active_mode=1;pending=None
++            else:pending=None
++            if self.active_mode or pending is not None:
++                self.pending_state=pending
++                return self.active_mode>0,pending is not None,qualified,self.active_mode
++        if raw and mode==1:
++            pending=dict(mode=1,start=t)
++            if self.config.ticket_confirmation_s<=0:self.active_mode=1;pending=None
++        elif qualified and mode==2:
++            pending=dict(mode=2,start=t,duration=0.,last_time=t,previous_qualified=True,recovery=None,group=row["group"])
++            if self.config.thrust_loss_pending_confirmation_s<=0:self.active_mode=2;pending=None
++        self.pending_state=pending
++        return self.active_mode>0,pending is not None,qualified,self.active_mode
++
++    @staticmethod
++    def _probability(values,size,default):
++        try: a=np.asarray(values,dtype=float)
++        except (TypeError,ValueError):return np.asarray(default,dtype=float)
++        if a.shape!=(size,) or not np.all(np.isfinite(a)) or np.any(a<0) or a.sum()<=0:
++            return np.asarray(default,dtype=float)
++        return a/a.sum()
++
++    def update(self,log,diagnosis):
++        time=float(log["time"])
++        if not np.isfinite(time) or (self.last_time is not None and time<=self.last_time):
++            raise ValueError("Review times must be finite and strictly increasing")
++        self.last_time=time
++        context=int(log.get("guidance_context_id",0))
++        self.contexts.append(context)
++        health=extract_thruster_health_features(log,self.previous_log,generalized_mass_diagonal=self.mass)
++        motion_valid,motion_reasons=_motion_sample_support(log,self.previous_log,self.config.maximum_motion_sample_gap_s)
++        self.previous_log=log
++        commands=np.asarray(log.get("commanded_thruster_forces",np.zeros(6)),dtype=float)
++        limits=np.asarray(log.get("thruster_force_limits",np.ones(6)*40),dtype=float)
++        no_output,fresh_telemetry=_telemetry_proof(log)
++        electrical=_electrical_observations(log,fresh_telemetry)
++        self.tail.append((commands.copy(),health.local_anomaly_score.copy(),health.motion_loss_evidence.copy(),no_output.copy(),time,motion_valid))
++        tail_motion_valid=all(r[5] and time-r[4]<=self.config.maximum_motion_evidence_age_s+1e-9 for r in self.tail)
++        if motion_valid and not tail_motion_valid:motion_reasons=["awaiting_clean_motion_evidence_tail"]
++        trusted=not any(state.get("trust_level")=="untrusted" for state in log.get("sensor_health",{}).values())
++        trusted=trusted and not log.get("ftc_untrusted_esc_channels",())
++        inference=diagnosis.get("inference_time_s")
++        try: age=time-float(inference)
++        except (TypeError,ValueError): age=float("inf")
++        usable=bool(diagnosis.get("available",False) and not diagnosis.get("advisory_gate_active",False)
++            and trusted and np.isfinite(age) and -1e-9<=age<=self.maximum_result_age_s+1e-9)
++        fresh=bool(diagnosis.get("updated",False) and inference is not None and
++            (self.last_inference is None or float(inference)>self.last_inference))
++        context_changed=bool(self.rows and context!=self.rows[-1]["context"])
++        invalid_due=not usable and (not self.rows or self.last_usable or context_changed or time-self.rows[-1]["time"]>=.5-1e-9)
++        self.last_usable=usable
++        status=dict(self.last_status,created=False,closed=False,updated=False,
++            time_s=time,model_available=usable,raw_event_retained=bool(diagnosis.get("record_event",False)
++                or diagnosis.get("raw_health_level",0)>0 or electrical),current_fault_probability=None,
++            electrical_observations=electrical,no_output_evidence_available=bool(np.any(fresh_telemetry)),
++            current_no_output_scores=no_output.tolist(),
++            evidence_policy="fresh_joint_current_rpm_and_valid_body_motion_v2",
++            motion_evidence_available=tail_motion_valid,motion_evidence_reasons=motion_reasons,
++            motion_evidence_source="body_imu_acceleration_and_rate_derivative",
++            navigation_reference_warning=(log.get("horizontal_position_reference")=="degraded_without_absolute_fix"))
++        if not (fresh or invalid_due):
++            return status
++        if fresh:self.last_inference=float(inference)
++        prob=self._probability(diagnosis.get("raw_mode_probabilities"),3,[1.,0.,0.]) if usable else np.array([1.,0.,0.])
++        location=self._probability(diagnosis.get("raw_location_probabilities"),6,[1/6]*6)
++        tail=list(self.tail)
++        excitation=np.sqrt(np.mean([r[0]**2 for r in tail],axis=0))/np.maximum(limits,1e-6)
++        candidates=[int(c.get("index",0)) for c in diagnosis.get("candidates",[])][:2]
++        candidates=(candidates+[0,0])[:2]
++        stable=len(self.contexts)==self.sequence_length and all(c==context for c in self.contexts)
++        recent_proof=[r[3] for r in tail if time-r[4]<=self.config.maximum_no_output_evidence_age_s+1e-9]
++        self.rows.append(dict(time=time,context=context,stable=stable,
++            level=int(diagnosis.get("health_level",0)) if usable else 0,
++            mode=int(diagnosis.get("confirmed_mode",0)) if usable else 0,
++            state=str(diagnosis.get("temporal_state","normal")) if usable else "normal",
++            group=str(diagnosis.get("suspected_group","none")),prob=prob,location=location,
++            candidates=candidates,excitation=np.clip(excitation,0,1),
++            local=np.mean([r[1] for r in tail],axis=0),motion=np.mean([r[2] for r in tail],axis=0),
++            motion_valid=np.full(6,tail_motion_valid,dtype=bool),
++            no_output=np.where(fresh_telemetry,np.max(recent_proof,axis=0),0.)))
++        active,pending,qualified,mode=self._advance(self.rows[-1])
++        created=active and not self.last_active;closed=self.last_active and not active
++        if created:
++            self.created_count+=1;self.events.append(dict(time_s=time,event="created",mode=mode))
++            self.location_sum=np.zeros(6);self.location_count=0
++        if closed:self.closed_count+=1;self.events.append(dict(time_s=time,event="closed"))
++        self.last_active=active
++        if active:self.location_sum+=location;self.location_count+=1
++        candidates=_group_and_candidates(self.location_sum/self.location_count)[1] if active else []
++        status.update(active=active,created=created,closed=closed,pending=pending,updated=True,
++            qualified=qualified,
++            mode=("normal","no_output","thrust_loss")[mode],
++            status="maintenance_required" if active else ("pending_review" if pending else "observing"),
++            inspection_candidates=deepcopy(candidates),created_count=self.created_count,closed_count=self.closed_count,
++            current_fault_probability=float(np.max(prob[1:])),
++            current_thrust_loss_probability=float(prob[2]))
++        self.last_status=deepcopy(status)
++        return status
++
++
++class MaintenanceReviewObserver:
++    """Attach review metadata while preserving all original control inputs."""
++    def __init__(self,bridge,config=None):
++        self.bridge=bridge
++        self.review=OnlineMaintenanceReview(config,generalized_mass_diagonal=bridge.diagnostic_generalized_mass_diagonal,
++            sequence_length=bridge.sequence_length,maximum_result_age_s=1.2*bridge.inference_stride*.05)
++    def __getattr__(self,name):return getattr(self.bridge,name)
++    def reset(self):self.bridge.reset();self.review.reset()
++    def update(self,log):
++        result=self.bridge.update(log)
++        return dict(result,maintenance_review=self.review.update(log,result))
+--- a/math-model/src/presentation/advisory_context_gate.py
++++ b/math-model/src/presentation/advisory_context_gate.py
+@@ -1,7 +1,7 @@
+ """Causal context gate for learned six-DOF maintenance advice.
+ 
+-The gate only controls whether learned advice is presented to the operator. It
+-does not modify sensor diagnosis, direct thruster evidence, or FTC decisions.
++The gate masks learned advice before presentation and downstream AI/FTC fusion.
++Sensor diagnosis and direct safety guards remain independent of this gate.
+ """
+ 
+ from __future__ import annotations
+@@ -71,12 +71,18 @@
+     """Configuration for causal learned-advice stabilization."""
+ 
+     stabilization_time_s: float = 3.0
++    dvl_unavailable_reset_delay_s: float = 0.5
+ 
+     def __post_init__(self):
+         if not isfinite(self.stabilization_time_s):
+             raise ValueError("stabilization_time_s must be finite")
+         if self.stabilization_time_s < 0.0:
+             raise ValueError("stabilization_time_s must be non-negative")
++        if (
++            not isfinite(self.dvl_unavailable_reset_delay_s)
++            or self.dvl_unavailable_reset_delay_s < 0.0
++        ):
++            raise ValueError("dvl_unavailable_reset_delay_s must be finite and non-negative")
+ 
+ 
+ @dataclass(frozen=True)
+@@ -97,6 +103,8 @@
+     def reset(self):
+         self._guidance_context_id = None
+         self._direct_faults = frozenset()
++        self._reset_eligible_faults = frozenset()
++        self._dvl_unavailable_since_s = None
+         self._operator_hypotheses = frozenset()
+         self._untrusted_esc_channels = frozenset()
+         self._suppress_until_s = float("-inf")
+@@ -135,12 +143,26 @@
+             self._guidance_context_id = context_id
+ 
+         direct_faults = _direct_sensor_faults(log)
+-        direct_onsets = direct_faults - self._direct_faults
++        reset_eligible_faults = set(direct_faults)
++        dvl_health = _mapping(_mapping(log.get("sensor_health")).get("dvl"))
++        if "dvl" in direct_faults and dvl_health.get("fault_type") == "unavailable":
++            if self._dvl_unavailable_since_s is None:
++                self._dvl_unavailable_since_s = time_s
++            # Missing DVL samples have an explicit validity feature. Preserve
++            # that history for a brief dropout, but never admit advice while
++            # the current sensor is untrusted, or reuse pre-dropout inference.
++            self._fresh_inference_required = True
++            if time_s - self._dvl_unavailable_since_s < self.config.dvl_unavailable_reset_delay_s:
++                reset_eligible_faults.discard("dvl")
++        else:
++            self._dvl_unavailable_since_s = None
++        direct_onsets = reset_eligible_faults - self._reset_eligible_faults
+         if direct_onsets:
+             transitions.append(
+                 "direct_sensor_fault:" + ",".join(sorted(direct_onsets))
+             )
+         self._direct_faults = direct_faults
++        self._reset_eligible_faults = frozenset(reset_eligible_faults)
+ 
+         hypotheses = _operator_sensor_hypotheses(log)
+         hypothesis_onsets = hypotheses - self._operator_hypotheses
+--- a/math-model/src/presentation/six_dof_model_bridge.py
++++ b/math-model/src/presentation/six_dof_model_bridge.py
+@@ -11,6 +11,8 @@
+ 
+ from diagnosis.maintenance_health_decision import MaintenanceHealthDecision
+ from diagnosis.temporal_fault_decision import TemporalDecisionConfig
++from diagnosis.maintenance_ticket_policy import MaintenanceTicketConfig
++from diagnosis.online_maintenance_review import OnlineMaintenanceReview
+ from presentation.advisory_context_gate import (
+     AdvisoryContextGate,
+     AdvisoryGateConfig,
+@@ -39,8 +41,9 @@
+ class SixDOFModelBridge:
+     """Run fixed-length model windows without using future samples.
+ 
+-    Model output is maintenance advice only. It is not fed into the FTC
+-    supervisor and cannot isolate a thruster.
++    Raw model evidence may be consumed by the explicit AI/FTC fusion gate.
++    Formal maintenance review is separate metadata: it never changes that
++    evidence or directly isolates a thruster.
+     """
+ 
+     def __init__(
+@@ -54,6 +57,7 @@
+         advisory_stabilization_time_s=3.0,
+         device=None,
+         diagnostic_generalized_mass_diagonal=None,
++        maintenance_config_path=None,
+     ):
+         import torch
+ 
+@@ -109,6 +113,21 @@
+         self.decision = MaintenanceHealthDecision(
+             temporal_config=temporal_config
+         )
++        sibling = self.temporal_config_path.parent / "maintenance_ticket_config.json"
++        self.maintenance_config_path = (
++            Path(maintenance_config_path) if maintenance_config_path is not None
++            else (sibling if sibling.exists() else None)
++        )
++        self.maintenance_config = MaintenanceTicketConfig(**(
++            json.loads(self.maintenance_config_path.read_text(encoding="utf-8"))
++            if self.maintenance_config_path is not None else {}
++        ))
++        self.maintenance_review = OnlineMaintenanceReview(
++            self.maintenance_config,
++            generalized_mass_diagonal=self.diagnostic_generalized_mass_diagonal,
++            sequence_length=self.sequence_length,
++            maximum_result_age_s=1.2 * self.inference_stride * 0.05,
++        )
+         self.context_gate = AdvisoryContextGate(AdvisoryGateConfig(
+             stabilization_time_s=float(advisory_stabilization_time_s)
+         ))
+@@ -137,6 +156,14 @@
+         self.decision.reset()
+         self.context_gate.reset()
+         self.last_result = None
++        if hasattr(self, "maintenance_review"):
++            self.maintenance_review.reset()
++
++    def _with_maintenance_review(self, log, result):
++        # Compatibility with small test doubles and explicitly versioned bridges.
++        if not hasattr(self, "maintenance_review"):
++            return result
++        return dict(result, maintenance_review=self.maintenance_review.update(log, result))
+ 
+     def _reset_model_context(self):
+         """Discard model history contaminated by a causal context transition."""
+@@ -351,7 +378,7 @@
+             )
+             if gate.active:
+                 warmup["status"] = "context_warmup"
+-            return self._apply_context_gate(warmup, gate)
++            return self._with_maintenance_review(log, self._apply_context_gate(warmup, gate))
+         inference_due = (
+             self.last_result is None
+             or (self.sample_index - self.sequence_length)
+@@ -360,11 +387,11 @@
+         if inference_due:
+             self.last_result = self._infer(log)
+             gate = self.context_gate.mark_model_inference(time_s)
+-            return self._apply_context_gate(self.last_result, gate)
++            return self._with_maintenance_review(log, self._apply_context_gate(self.last_result, gate))
+         held = dict(self.last_result)
+         held.update({"updated": False, "time_s": time_s, "status": "held"})
+         held["result_age_s"] = time_s - held["inference_time_s"]
+-        return self._apply_context_gate(held, gate)
++        return self._with_maintenance_review(log, self._apply_context_gate(held, gate))
+ 
+     def enrich_logs(self, logs):
+         self.reset()

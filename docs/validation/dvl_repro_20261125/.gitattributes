@@ -1,0 +1,4 @@
+# The reference hashes of configuration files are byte-level, including line endings.
+config/*.json -text whitespace=cr-at-eol
+*.patch text eol=lf -whitespace
+*.py text eol=lf

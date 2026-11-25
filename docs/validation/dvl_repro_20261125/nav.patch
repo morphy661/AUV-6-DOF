@@ -1,0 +1,1682 @@
+--- a/math-model/src/diagnosis/sensor_health_monitor.py
++++ b/math-model/src/diagnosis/sensor_health_monitor.py
+@@ -254,6 +254,10 @@
+         if sensor == "depth":
+             return bool(delta[0] >= self.config.depth_spike_threshold_m)
+         if sensor == "imu":
++            # Heading is periodic. Keep ordinary differences (including exact
++            # threshold ties) untouched; never wrap gyro, acceleration or pitch.
++            if delta[2] > np.pi:
++                delta[2] = abs((current[2] - previous[2] + np.pi) % (2 * np.pi) - np.pi)
+             return bool(
+                 np.max(delta[:3])
+                 >= self.config.imu_orientation_spike_threshold_rad
+--- a/math-model/src/environment/six_dof_simulator.py
++++ b/math-model/src/environment/six_dof_simulator.py
+@@ -3,6 +3,7 @@
+ from typing import Callable, Optional
+ from copy import deepcopy
+ from time import perf_counter
++from dataclasses import replace
+ 
+ import numpy as np
+ 
+@@ -25,6 +26,8 @@
+     build_rule_based_ftc_evidence,
+ )
+ from ftc.degraded_guidance import FTCGuidanceManager
++from ftc.mission_recovery import MissionRecoveryManager, RecoveryConfig, ExternalPositionFix
++from ftc.external_position_hold import ExternalPositionHold, ExternalHoldConfig
+ 
+ 
+ class SixDOFSimulator:
+@@ -48,10 +51,21 @@
+         diagnostic_observer=None,
+         ai_ftc_fusion=None,
+         vertical_fault_recovery: bool = True,
++        *,
++        safety_thruster_slew_rate_nps: Optional[float] = 200.0,
++        recovery_config: Optional[RecoveryConfig] = None,
++        external_position_hold_config: Optional[ExternalHoldConfig] = None,
+     ):
+         self.dynamics = dynamics or SixDOFDynamics()
+         self.thruster_array = thruster_array or default_six_thruster_array()
+         self.controller = controller or CascadedSixDOFController()
++        if safety_thruster_slew_rate_nps is not None:
++            rate = float(safety_thruster_slew_rate_nps)
++            if not np.isfinite(rate) or rate <= 0.0:
++                raise ValueError("safety_thruster_slew_rate_nps must be positive or None")
++            safety_thruster_slew_rate_nps = rate
++        self.safety_thruster_slew_rate_nps = safety_thruster_slew_rate_nps
++        self._previous_sent_thruster_forces = np.zeros(len(self.thruster_array.thrusters))
+         if fault is not None and actuator_bank is not None:
+             raise ValueError("provide fault or actuator_bank, not both")
+         self.actuator_bank = actuator_bank or ThrusterActuatorBank(
+@@ -78,7 +92,12 @@
+         # both vertical isolation recovery and horizontal degraded guidance.
+         self.fault_recovery_guidance = bool(vertical_fault_recovery)
+         self.vertical_fault_recovery = self.fault_recovery_guidance
+-        self.ftc_guidance_manager = FTCGuidanceManager()
++        self.mission_recovery = MissionRecoveryManager(recovery_config)
++        self.external_position_hold = (None if external_position_hold_config is None
++                                       else ExternalPositionHold(external_position_hold_config))
++        self._pending_position_fix = None
++        self.ftc_guidance_manager = FTCGuidanceManager(
++            recovery_config=self.mission_recovery.config)
+         self.ftc_decision = (
+             None if self.ftc_supervisor is None else self.ftc_supervisor.reset()
+         )
+@@ -123,6 +142,7 @@
+     def reset(self, state=None):
+         self.dynamics.reset(state)
+         self.controller.reset()
++        self._previous_sent_thruster_forces.fill(0.0)
+         if hasattr(self.actuator_bank, "reset"):
+             self.actuator_bank.reset()
+         if self.sensor_suite is not None:
+@@ -140,8 +160,24 @@
+         if self.ai_ftc_fusion is not None:
+             self.ai_ftc_fusion.reset()
+         self.ftc_guidance_manager.reset()
++        self.mission_recovery.reset()
++        if self.external_position_hold is not None:
++            self.external_position_hold.reset()
++        self._pending_position_fix = None
+         self.logs = []
+         return self.state.copy()
++
++    def submit_external_position_fix(self, packet):
++        """Queue a receiver measurement for the next command step, never truth.
++
++        This simulation adapter does not synthesize a receiver or send a
++        recovery request to real hardware. Repeated packets cannot confirm.
++        """
++        if not isinstance(packet, ExternalPositionFix):
++            raise TypeError("packet must be ExternalPositionFix")
++        if self._pending_position_fix is not None:
++            raise ValueError("pending fix must be processed before another is queued")
++        self._pending_position_fix = packet
+ 
+     def _observe_diagnosis(self, log):
+         started = perf_counter()
+@@ -158,6 +194,26 @@
+         step_started = perf_counter()
+         mission_target = target
+         previous_velocity = self.state.body_velocity.copy()
++        fix_applied = False
++        if self.sensor_feedback_enabled and self._pending_position_fix is not None:
++            prior = self.state_estimate
++            accepted = self.mission_recovery.consider_fix(
++                self._pending_position_fix, now_s=float(prior.state.time),
++                estimated_depth_m=float(prior.state.position_ned[2]),
++                depth_trusted=prior.sources.get("depth") == "depth_sensor")
++            if accepted is not None:
++                if self.external_position_hold is not None:
++                    self.external_position_hold.observe(accepted)
++                fixed_state = self.state_estimator.apply_horizontal_position_fix(accepted.north_east_m)
++                self.state_estimate = replace(
++                    prior, state=fixed_state,
++                    sources=dict(prior.sources, position_xy=accepted.source + "_position_fix"),
++                    horizontal_position_reference="external_position_fix")
++                self.state_estimator.last_estimate = self.state_estimate
++                fix_applied = True
++            elif self.external_position_hold is not None:
++                self.external_position_hold.reject()
++        self._pending_position_fix = None
+         if self.sensor_feedback_enabled:
+             controller_state = self.state_estimate.state.copy()
+             controller_state_source = (
+@@ -168,19 +224,106 @@
+         else:
+             controller_state = self.state.copy()
+             controller_state_source = "simulator_truth"
++        # Snapshot the provenance of the state actually used for this command.
++        # The estimator below advances before the log is emitted; its current
++        # metadata cannot describe this previous-step controller input.
++        controller_estimate_metadata = None
++        if self.sensor_feedback_enabled and self.state_estimate is not None:
++            estimate = self.state_estimate
++            controller_estimate_metadata = {
++                "time_s": float(controller_state.time),
++                "sources": dict(estimate.sources),
++                "quality": estimate.quality,
++                "excluded_sensors": tuple(estimate.excluded_sensors),
++                "rejected_sensors": tuple(estimate.rejected_sensors),
++                "horizontal_reference": estimate.horizontal_position_reference,
++                "sensor_health": deepcopy(
++                    self.logs[-1].get("sensor_health", {}) if self.logs else {}
++                ),
++            }
+         applied_ftc_decision = self.ftc_decision
+-        if self.fault_recovery_guidance:
++        recovery_sources = {} if controller_estimate_metadata is None else controller_estimate_metadata["sources"]
++        recovery_phase = self.mission_recovery.update(
++            now_s=float(controller_state.time),
++            navigation_latched=bool(self.ftc_supervisor is not None
++                                    and self.ftc_supervisor.navigation_protection_latched),
++            state=controller_state, sources=recovery_sources,
++            decision=applied_ftc_decision)
++        if (recovery_phase != "inactive" and applied_ftc_decision is not None
++                and (recovery_sources.get("attitude") != "imu"
++                     or recovery_sources.get("angular_velocity") != "imu")):
++            applied_ftc_decision = replace(applied_ftc_decision,
++                guidance_mode="safety_pause_untrusted_attitude", mission_abort_requested=True)
++        safety_pause_requested = bool(
++            recovery_phase != "inactive" or (applied_ftc_decision is not None
++            and (applied_ftc_decision.mission_abort_requested
++                 or applied_ftc_decision.guidance_mode == "attitude_feedback_guard"))
++        )
++        if self.fault_recovery_guidance or safety_pause_requested:
+             guidance = self.ftc_guidance_manager.update(
+                 mission_target,
+                 controller_state,
+                 applied_ftc_decision,
++                previous_desired_velocity_ned=(
++                    None if not self.logs else self.logs[-1]["desired_velocity_ned"]
++                ),
++                recovery_phase=recovery_phase,
+             )
+             target = guidance.target
+             if guidance.entered_mode:
+                 self.controller.reset()
+         else:
+             guidance = None
+-        control = self.controller.compute(controller_state, target, dt)
++        navigation_feedback_suppressed = bool(
++            guidance is not None and guidance.mode.startswith("safety_pause")
++            and self.sensor_feedback_enabled
++            and controller_estimate_metadata is not None
++            and controller_estimate_metadata["sources"].get("linear_velocity") != "dvl"
++        )
++        if navigation_feedback_suppressed:
++            control = self.controller.compute(
++                controller_state, target, dt,
++                navigation_velocity_feedback_trusted=False,
++            )
++        else:
++            control = self.controller.compute(controller_state, target, dt)
++        untrusted_attitude_pause = bool(
++            guidance is not None
++            and guidance.mode in ("safety_pause_untrusted_attitude", "attitude_feedback_guard")
++        )
++        if untrusted_attitude_pause:
++            # No precise attitude/XY hold using stale IMU. Leave passive
++            # stability and trusted depth control; request external abort.
++            control.desired_wrench_body[[0, 1, 3, 4, 5]] = 0.0
++            if (self.state_estimate is not None
++                    and "depth" in self.state_estimate.excluded_sensors):
++                control.desired_wrench_body[2] = 0.0
++        recovery_depth_suppressed = bool(
++            recovery_phase != "inactive" and recovery_sources.get("depth") != "depth_sensor")
++        if recovery_depth_suppressed:
++            # No ascent/depth actuation based on a dead-reckoned or held depth.
++            # Retain trusted attitude stabilization, but no translational drive.
++            control.desired_wrench_body[:3] = 0.0
++        external_hold_status = None
++        if self.external_position_hold is not None:
++            permitted = bool(navigation_feedback_suppressed and recovery_phase in
++                             ('pause', 'abort_ascent', 'abort_near_surface'))
++            tilt = np.rad2deg(np.arccos(np.clip(controller_state.rotation_nb[2, 2], -1., 1.)))
++            hold_guard = bool(
++                untrusted_attitude_pause or recovery_depth_suppressed
++                or recovery_sources.get('attitude') != 'imu'
++                or recovery_sources.get('angular_velocity') != 'imu'
++                or applied_ftc_decision is None
++                or applied_ftc_decision.controlled_ascent_requested
++                or min(applied_ftc_decision.estimated_thruster_effectiveness) < 0.8
++                or tilt >= self.external_position_hold.config.maximum_tilt_deg)
++            external_hold_status = self.external_position_hold.update(
++                now_s=float(controller_state.time), dt=dt,
++                permitted=permitted, hard_guard=hold_guard)
++            # Explicit separate XY-only NED correction, before allocation and
++            # actuator limiting; never enable stale velocity feedback or yaw FF.
++            force_ne = external_hold_status['force_ned_n']
++            control.desired_wrench_body[:3] += controller_state.rotation_nb.T @ np.r_[force_ne, 0.]
+         if self.ideal_fault_tolerant_allocation:
+             allocation_effectiveness = (
+                 self.actuator_bank.force_efficiencies_at(self.state.time)
+@@ -204,12 +347,36 @@
+             wrench_weights=(
+                 None
+                 if (
+-                    not self.fault_recovery_guidance
++                    not (self.fault_recovery_guidance or safety_pause_requested)
+                     or applied_ftc_decision is None
+                 )
+                 else applied_ftc_decision.allocation_wrench_weights
+             ),
+         )
++        unsmoothed_forces = allocation.thruster_forces.copy()
++        slew_limited = np.zeros(len(unsmoothed_forces), dtype=bool)
++        if (guidance is not None and guidance.mode in ("safety_pause", "safety_pause_abort_ascent")
++                and self.safety_thruster_slew_rate_nps is not None):
++            delta = self.safety_thruster_slew_rate_nps * float(dt)
++            sent = np.clip(unsmoothed_forces,
++                           self._previous_sent_thruster_forces - delta,
++                           self._previous_sent_thruster_forces + delta)
++            # Directly isolated channels must turn off immediately; command
++            # smoothing must never delay an independent disable decision.
++            sent[allocation_effectiveness <= 0.0] = 0.0
++            slew_limited = np.abs(sent - unsmoothed_forces) > 1e-9
++            allocation.thruster_forces = sent
++            effective_matrix = (
++                self.thruster_array.allocation_matrix
++                * allocation_effectiveness[np.newaxis, :]
++            )
++            allocation.achieved_wrench = effective_matrix @ sent
++            allocation.residual_wrench = allocation.desired_wrench - allocation.achieved_wrench
++            allocation.saturated = np.logical_or(
++                np.isclose(sent, self.thruster_array.min_forces, atol=1e-9),
++                np.isclose(sent, self.thruster_array.max_forces, atol=1e-9),
++            )
++        self._previous_sent_thruster_forces = allocation.thruster_forces.copy()
+         actuation = self.actuator_bank.apply(
+             allocation.thruster_forces,
+             time_s=self.state.time,
+@@ -281,6 +448,10 @@
+ 
+         log = {
+             "time": float(state.time),
++            "mission_recovery": self.mission_recovery.snapshot(),
++            "external_position_fix_applied": fix_applied,
++            "external_position_hold": external_hold_status,
++            "recovery_depth_feedback_suppressed": recovery_depth_suppressed,
+             "thruster_names": tuple(self.thruster_array.names),
+             "position_ned": state.position_ned.copy(),
+             "euler_rpy": state.euler_rpy.copy(),
+@@ -290,6 +461,7 @@
+             ),
+             "sensor_feedback_enabled": self.sensor_feedback_enabled,
+             "controller_state_source": controller_state_source,
++            "controller_estimate_metadata": controller_estimate_metadata,
+             "controller_position_ned": (
+                 controller_state.position_ned.copy()
+             ),
+@@ -300,6 +472,7 @@
+             "target_position_ned": target.position_ned.copy(),
+             "target_euler_rpy": target.euler_rpy.copy(),
+             "target_velocity_ned": target.linear_velocity_ned.copy(),
++            "target_reference_kind": target.reference_kind,
+             "guidance_context_id": target.guidance_context_id,
+             "mission_target_position_ned": mission_target.position_ned.copy(),
+             "mission_target_euler_rpy": mission_target.euler_rpy.copy(),
+@@ -307,6 +480,7 @@
+                 mission_target.linear_velocity_ned.copy()
+             ),
+             "mission_guidance_context_id": mission_target.guidance_context_id,
++            "mission_target_reference_kind": mission_target.reference_kind,
+             "vertical_fault_recovery_enabled": self.vertical_fault_recovery,
+             "ftc_guidance_recovery_enabled": self.fault_recovery_guidance,
+             "ftc_guidance_mode_applied": (
+@@ -315,10 +489,14 @@
+             "ftc_guidance_transition": bool(
+                 guidance is not None and guidance.entered_mode
+             ),
++            "ftc_mission_paused_applied": bool(
++                guidance is not None and guidance.mode.startswith("safety_pause")
++            ),
++            "ftc_untrusted_attitude_open_loop": untrusted_attitude_pause,
+             "ftc_allocation_wrench_weights_applied": (
+                 self.thruster_array.wrench_weights.copy()
+                 if (
+-                    not self.fault_recovery_guidance
++                    not (self.fault_recovery_guidance or safety_pause_requested)
+                     or applied_ftc_decision is None
+                     or applied_ftc_decision.allocation_wrench_weights is None
+                 )
+@@ -342,6 +520,9 @@
+             ),
+             "thruster_forces": allocation.thruster_forces.copy(),
+             "commanded_thruster_forces": actuation.commanded_forces.copy(),
++            "ftc_unsmoothed_thruster_forces": unsmoothed_forces,
++            "ftc_command_slew_limited": slew_limited,
++            "ftc_safety_thruster_slew_rate_nps": self.safety_thruster_slew_rate_nps,
+             "actual_thruster_forces": actuation.actual_forces.copy(),
+             "thruster_expected_currents": actuation.expected_currents.copy(),
+             "thruster_measured_currents": actuation.measured_currents.copy(),
+@@ -427,6 +608,10 @@
+             )
+             if not isinstance(evidence, FTCEvidence):
+                 raise TypeError("ftc_evidence_provider must return FTCEvidence")
++            # Same-step onboard evidence, before AI fusion and FTC decisions.
++            # This metadata does not enter the fixed model feature schema.
++            log["maintenance_no_output_scores"] = evidence.no_output_scores.copy()
++            log["maintenance_no_output_evidence_time_s"] = evidence.time_s
+             if self.ai_ftc_fusion is not None:
+                 # Current onboard evidence exists before AI inference; the
+                 # supervisor is updated exactly once, after fusion.
+@@ -475,6 +660,9 @@
+                     else self.ftc_decision.allocation_wrench_weights.copy()
+                 ),
+                 "ftc_evidence_source": evidence.source,
++                "ftc_navigation_velocity_untrusted": evidence.navigation_velocity_untrusted,
++                "ftc_navigation_protection_latched": self.ftc_supervisor.navigation_protection_latched,
++                "ftc_navigation_feedback_suppressed": navigation_feedback_suppressed,
+                 "ftc_no_output_scores": evidence.no_output_scores.copy(),
+                 "ftc_untrusted_esc_channels": (
+                     evidence.untrusted_esc_channels
+--- a/math-model/src/estimation/six_dof_state_estimator.py
++++ b/math-model/src/estimation/six_dof_state_estimator.py
+@@ -7,6 +7,7 @@
+ """
+ 
+ from dataclasses import dataclass, field
++from collections import deque
+ from typing import Any, Mapping, Optional
+ 
+ import numpy as np
+@@ -44,6 +45,11 @@
+     )
+     no_inertial_velocity_decay_s: float = 2.0
+     horizontal_integrity_loss_confirmation_s: float = 0.5
++    dvl_stuck_reseed_history_s: float = field(default=2.0, kw_only=True)
++    depth_rate_window_s: float = field(default=2.0, kw_only=True)
++    depth_rate_min_span_s: float = field(default=0.5, kw_only=True)
++    depth_rate_max_correction_mps2: float = field(default=0.5, kw_only=True)
++    depth_rate_correction_time_constant_s: float = field(default=1.0, kw_only=True)
+ 
+     def __post_init__(self):
+         for name in (
+@@ -70,6 +76,13 @@
+                 "and non-negative"
+             )
+         self.horizontal_integrity_loss_confirmation_s = confirmation
++        if not np.isfinite(self.dvl_stuck_reseed_history_s) or self.dvl_stuck_reseed_history_s <= 0.:
++            raise ValueError("dvl_stuck_reseed_history_s must be finite and positive")
++        for name in ('depth_rate_window_s','depth_rate_min_span_s','depth_rate_max_correction_mps2','depth_rate_correction_time_constant_s'):
++            if not np.isfinite(getattr(self,name)) or getattr(self,name)<=0:
++                raise ValueError(name+' must be finite and positive')
++        if self.depth_rate_min_span_s>self.depth_rate_window_s:
++            raise ValueError('depth rate minimum span exceeds window')
+ 
+ 
+ @dataclass(frozen=True)
+@@ -117,6 +130,11 @@
+             sensor: 0.0 for sensor in SENSOR_NAMES
+         }
+         self.horizontal_position_reference_degraded = False
++        self._dvl_reseed_history = deque(maxlen=128)
++        self._dvl_stuck_active = False
++        self._depth_rate_history = deque(maxlen=256)
++        self.last_depth_rate = dict(applied=False,reason='initializing')
++        self.last_velocity_reseed = {"applied": False, "reason": "not_requested"}
+         self.last_estimate = SixDOFStateEstimate(
+             state=self.state.copy(),
+             quality="nominal",
+@@ -201,6 +219,72 @@
+             ),
+             "dvl": (dvl_velocity, dvl_valid),
+         }
++
++    def _pre_stuck_velocity(self, current):
++        """Rebuild velocity only from a recent pre-freeze DVL and trusted IMU.
++
++        Position is never reanchored; accumulated absolute error remains.
++        """
++        rows = [r for r in self._dvl_reseed_history
++                if current["time"] - r["time"] <= self.config.dvl_stuck_reseed_history_s] + [current]
++        anchor = None
++        for i in range(len(rows)-2, -1, -1):
++            r = rows[i]
++            if r["dvl_valid"] and np.max(np.abs(r["velocity"]-current["velocity"])) > 1e-6:
++                if r["dvl_trusted"]: anchor=i
++                break
++        if anchor is None:
++            return None, {"applied": False, "reason": "no_recent_pre_stuck_anchor"}
++        velocity=rows[anchor]["velocity"].copy()
++        previous_time=rows[anchor]["time"]
++        for r in rows[anchor+1:]:
++            gap=r["time"]-previous_time
++            if not r["imu_trusted"] or not 0.<gap<=.20+1e-9 or abs(gap-r["dt"])>1e-8:
++                return None, {"applied": False, "reason": "invalid_inertial_history"}
++            velocity=velocity+r["acceleration"]*gap
++            previous_time=r["time"]
++        return np.clip(velocity,-self.config.max_abs_linear_velocity_mps,self.config.max_abs_linear_velocity_mps), {
++            "applied": True, "reason": "pre_stuck_dvl_plus_trusted_imu",
++            "anchor_time_s": rows[anchor]["time"], "reconstructed_interval_s": current["time"]-rows[anchor]["time"]}
++
++    def _observed_depth_rate(self, time_s, dt, depth, trusted):
++        """Past pressure samples only; never infer horizontal/DVL recovery."""
++        self.last_depth_rate = dict(applied=False,reason='depth_or_attitude_not_trusted')
++        history=self._depth_rate_history
++        if not trusted:
++            history.clear();return None
++        if history:
++            gap=time_s-history[-1][0]
++            if not 0<gap<=.2+1e-9 or abs(gap-dt)>1e-8:
++                history.clear()
++                self.last_depth_rate['reason']='invalid_depth_timing'
++                return None
++            # Match the direct sensor health jump bound; ordinary pressure
++            # noise must not repeatedly destroy the velocity-fitting window.
++            if abs(depth-history[-1][1])>.75:
++                history.clear()
++                self.last_depth_rate['reason']='depth_step_rejected'
++                return None
++        history.append((time_s,depth))
++        while history and time_s-history[0][0]>self.config.depth_rate_window_s+1e-9:
++            history.popleft()
++        self.last_depth_rate['reason']='confirming_depth_rate'
++        if len(history)<6 or time_s-history[0][0]<self.config.depth_rate_min_span_s-1e-9:
++            return None
++        rows=np.asarray(history);t=rows[:,0]-time_s;z=rows[:,1]
++        centered=t-t.mean();den=float(centered@centered)
++        rate=float(centered@(z-z.mean())/den)
++        residual=z-(z.mean()+rate*centered)
++        sigma=float(np.sqrt(residual@residual/max(len(z)-2,1)))
++        rate_sigma=sigma/np.sqrt(den)
++        if abs(rate)>1. or sigma>.15 or np.max(np.abs(residual))>max(.12,4*sigma):
++            history.clear();self.last_depth_rate['reason']='depth_motion_inconsistent';return None
++        if rate_sigma>.06:
++            self.last_depth_rate.update(reason='confirming_depth_precision',rate_sigma_mps=rate_sigma)
++            return None
++        self.last_depth_rate=dict(applied=False,reason='depth_rate_ready',rate_mps=rate,
++                                  span_s=float(t[-1]-t[0]),samples=len(history),rate_sigma_mps=rate_sigma)
++        return rate
+ 
+     def update(
+         self,
+@@ -262,6 +346,16 @@
+ 
+         measured_velocity, dvl_valid = packet["dvl"]
+         dvl_usable = dvl_valid and not statuses["dvl"][2]
++        current_history = dict(time=time_s,dt=dt,velocity=measured_velocity.copy(),dvl_valid=dvl_valid,
++            dvl_trusted=dvl_usable and statuses["dvl"][0]=="normal" and statuses["dvl"][1]=="trusted",
++            acceleration=linear_acceleration.copy(),imu_trusted=imu_usable and statuses["imu"][1]=="trusted")
++        stuck_now = statuses["dvl"][0]=="stuck" and statuses["dvl"][2]
++        reseeded=None
++        self.last_velocity_reseed={"applied": False,"reason": "not_requested"}
++        if stuck_now and not self._dvl_stuck_active and dvl_valid and imu_usable:
++            reseeded,self.last_velocity_reseed=self._pre_stuck_velocity(current_history)
++        self._dvl_stuck_active=stuck_now
++        self._dvl_reseed_history.append(current_history)
+         if dvl_usable:
+             linear_velocity = np.clip(
+                 measured_velocity,
+@@ -272,7 +366,7 @@
+             linear_velocity_source = "dvl"
+         elif imu_usable:
+             linear_velocity = np.clip(
+-                previous.body_velocity[:3] + linear_acceleration * dt,
++                previous.body_velocity[:3] + linear_acceleration * dt if reseeded is None else reseeded,
+                 -config.max_abs_linear_velocity_mps,
+                 config.max_abs_linear_velocity_mps,
+             )
+@@ -285,6 +379,33 @@
+             linear_velocity_source = "decaying_velocity_hold"
+ 
+         rotation_nb = quaternion_to_rotation_matrix(quaternion)
++        measured_depth, depth_valid = packet['depth']
++        depth_usable = depth_valid and not statuses['depth'][2]
++        depth_rate=self._observed_depth_rate(time_s,dt,measured_depth,
++            depth_usable and statuses['depth'][0]=='normal' and statuses['depth'][1]=='trusted'
++            and imu_usable and statuses['imu'][0]=='normal' and statuses['imu'][1]=='trusted')
++        vertical_velocity_source=linear_velocity_source
++        if (not dvl_usable and depth_rate is not None
++                and self.fallback_durations_s['dvl']>=.5-1e-9):
++            velocity_ned=rotation_nb@linear_velocity
++            gain=-np.expm1(-dt/config.depth_rate_correction_time_constant_s)
++            correction=np.clip(gain*(depth_rate-velocity_ned[2]),
++                -config.depth_rate_max_correction_mps2*dt,
++                config.depth_rate_max_correction_mps2*dt)
++            # Only move along NED vertical, limiting the scalar correction
++            # so the existing body-axis velocity bounds remain satisfied.
++            direction=rotation_nb.T[:,2]
++            delta=direction*correction
++            scale=1.
++            for j in range(3):
++                if delta[j]>0:
++                    scale=min(scale,(config.max_abs_linear_velocity_mps[j]-linear_velocity[j])/delta[j])
++                elif delta[j]<0:
++                    scale=min(scale,(-config.max_abs_linear_velocity_mps[j]-linear_velocity[j])/delta[j])
++            correction*=max(0.,scale)
++            linear_velocity=linear_velocity+direction*correction
++            vertical_velocity_source='depth_rate_corrected'
++            self.last_depth_rate.update(applied=True,correction_mps=float(correction))
+         position = previous.position_ned + (
+             rotation_nb @ linear_velocity
+         ) * dt
+@@ -372,6 +493,7 @@
+                 "depth": depth_source,
+                 "attitude": attitude_source,
+                 "linear_velocity": linear_velocity_source,
++                "vertical_velocity": vertical_velocity_source,
+                 "angular_velocity": angular_velocity_source,
+             },
+             excluded_sensors=tuple(sorted(excluded)),
+--- a/math-model/src/ftc/degraded_guidance.py
++++ b/math-model/src/ftc/degraded_guidance.py
+@@ -17,7 +17,13 @@
+ class FTCGuidanceManager:
+     """Latch an estimated hold point for vertical or horizontal degradation."""
+ 
+-    def __init__(self):
++    def __init__(self, *, safety_horizontal_deceleration_mps2=0.5,
++                 recovery_config=None):
++        value = float(safety_horizontal_deceleration_mps2)
++        if not np.isfinite(value) or value <= 0.0:
++            raise ValueError("safety_horizontal_deceleration_mps2 must be positive")
++        self.safety_horizontal_deceleration_mps2 = value
++        self.recovery_config = recovery_config
+         self.reset()
+ 
+     def reset(self):
+@@ -25,36 +31,110 @@
+         self.hold_position_ned = None
+         self.hold_yaw_rad = None
+         self.hold_context_id = None
++        self.safety_velocity_ned = None
++        self.safety_last_time_s = None
++        self.recovery_goal_depth_m = None
+ 
+-    def update(self, requested_target, controller_state, ftc_decision):
++    def update(self, requested_target, controller_state, ftc_decision, *,
++               previous_desired_velocity_ned=None, recovery_phase="inactive"):
+         requested_mode = (
+             "normal" if ftc_decision is None else ftc_decision.guidance_mode
+         )
++        if recovery_phase != "inactive" and requested_mode not in (
++                "safety_pause_untrusted_attitude", "attitude_feedback_guard"):
++            requested_mode = "safety_pause"
++        if recovery_phase in ("abort_ascent", "abort_near_surface"):
++            requested_mode = "safety_pause_abort_ascent"
+         if requested_mode == "normal":
+             entered = self.mode != "normal"
+             self.reset()
+             return GuidanceDecision(requested_target, "normal", entered)
+         if requested_mode not in {
+             "vertical_thruster_hold", "horizontal_degraded_hold",
++            "safety_pause", "safety_pause_untrusted_attitude",
++            "safety_pause_abort_ascent",
++            "attitude_feedback_guard",
+         }:
+             raise ValueError(f"unknown FTC guidance mode: {requested_mode}")
+ 
+         entered = self.mode != requested_mode
+         if entered:
++            previous_safety_mode = self.mode.startswith("safety_pause") or self.mode == "attitude_feedback_guard"
+             self.mode = requested_mode
+-            self.hold_position_ned = controller_state.position_ned.copy()
++            if not previous_safety_mode:
++                self.hold_position_ned = controller_state.position_ned.copy()
+             self.hold_yaw_rad = float(controller_state.euler_rpy[2])
+             context_offset = (
+                 100000 if requested_mode == "vertical_thruster_hold"
+-                else 200000
++                else (300000 if requested_mode.startswith("safety_pause") or requested_mode == "attitude_feedback_guard" else 200000)
+             )
+             self.hold_context_id = (
+                 int(requested_target.guidance_context_id) + context_offset
+             )
++            if requested_mode == "safety_pause_abort_ascent":
++                self.recovery_goal_depth_m = min(
++                    float(self.hold_position_ned[2]), self.recovery_config.recovery_depth_m)
++            if (requested_mode.startswith("safety_pause") or requested_mode == "attitude_feedback_guard") and not previous_safety_mode:
++                if previous_desired_velocity_ned is None:
++                    self.safety_velocity_ned = (
++                        controller_state.rotation_nb @ controller_state.body_velocity[:3]
++                    )
++                    self.safety_velocity_ned[2] = 0.0
++                else:
++                    velocity = np.asarray(previous_desired_velocity_ned, dtype=float)
++                    if velocity.shape != (3,) or not np.all(np.isfinite(velocity)):
++                        raise ValueError("previous_desired_velocity_ned must be a finite 3-vector")
++                    # Bumpless entry uses the command already issued, not the
++                    # true velocity or a forced zero heave reference.
++                    self.safety_velocity_ned = velocity.copy()
++                self.safety_last_time_s = float(controller_state.time)
++        if requested_mode.startswith("safety_pause") or requested_mode == "attitude_feedback_guard":
++            now = float(controller_state.time)
++            dt = max(0.0, now - self.safety_last_time_s)
++            self.safety_last_time_s = now
++            old_vertical_velocity = float(self.safety_velocity_ned[2])
++            speed = float(np.linalg.norm(self.safety_velocity_ned[:2]))
++            if speed > 0.0:
++                remaining = max(0.0, speed - self.safety_horizontal_deceleration_mps2 * dt)
++                self.safety_velocity_ned[:2] *= remaining / speed
++            vertical_speed = max(0.0, abs(old_vertical_velocity)
++                                 - self.safety_horizontal_deceleration_mps2 * dt)
++            self.safety_velocity_ned[2] = np.sign(old_vertical_velocity) * vertical_speed
++            if requested_mode == "safety_pause_abort_ascent":
++                config = self.recovery_config
++                if config is None:
++                    raise ValueError("powered abort guidance requires RecoveryConfig")
++                distance = max(0.0, self.hold_position_ned[2] - self.recovery_goal_depth_m)
++                desired = -min(config.ascent_speed_mps,
++                               np.sqrt(2.0 * config.ascent_acceleration_mps2 * distance))
++                step = config.ascent_acceleration_mps2 * dt
++                self.safety_velocity_ned[2] = np.clip(
++                    desired, old_vertical_velocity - step, old_vertical_velocity + step)
++            # Move the local depth reference along the stopping ramp rather
++            # than abruptly forcing zero vertical speed at the old depth.
++            self.hold_position_ned[2] += 0.5 * (
++                old_vertical_velocity + self.safety_velocity_ned[2]
++            ) * dt
++            if requested_mode == "safety_pause_abort_ascent" and self.hold_position_ned[2] <= self.recovery_goal_depth_m:
++                self.hold_position_ned[2] = self.recovery_goal_depth_m
++                self.safety_velocity_ned[2] = 0.0
++            position = controller_state.position_ned.copy()
++            position[2] = self.hold_position_ned[2]
++            # Do not chase the global route or an old XY point while stopping.
++            # Yaw request follows the estimated heading: rate damping, no turn.
++            target = PoseTarget(
++                position_ned=position,
++                euler_rpy=np.array([0.0, 0.0, controller_state.euler_rpy[2]]),
++                guidance_context_id=self.hold_context_id,
++                linear_velocity_ned=self.safety_velocity_ned.copy(),
++                reference_kind="trajectory",
++            )
++            return GuidanceDecision(target, self.mode, entered)
+         target = PoseTarget(
+             position_ned=self.hold_position_ned,
+             euler_rpy=np.array([0.0, 0.0, self.hold_yaw_rad]),
+             guidance_context_id=self.hold_context_id,
+             linear_velocity_ned=np.zeros(3),
++            reference_kind="trajectory",
+         )
+         return GuidanceDecision(target, self.mode, entered)
+--- /dev/null
++++ b/math-model/src/ftc/external_position_hold.py
+@@ -0,0 +1,151 @@
++"""Low-bandwidth abort-only XY hold using accepted external measurements.
++
++No plant truth, IMU-integrated velocity or mission route is used. This is an
++optional receiver-dependent capability, not navigation recovery. A common
++receiver bias is unobservable here; the adapter must own frame and provenance.
++"""
++from dataclasses import dataclass
++import numpy as np
++
++
++@dataclass(frozen=True)
++class ExternalHoldConfig:
++    window_s: float = 6.0
++    minimum_span_s: float = 4.0
++    max_age_s: float = 1.0
++    max_gap_s: float = 1.0
++    max_sigma_m: float = 1.0
++    max_speed_mps: float = 0.6
++    max_velocity_sigma_mps: float = 0.15
++    position_gain_npm: float = 1.5
++    velocity_gain_nspm: float = 20.0
++    integral_gain_npm_s: float = 0.15
++    max_integral_force_n: float = 4.0
++    max_force_n: float = 8.0
++    slew_nps: float = 2.0
++    maximum_tilt_deg: float = 20.0
++
++    def __post_init__(self):
++        for name in self.__dataclass_fields__:
++            if not np.isfinite(getattr(self, name)) or getattr(self, name) <= 0:
++                raise ValueError(name + ' must be finite and positive')
++        if self.minimum_span_s > self.window_s or self.maximum_tilt_deg >= 35:
++            raise ValueError('invalid observation window or tilt boundary')
++
++
++def limited(vector, maximum):
++    norm = float(np.linalg.norm(vector))
++    return vector * min(1., maximum / max(norm, 1e-12))
++
++
++class ExternalPositionHold:
++    def __init__(self, config=None):
++        self.config = config or ExternalHoldConfig()
++        self.reset()
++
++    def reset(self):
++        self.packets = []
++        self.anchor = None
++        self.force = np.zeros(2)
++        self.integral_force = np.zeros(2)
++        self.fit = None
++        self.reason = 'inactive'
++        self.last_update = None
++
++    def reject(self):
++        # Withdraw with force slew on the next update, never carry a stale fit.
++        self.packets = []
++        self.fit = None
++        self.anchor = None
++        self.integral_force[:] = 0.
++        self.reason = 'receiver_rejected'
++
++    def observe(self, packet):
++        cfg = self.config
++        xy = np.asarray(packet.north_east_m, dtype=float)
++        if (not packet.valid or xy.shape != (2,) or not np.all(np.isfinite(xy))
++                or not np.isfinite(packet.time_s) or not np.isfinite(packet.sigma_m)
++                or not 0 < packet.sigma_m <= cfg.max_sigma_m):
++            self.reject(); return
++        if self.packets:
++            previous = self.packets[-1]
++            gap = packet.time_s - previous.time_s
++            if gap <= 0:
++                self.reject(); return
++            if gap > cfg.max_gap_s + 1e-8 or packet.source != previous.source:
++                self.reject()
++        self.packets.append(packet)
++        self.packets = [p for p in self.packets if packet.time_s-p.time_s <= cfg.window_s+1e-8]
++        self.fit = None
++        if len(self.packets) < 5 or packet.time_s-self.packets[0].time_s < cfg.minimum_span_s-1e-8:
++            self.reason = 'confirming_external_motion'; return
++        times = np.array([p.time_s-packet.time_s for p in self.packets])
++        xy = np.array([p.north_east_m for p in self.packets])
++        sigma = np.array([p.sigma_m for p in self.packets])
++        design = np.column_stack((np.ones(len(times)), times))
++        weighted = design / sigma[:, None]
++        coeff = np.linalg.lstsq(weighted, xy/sigma[:,None], rcond=None)[0]
++        residual = (xy - design @ coeff) / sigma[:,None]
++        velocity_sigma = float(np.sqrt(np.linalg.inv(weighted.T @ weighted)[1,1]))
++        if (np.max(np.abs(residual)) > 4.0 or np.sqrt(np.mean(residual**2)) > 2.0
++                or np.linalg.norm(coeff[1]) > cfg.max_speed_mps):
++            self.reject(); self.reason = 'external_motion_inconsistent'; return
++        if velocity_sigma > cfg.max_velocity_sigma_mps:
++            # Insufficient precision is not an invalid packet. Keep the bounded
++            # history to accumulate a longer span; no force from this fit yet.
++            self.reason = 'confirming_external_precision'; return
++        self.fit = (packet.time_s, coeff[0], coeff[1], velocity_sigma)
++        self.reason = 'external_motion_ready'
++
++    def update(self, *, now_s, dt, permitted, hard_guard=False):
++        if (not np.isfinite(now_s) or not np.isfinite(dt) or dt <= 0
++                or (self.last_update is not None and now_s < self.last_update)):
++            raise ValueError('time must be finite, monotonic; dt must be positive')
++        self.last_update = now_s
++        desired = np.zeros(2)
++        active = False
++        position = velocity = None
++        if not permitted or hard_guard:
++            # Keep a still-observed abort reference across brief sensor guards;
++            # do not turn each guard into a new downstream station-keeping point.
++            if self.fit is None or not 0 <= now_s-self.fit[0] <= self.config.max_age_s:
++                self.anchor = None
++            self.integral_force[:] = 0.
++            self.reason = 'control_guard' if hard_guard else 'not_in_degraded_abort'
++        elif self.fit is not None:
++            time, point, speed, sigma = self.fit
++            if 0 <= now_s-time <= self.config.max_age_s+1e-8:
++                position = point + speed*(now_s-time)
++                velocity = speed
++                if self.anchor is None:
++                    # Anchor at the start of the confirmed observation window,
++                    # fitted from those same past measurements, not old route/DR.
++                    self.anchor = point + speed*(self.packets[0].time_s-time)
++                error = self.anchor-position
++                pd = self.config.position_gain_npm*error - self.config.velocity_gain_nspm*speed
++                proposed = limited(self.integral_force+self.config.integral_gain_npm_s*error*dt,
++                                   self.config.max_integral_force_n)
++                # Conditional integration prevents accumulation into saturation.
++                if (np.linalg.norm(pd+proposed) <= self.config.max_force_n
++                        or np.linalg.norm(pd+proposed) < np.linalg.norm(pd+self.integral_force)):
++                    self.integral_force = proposed
++                desired = limited(pd+self.integral_force, self.config.max_force_n)
++                active = True
++                self.reason = 'external_position_limited_hold'
++            else:
++                self.reject(); self.reason = 'external_position_stale'
++        # Loss of depth/attitude authority disables immediately. Ordinary link
++        # loss fades to zero in at most max_force/slew seconds. Integral bias is
++        # cleared on link loss/receiver rejection; it never survives a new anchor.
++        if hard_guard or not permitted:
++            self.force[:] = 0.
++        else:
++            self.force += limited(desired-self.force, self.config.slew_nps*dt)
++        return dict(active=active, reason=self.reason,
++                    force_ned_n=self.force.copy(),
++                    integral_force_n=self.integral_force.copy(),
++                    anchor_ne_m=None if self.anchor is None else self.anchor.copy(),
++                    position_ne_m=None if position is None else position.copy(),
++                    velocity_ne_mps=None if velocity is None else velocity.copy(),
++                    sample_count=len(self.packets),
++                    fix_age_s=None if not self.packets else now_s-self.packets[-1].time_s)
+--- /dev/null
++++ b/math-model/src/ftc/mission_recovery.py
+@@ -0,0 +1,244 @@
++"""Finite navigation pause, guarded powered abort, and external re-anchoring.
++
++No plant truth, fault schedule, automatic mission resume, emergency ballast,
++surface hydrodynamics or acoustic/GNSS receiver is implemented here. A mission
++must explicitly authorize a clear ascent corridor. Default policy refuses it.
++"""
++from dataclasses import dataclass
++import numpy as np
++
++
++@dataclass(frozen=True)
++class RecoveryConfig:
++    pause_timeout_s: float = 20.0
++    ascent_corridor_clear: bool = False
++    recovery_depth_m: float = 2.0
++    ascent_speed_mps: float = 0.25
++    ascent_acceleration_mps2: float = 0.1
++    ascent_timeout_s: float = 1500.0
++    progress_window_s: float = 30.0
++    minimum_progress_m: float = 1.0
++    maximum_ascent_tilt_deg: float = 25.0
++    fix_max_age_s: float = 2.0
++    fix_max_sigma_m: float = 2.0
++    sensor_loss_confirmation_s: float = 2.0
++
++    def __post_init__(self):
++        if type(self.ascent_corridor_clear) is not bool:
++            raise ValueError("ascent_corridor_clear must be an explicit bool")
++        for name in self.__dataclass_fields__:
++            if name == "ascent_corridor_clear":
++                continue
++            value = getattr(self, name)
++            if not np.isfinite(value) or value <= 0:
++                raise ValueError(f"{name} must be finite and positive")
++        if self.maximum_ascent_tilt_deg >= 35:
++            raise ValueError("ascent permission must be below the 35-degree boundary")
++
++
++@dataclass(frozen=True)
++class ExternalPositionFix:
++    """Trusted receiver-adapter packet in the mission's local NED frame.
++
++    sigma_m is one-axis standard uncertainty, not an authentication guarantee.
++    The caller owns receiver provenance and coordinate-frame conversion.
++    """
++    time_s: float
++    north_east_m: tuple[float, float]
++    sigma_m: float
++    source: str = "acoustic"
++    valid: bool = True
++
++
++class MissionRecoveryManager:
++    def __init__(self, config=None):
++        self.config = config or RecoveryConfig()
++        self.reset()
++
++    def reset(self):
++        self.phase = "inactive"
++        self.reason = "navigation_pause_not_requested"
++        self.pause_start_s = None
++        self.abort_start_s = None
++        self.mission_aborted = False
++        self.ascent_start_s = None
++        self.progress_anchor = None
++        self.last_time_s = None
++        self.last_fix_time_s = None
++        self.fix_chain = []
++        self.fix_status = "none"
++        self.accepted_fix = None
++        self.velocity_trusted_since = None
++        self.sensor_loss_since = None
++        self.relocalization_loss_since = None
++        self.guard_return_phase = None
++
++    def consider_fix(self, packet, *, now_s, estimated_depth_m, depth_trusted):
++        """Return a measurement only after three distinct consistent packets.
++
++        One accepted sequence is not a declaration of recovered velocity or
++        station keeping. A fresh accepted fix plus stable DVL is needed below.
++        """
++        if packet is None:
++            return None
++        if not isinstance(packet, ExternalPositionFix):
++            raise TypeError("external fix must be ExternalPositionFix")
++        xy = np.asarray(packet.north_east_m, dtype=float)
++        valid = (type(packet.valid) is bool and packet.valid and xy.shape == (2,)
++                 and np.all(np.isfinite(xy)) and np.isfinite(packet.time_s)
++                 and np.isfinite(packet.sigma_m)
++                 and 0 < packet.sigma_m <= self.config.fix_max_sigma_m
++                 and 0 <= now_s - packet.time_s <= self.config.fix_max_age_s
++                 and packet.source in ("acoustic", "surface_gnss"))
++        if packet.source == "surface_gnss":
++            # There is no GNSS-underwater assumption or implicit antenna mast.
++            valid = valid and depth_trusted and estimated_depth_m <= 0.0
++        if not valid:
++            self.fix_chain = []
++            self.fix_status = "rejected_invalid_stale_or_submerged"
++            return None
++        if self.last_fix_time_s is not None and packet.time_s <= self.last_fix_time_s:
++            self.fix_status = "rejected_replayed_or_out_of_order"
++            return None
++        self.last_fix_time_s = float(packet.time_s)
++        if self.fix_chain:
++            previous = self.fix_chain[-1]
++            elapsed = packet.time_s - previous.time_s
++            limit = 3.0 * elapsed + 3.0 * np.hypot(packet.sigma_m, previous.sigma_m)
++            if (elapsed > 1.5 or packet.source != previous.source
++                    or np.linalg.norm(xy - previous.north_east_m) > limit):
++                self.fix_chain = []
++        self.fix_chain.append(packet)
++        # Keep the shortest recent history covering the confirmation interval,
++        # not a fixed three-packet slice. Legal cadence jitter can put the last
++        # three packets inside one second even after a valid sequence formed.
++        # Retain at least three distinct observations and the interval boundary.
++        # A resource cap fails closed for excessively dense input; it must not
++        # relax the minimum span or permit single/burst-packet confirmation.
++        self.fix_chain = self.fix_chain[-256:]
++        while (len(self.fix_chain) > 3
++               and packet.time_s - self.fix_chain[1].time_s + 1e-9 >= 1.0):
++            self.fix_chain.pop(0)
++        if len(self.fix_chain) < 3 or packet.time_s - self.fix_chain[0].time_s + 1e-9 < 1.0:
++            self.fix_status = "confirming"
++            return None
++        self.accepted_fix = packet
++        self.fix_status = "accepted_external_measurement"
++        return packet
++
++    def update(self, *, now_s, navigation_latched, state, sources, decision):
++        if not np.isfinite(now_s) or (self.last_time_s is not None and now_s < self.last_time_s):
++            raise ValueError("recovery time must be finite and nondecreasing")
++        self.last_time_s = now_s
++        if not navigation_latched and self.phase == "inactive":
++            return self.phase
++        if self.phase == "inactive":
++            self.phase = "pause"
++            self.pause_start_s = now_s
++            self.reason = "finite_navigation_pause"
++        if sources.get("linear_velocity") == "dvl":
++            if self.velocity_trusted_since is None:
++                self.velocity_trusted_since = now_s
++        else:
++            self.velocity_trusted_since = None
++        # A fix never releases the supervisor's mission latch. Terminate the old
++        # mission even if localization is restored during the pause.
++        recovered = (self.accepted_fix is not None
++                     and 0 <= now_s - self.accepted_fix.time_s <= self.config.fix_max_age_s
++                     and self.velocity_trusted_since is not None
++                     and now_s - self.velocity_trusted_since >= 2.0
++                     and sources.get("attitude") == "imu"
++                     and sources.get("angular_velocity") == "imu"
++                     and sources.get("depth") == "depth_sensor")
++        if recovered and self.phase not in ("abort_external_recovery",):
++            self.phase = "relocalized_wait"
++            self.reason = "external_fix_and_stable_velocity_new_mission_authorization_required"
++            self._abort(now_s)
++        if self.phase == "relocalized_wait":
++            # Position re-anchoring is an event, not perpetual nav health.
++            if (sources.get("linear_velocity") != "dvl"
++                    or sources.get("attitude") != "imu"
++                    or sources.get("angular_velocity") != "imu"
++                    or sources.get("depth") != "depth_sensor"):
++                if self.relocalization_loss_since is None:
++                    self.relocalization_loss_since = now_s
++                self.reason = "relocalized_wait_feedback_temporarily_restricted"
++                if now_s - self.relocalization_loss_since + 1e-9 >= self.config.sensor_loss_confirmation_s:
++                    self.phase = "abort_external_recovery"
++                    self.reason = "sensor_trust_lost_after_relocalization"
++            else:
++                self.relocalization_loss_since = None
++                self.reason = "external_fix_and_stable_velocity_new_mission_authorization_required"
++            return self.phase
++        if self.phase == "pause" and now_s - self.pause_start_s + 1e-9 < self.config.pause_timeout_s:
++            return self.phase
++        if self.phase == "pause":
++            self._abort(now_s)
++            self.phase = "abort_ascent"
++            self.ascent_start_s = now_s
++            self.progress_anchor = (now_s, float(state.position_ned[2]))
++        if self.phase in ("abort_ascent", "abort_near_surface", "abort_sensor_guard"):
++            tilt = np.rad2deg(np.arccos(np.clip(state.rotation_nb[2, 2], -1., 1.)))
++            reason = None
++            if not self.config.ascent_corridor_clear:
++                reason = "ascent_corridor_not_authorized"
++            elif sources.get("attitude") != "imu" or sources.get("angular_velocity") != "imu":
++                reason = "attitude_not_trusted"
++            elif sources.get("depth") != "depth_sensor":
++                reason = "depth_not_trusted"
++            elif (decision is None or decision.controlled_ascent_requested
++                  or min(decision.estimated_thruster_effectiveness[4:6]) < 0.8):
++                reason = "vertical_authority_insufficient_independent_recovery_needed"
++            elif tilt >= self.config.maximum_ascent_tilt_deg:
++                reason = "inclination_too_large_for_powered_ascent"
++            if reason:
++                if reason in ("attitude_not_trusted", "depth_not_trusted"):
++                    if self.sensor_loss_since is None:
++                        self.sensor_loss_since = now_s
++                        self.guard_return_phase = self.phase
++                    if now_s - self.sensor_loss_since + 1e-9 < self.config.sensor_loss_confirmation_s:
++                        self.phase = "abort_sensor_guard"
++                        self.reason = reason + "_commands_guarded_pending_confirmation"
++                        return self.phase
++                self.phase = "abort_external_recovery"
++                self.reason = reason
++                return self.phase
++            if self.phase == "abort_sensor_guard":
++                self.phase = self.guard_return_phase
++                # Retain the overall timeout. Restart only observed progress
++                # measurement after a bounded sensor-guard interruption.
++                self.progress_anchor = (now_s, float(state.position_ned[2]))
++            self.sensor_loss_since = None
++            depth = float(state.position_ned[2])
++            if depth <= self.config.recovery_depth_m + 0.3:
++                self.phase = "abort_near_surface"
++                self.reason = "near_surface_rendezvous_not_surface_or_GNSS_completion"
++            elif self.phase == "abort_ascent":
++                self.reason = "powered_ascent_executing_original_mission_aborted"
++                elapsed = now_s - self.ascent_start_s
++                anchor_time, anchor_depth = self.progress_anchor
++                if elapsed >= self.config.ascent_timeout_s:
++                    self.phase = "abort_external_recovery"
++                    self.reason = "ascent_timeout"
++                elif now_s - anchor_time >= self.config.progress_window_s:
++                    if anchor_depth - depth < self.config.minimum_progress_m:
++                        self.phase = "abort_external_recovery"
++                        self.reason = "ascent_not_making_observed_depth_progress"
++                    else:
++                        self.progress_anchor = (now_s, depth)
++        return self.phase
++
++    def _abort(self, now_s):
++        if not self.mission_aborted:
++            self.abort_start_s = now_s
++        self.mission_aborted = True
++
++    def snapshot(self):
++        return dict(phase=self.phase, reason=self.reason,
++                    mission_aborted=self.mission_aborted,
++                    pause_start_s=self.pause_start_s, abort_start_s=self.abort_start_s,
++                    external_recovery_required=self.phase in ("abort_external_recovery", "abort_near_surface"),
++                    original_mission_resume_permitted=False,
++                    fix_status=self.fix_status,
++                    accepted_fix_time_s=None if self.accepted_fix is None else self.accepted_fix.time_s,
++                    accepted_fix_source=None if self.accepted_fix is None else self.accepted_fix.source)
+--- a/math-model/src/ftc/safety_supervisor.py
++++ b/math-model/src/ftc/safety_supervisor.py
+@@ -62,6 +62,7 @@
+     degraded_wrench_scale: float = 0.65
+     safe_wrench_scale: float = 0.35
+     horizontal_tracking_limit_m: float = 8.0
++    trajectory_minimum_error_growth_mps: float = 0.10
+     depth_tracking_limit_m: float = 3.0
+     tilt_limit_deg: float = 35.0
+     horizontal_yaw_error_limit_deg: float = 25.0
+@@ -74,6 +75,18 @@
+     vertical_fault_pitch_weight: float = 5.0
+     horizontal_fault_force_weight: float = 0.25
+     horizontal_fault_yaw_weight: float = 4.0
++    # Independent hard-attitude guard; keyword-only to preserve old callers.
++    tilt_confirmation_s: float = field(default=0.25, kw_only=True)
++    tilt_maximum_sample_gap_s: float = field(default=0.20, kw_only=True)
++    # Early intervention headroom does not change the operational limit.
++    tilt_protection_margin_deg: float = field(default=8.0, kw_only=True)
++    # A confirmed horizontal actuator loss must not indefinitely chase a
++    # heading it cannot track. This is a mission guard, not fault attribution.
++    yaw_loss_confirmation_s: float = field(default=0.50, kw_only=True)
++    # Mission permission is independent of actuator isolation. Short velocity
++    # outages are observed; sustained dead reckoning requires a latched pause.
++    navigation_loss_confirmation_s: float = field(default=2.0, kw_only=True)
++    navigation_maximum_sample_gap_s: float = field(default=0.20, kw_only=True)
+ 
+     def __post_init__(self):
+         if not isinstance(self.require_fresh_esc_telemetry, (bool, np.bool_)):
+@@ -113,7 +126,14 @@
+             "critical_confirmation_s",
+             "stress_only_critical_confirmation_s",
+             "recovery_confirmation_s",
++            "tilt_confirmation_s",
++            "yaw_loss_confirmation_s",
++            "navigation_loss_confirmation_s",
++            "navigation_maximum_sample_gap_s",
++            "tilt_maximum_sample_gap_s",
++            "tilt_protection_margin_deg",
+             "horizontal_tracking_limit_m",
++            "trajectory_minimum_error_growth_mps",
+             "depth_tracking_limit_m",
+             "tilt_limit_deg",
+             "horizontal_yaw_error_limit_deg",
+@@ -130,6 +150,8 @@
+             value = float(getattr(self, name))
+             if not np.isfinite(value) or value < 0.0:
+                 raise ValueError(f"{name} must be finite and non-negative")
++        if self.tilt_protection_margin_deg >= self.tilt_limit_deg:
++            raise ValueError("tilt_protection_margin_deg must be below tilt_limit_deg")
+         for name in (
+             "horizontal_tracking_limit_m", "depth_tracking_limit_m",
+             "tilt_limit_deg", "horizontal_yaw_error_limit_deg",
+@@ -138,9 +160,12 @@
+             "horizontal_degraded_motion_ratio",
+             "severe_horizontal_motion_ratio",
+             "vertical_fault_pitch_weight", "horizontal_fault_yaw_weight",
++            "tilt_maximum_sample_gap_s",
+         ):
+             if float(getattr(self, name)) <= 0.0:
+                 raise ValueError(f"{name} must be positive")
++        if self.navigation_maximum_sample_gap_s <= 0.0:
++            raise ValueError("navigation_maximum_sample_gap_s must be positive")
+         if (
+             self.critical_tracking_error_ratio
+             < self.degraded_tracking_error_ratio
+@@ -233,9 +258,21 @@
+     cross_track_error_m: Optional[float] = None
+     horizontal_motion_error_ratio: float = 0.0
+     position_tracking_safety_active: bool = False
++    trajectory_tracking_active: bool = False
++    guidance_context_id: int = 0
++    yaw_feedback_trusted: bool = field(default=False, kw_only=True)
++    navigation_velocity_untrusted: bool = field(default=False, kw_only=True)
+ 
+     def __post_init__(self):
+         time_s = float(self.time_s)
++        if not isinstance(self.navigation_velocity_untrusted, (bool, np.bool_)):
++            raise ValueError("navigation_velocity_untrusted must be boolean")
++        if not isinstance(self.yaw_feedback_trusted, (bool, np.bool_)):
++            raise ValueError("yaw_feedback_trusted must be boolean")
++        if not isinstance(self.trajectory_tracking_active, (bool, np.bool_)):
++            raise ValueError("trajectory_tracking_active must be boolean")
++        if int(self.guidance_context_id) != self.guidance_context_id or self.guidance_context_id < 0:
++            raise ValueError("guidance_context_id must be a non-negative integer")
+         if not isinstance(self.tracking_error_available, (bool, np.bool_)):
+             raise ValueError("tracking_error_available must be boolean")
+         object.__setattr__(
+@@ -351,6 +388,24 @@
+         self.critical_escalation_source = None
+         self.stress_recovery_start = None
+         self.horizontal_degraded_latched = False
++        self.horizontal_hold_source = None
++        self.trajectory_exceedance_start = None
++        self.trajectory_peak_error = 0.0
++        self.trajectory_start_error = 0.0
++        self.trajectory_context_id = None
++        self.tilt_exceedance_start = None
++        self.last_tilt_sample_time = None
++        self.tilt_protection_latched = False
++        self.yaw_protection_latched = False
++        self.yaw_exceedance_start = None
++        self.last_yaw_sample_time = None
++        self.yaw_context_id = None
++        self.navigation_protection_latched = False
++        self.navigation_loss_start = None
++        self.last_navigation_sample_time = None
++        self.mission_paused_latched = False
++        self.attitude_feedback_trusted = True
++        self.attitude_guard_start = None
+         self.last_decision = self._decision(
+             FTCAction.NORMAL_CONTROL,
+             "No fault or control-stress evidence.",
+@@ -376,11 +431,27 @@
+             wrench_scale = self.config.safe_wrench_scale
+             abort = True
+             ascent = True
++        if abort:
++            self.mission_paused_latched = True
++        if self.mission_paused_latched:
++            abort = True
++            # A trusted tilt emergency needs pitch/depth stabilizing authority.
++            # Reduce the navigation request instead of scaling all torques.
++            if (self.tilt_protection_latched or self.yaw_protection_latched
++                    or self.navigation_protection_latched) and self.attitude_feedback_trusted:
++                wrench_scale = 1.0
+         vertical_isolated = bool(self.isolated_thrusters.intersection({4, 5}))
+         horizontal_hold = (
+             self.horizontal_degraded_latched and not vertical_isolated
+         )
+-        if vertical_isolated:
++        if self.mission_paused_latched:
++            guidance_mode = (
++                "safety_pause" if self.attitude_feedback_trusted
++                else "safety_pause_untrusted_attitude"
++            )
++        elif not self.attitude_feedback_trusted:
++            guidance_mode = "attitude_feedback_guard"
++        elif vertical_isolated:
+             guidance_mode = "vertical_thruster_hold"
+         elif horizontal_hold:
+             guidance_mode = "horizontal_degraded_hold"
+@@ -404,6 +475,19 @@
+                 1.0,
+                 self.config.horizontal_fault_yaw_weight,
+             ])
++        elif self.yaw_protection_latched and self.attitude_feedback_trusted:
++            allocation_wrench_weights = np.array([
++                self.config.horizontal_fault_force_weight,
++                self.config.horizontal_fault_force_weight,
++                1.0, 0.0, self.config.vertical_fault_pitch_weight,
++                self.config.horizontal_fault_yaw_weight,
++            ])
++        elif self.mission_paused_latched and self.attitude_feedback_trusted:
++            allocation_wrench_weights = np.array([
++                self.config.horizontal_fault_force_weight,
++                self.config.horizontal_fault_force_weight,
++                1.0, 0.0, self.config.vertical_fault_pitch_weight, 1.0,
++            ])
+         return FTCDecision(
+             action=action,
+             reason=reason,
+@@ -416,7 +500,8 @@
+                 None if target is None else THRUSTER_NAMES[target]
+             ),
+             wrench_scale=wrench_scale,
+-            intervention_required=action not in (
++            intervention_required=(self.mission_paused_latched
++                or not self.attitude_feedback_trusted) or action not in (
+                 FTCAction.NORMAL_CONTROL,
+                 FTCAction.LOG_ONLY,
+             ),
+@@ -604,6 +689,160 @@
+         else:
+             self.stress_recovery_start = None
+ 
++    def _update_tilt_safety(self, evidence):
++        """Latch mission pause from fresh trusted attitude, without AI/ESC."""
++        self.attitude_feedback_trusted = (
++            "imu" not in evidence.untrusted_sensors
++            and evidence.sensor_guard_action != "safe_hold_or_abort"
++        )
++        if self.attitude_feedback_trusted:
++            self.attitude_guard_start = None
++        else:
++            if self.attitude_guard_start is None:
++                self.attitude_guard_start = evidence.time_s
++            if evidence.time_s - self.attitude_guard_start + 1e-9 >= self.config.tilt_confirmation_s:
++                self.mission_paused_latched = True
++        if self.tilt_protection_latched:
++            return
++        eligible = (
++            self.attitude_feedback_trusted
++            and evidence.tilt_angle_deg is not None
++        )
++        if not eligible:
++            self.tilt_exceedance_start = None
++            self.last_tilt_sample_time = None
++            return
++        if self.last_tilt_sample_time is not None:
++            gap = evidence.time_s - self.last_tilt_sample_time
++            if gap <= 0.0:
++                return  # Held/duplicate data must not accumulate confirmation.
++            if gap > self.config.tilt_maximum_sample_gap_s + 1e-9:
++                self.tilt_exceedance_start = None
++        self.last_tilt_sample_time = evidence.time_s
++        if evidence.tilt_angle_deg < (
++            self.config.tilt_limit_deg - self.config.tilt_protection_margin_deg
++        ):
++            self.tilt_exceedance_start = None
++            return
++        if self.tilt_exceedance_start is None:
++            self.tilt_exceedance_start = evidence.time_s
++        if evidence.time_s - self.tilt_exceedance_start + 1e-9 >= self.config.tilt_confirmation_s:
++            self.tilt_protection_latched = True
++            self.mission_paused_latched = True
++
++    def _update_yaw_loss_safety(self, evidence):
++        """Trusted heading remains usable when DVL/absolute XY is unavailable.
++
++        Only direct ESC-confirmed horizontal isolation arms this narrow guard.
++        No model probability, estimated XY error, or simulation truth enters it.
++        """
++        if self.yaw_protection_latched:
++            return
++        eligible = bool(
++            self.isolated_thrusters.intersection({0, 1, 2, 3})
++            and evidence.yaw_feedback_trusted
++            and self.attitude_feedback_trusted
++            and evidence.yaw_tracking_error_deg is not None
++        )
++        if not eligible:
++            self.yaw_exceedance_start = None
++            self.last_yaw_sample_time = None
++            self.yaw_context_id = None
++            return
++        if self.yaw_context_id != evidence.guidance_context_id:
++            self.yaw_exceedance_start = None
++            self.last_yaw_sample_time = None
++            self.yaw_context_id = evidence.guidance_context_id
++        if self.last_yaw_sample_time is not None:
++            gap = evidence.time_s - self.last_yaw_sample_time
++            if gap <= 0.0:
++                return
++            if gap > self.config.tilt_maximum_sample_gap_s + 1e-9:
++                self.yaw_exceedance_start = None
++        self.last_yaw_sample_time = evidence.time_s
++        if evidence.yaw_tracking_error_deg < self.config.horizontal_yaw_error_limit_deg:
++            self.yaw_exceedance_start = None
++            return
++        if self.yaw_exceedance_start is None:
++            self.yaw_exceedance_start = evidence.time_s
++        if evidence.time_s - self.yaw_exceedance_start + 1e-9 >= self.config.yaw_loss_confirmation_s:
++            self.yaw_protection_latched = True
++            self.mission_paused_latched = True
++
++    def _update_navigation_safety(self, evidence):
++        """Stop the route on persistent loss of measured velocity, not XY truth.
++
++        Recovery of DVL does not restore an absolute position reference, so a
++        confirmed pause needs explicit mission reset. A short recovered outage
++        resets this timer even if the estimator keeps its degraded-XY label.
++        """
++        if self.navigation_protection_latched:
++            return
++        if not evidence.navigation_velocity_untrusted:
++            self.navigation_loss_start = None
++            self.last_navigation_sample_time = None
++            return
++        if self.last_navigation_sample_time is not None:
++            gap = evidence.time_s - self.last_navigation_sample_time
++            if gap <= 0.0:
++                return
++            if gap > self.config.navigation_maximum_sample_gap_s + 1e-9:
++                self.navigation_loss_start = None
++        self.last_navigation_sample_time = evidence.time_s
++        if self.navigation_loss_start is None:
++            self.navigation_loss_start = evidence.time_s
++        if evidence.time_s - self.navigation_loss_start + 1e-9 >= self.config.navigation_loss_confirmation_s:
++            self.navigation_protection_latched = True
++            self.mission_paused_latched = True
++
++    def _update_trajectory_safety(self, evidence):
++        """Pause sustained tracking failure without asserting a fault cause.
++
++        This uses estimated navigation and a caller-declared time-indexed
++        trajectory only. A far waypoint, an untrusted estimate, or a context
++        transition must not accumulate evidence for this safety fallback.
++        """
++        if self.horizontal_degraded_latched:
++            return
++        error = evidence.horizontal_tracking_error_m
++        eligible = (
++            evidence.trajectory_tracking_active
++            and evidence.tracking_error_available
++            and not evidence.untrusted_sensors
++            and evidence.sensor_guard_action == "none"
++            and error is not None
++            and error >= self.config.horizontal_tracking_limit_m
++            # Along-track lag at commanded cruise speed is not sufficient:
++            # require a simultaneous lateral route departure, sustained for
++            # the same recovery interval. Reuse the existing path limit.
++            and evidence.cross_track_error_m is not None
++            and evidence.cross_track_error_m >= self.config.horizontal_cross_track_limit_m
++        )
++        if self.trajectory_context_id != evidence.guidance_context_id:
++            self.trajectory_exceedance_start = None
++            self.trajectory_peak_error = 0.0
++        self.trajectory_context_id = evidence.guidance_context_id
++        if not eligible:
++            self.trajectory_exceedance_start = None
++            self.trajectory_peak_error = 0.0
++            return
++        if self.trajectory_exceedance_start is None:
++            self.trajectory_exceedance_start = evidence.time_s
++            self.trajectory_start_error = error
++        self.trajectory_peak_error = max(self.trajectory_peak_error, error)
++        if evidence.time_s - self.trajectory_exceedance_start < self.config.stress_only_critical_confirmation_s:
++            return
++        interval = evidence.time_s - self.trajectory_exceedance_start
++        growth = (error - self.trajectory_start_error) / max(interval, 1e-9)
++        if (error <= self.config.stress_only_recovery_fraction * self.trajectory_peak_error
++                or growth < self.config.trajectory_minimum_error_growth_mps):
++            self.trajectory_exceedance_start = evidence.time_s
++            self.trajectory_peak_error = error
++            self.trajectory_start_error = error
++            return
++        self.horizontal_degraded_latched = True
++        self.horizontal_hold_source = "trajectory_safety"
++
+     def update(self, evidence: FTCEvidence):
+         if not isinstance(evidence, FTCEvidence):
+             raise TypeError("evidence must be FTCEvidence")
+@@ -611,7 +850,11 @@
+             raise ValueError("evidence time_s must be non-decreasing")
+         self.last_time = evidence.time_s
+         new_isolation = self._update_direct_no_output(evidence)
++        self._update_tilt_safety(evidence)
++        self._update_yaw_loss_safety(evidence)
++        self._update_navigation_safety(evidence)
+         self._update_stress_state(evidence)
++        self._update_trajectory_safety(evidence)
+         if (
+             evidence.health_level >= 2
+             and evidence.confirmed_mode in (1, 2)
+@@ -623,6 +866,8 @@
+             # The AI result is allowed to reduce mission demand, but it never
+             # selects an isolation target. Only direct ESC evidence can do so.
+             self.horizontal_degraded_latched = True
++            if self.horizontal_hold_source is None:
++                self.horizontal_hold_source = "validated_online_ai"
+ 
+         vertical_unavailable = evidence.vertical_control_unavailable or {
+             4, 5
+@@ -632,6 +877,27 @@
+                 FTCAction.CONTROLLED_ASCENT,
+                 "Vertical control authority is unavailable; request the independent safe-ascent system.",
+             )
++        elif self.tilt_protection_latched:
++            decision = self._decision(
++                FTCAction.SAFE_HOLD_OR_ABORT,
++                "Trusted attitude reached the early tilt protection threshold persistently; pause before the operational tilt boundary and retain stabilizing authority. Mission reset is required to resume; no fault location is inferred.",
++                target=(new_isolation if new_isolation is not None else
++                        (min(self.isolated_thrusters) if self.isolated_thrusters else None)),
++            )
++        elif self.yaw_protection_latched:
++            decision = self._decision(
++                FTCAction.SAFE_HOLD_OR_ABORT,
++                "Directly confirmed horizontal actuator loss is accompanied by persistent trusted heading tracking error; pause the original mission smoothly and retain yaw/depth stabilizing authority. No additional fault location is inferred; explicit mission reset is required.",
++                target=(new_isolation if new_isolation is not None else
++                        (min(self.isolated_thrusters) if self.isolated_thrusters else None)),
++            )
++        elif self.navigation_protection_latched:
++            decision = self._decision(
++                FTCAction.SAFE_HOLD_OR_ABORT,
++                "Persistent loss of measured navigation velocity; pause the original mission while retaining trusted attitude/depth control and confirmed actuator isolation. DVL recovery is not an absolute position fix; explicit mission reset is required.",
++                target=(new_isolation if new_isolation is not None else
++                        (min(self.isolated_thrusters) if self.isolated_thrusters else None)),
++            )
+         elif new_isolation is not None:
+             decision = self._decision(
+                 FTCAction.TARGETED_REALLOCATION,
+@@ -639,10 +905,16 @@
+                 target=new_isolation,
+             )
+         elif evidence.sensor_guard_action == "safe_hold_or_abort":
+-            decision = self._decision(
+-                FTCAction.SAFE_HOLD_OR_ABORT,
+-                "Confirmed IMU unavailability or stuck data makes attitude feedback untrustworthy; request safe hold or mission abort without guessing a thruster fault.",
+-            )
++            if self.mission_paused_latched:
++                decision = self._decision(
++                    FTCAction.SAFE_HOLD_OR_ABORT,
++                    "Persistent IMU unavailability or stuck data makes attitude feedback untrustworthy; pause the mission without guessing a thruster fault.",
++                )
++            else:
++                decision = self._decision(
++                    FTCAction.DEGRADED_OPERATION,
++                    "Brief loss of trusted attitude feedback; temporarily suppress XY and attitude demands while awaiting persistence or recovery.",
++                )
+         elif self.stress_level >= 2:
+             if self.critical_escalation_source == "stress_only_timeout":
+                 reason = (
+@@ -660,6 +932,12 @@
+                 FTCAction.SAFE_HOLD_OR_ABORT,
+                 reason,
+             )
++        elif self.mission_paused_latched:
++            decision = self._decision(
++                FTCAction.SAFE_HOLD_OR_ABORT,
++                "Safety mission pause remains latched; valid sensor samples alone do not resume the old route. Explicit mission reset is required.",
++                target=(min(self.isolated_thrusters) if self.isolated_thrusters else None),
++            )
+         elif self.isolated_thrusters:
+             target = min(self.isolated_thrusters)
+             decision = self._decision(
+@@ -673,9 +951,14 @@
+                 "Confirmed depth or DVL sensor failure; reduce navigation demand and use the remaining state-estimation sources.",
+             )
+         elif self.horizontal_degraded_latched:
++            reason = (
++                "Persistent lateral trajectory departure with growing estimated position error; pause the mission in a reduced-demand hold. Fault cause remains unconfirmed; no thruster is isolated."
++                if self.horizontal_hold_source == "trajectory_safety"
++                else "Persistent online fault evidence is corroborated by horizontal motion error and actuator saturation; pause the mission in a reduced-demand hold without guessing a thruster location."
++            )
+             decision = self._decision(
+                 FTCAction.DEGRADED_OPERATION,
+-                "Persistent online fault evidence is corroborated by horizontal motion error and actuator saturation; pause the mission in a reduced-demand hold without guessing a thruster location.",
++                reason,
+             )
+         elif self.stress_level == 1:
+             decision = self._decision(
+@@ -830,11 +1113,13 @@
+         )
+     horizontal_motion_ratio = float(max(horizontal_ratios))
+     # A distant mission waypoint is not itself a tracking failure. Position
+-    # limits become safety evidence only after FTC has latched a local hold
+-    # point; tilt remains meaningful in every mission mode.
++    # limits enter the general stress guard after a local hold. Time-indexed
++    # mission trajectories have a separate persistent-error pause, not an
++    # immediate abort and not an inferred hardware fault.
+     position_safety_active = (
+         str(log.get("ftc_guidance_mode_applied", "normal"))
+-        == "vertical_thruster_hold"
++        in ("vertical_thruster_hold", "horizontal_degraded_hold", "safety_pause",
++            "safety_pause_abort_ascent")
+     )
+     ratios = [tilt / config.tilt_limit_deg]
+     if position_safety_active:
+@@ -853,6 +1138,10 @@
+         "cross_track_error_m": cross_track,
+         "horizontal_motion_error_ratio": horizontal_motion_ratio,
+         "position_tracking_safety_active": position_safety_active,
++        "trajectory_tracking_active": (
++            log.get("target_reference_kind", "waypoint") == "trajectory"
++            and not position_safety_active
++        ),
+     }
+ 
+ 
+@@ -1030,6 +1319,29 @@
+         evidence_source += "+tracking_safety"
+     return FTCEvidence(
+         time_s=time_s,
++        navigation_velocity_untrusted=bool(
++            log.get("sensor_feedback_enabled", False)
++            and log.get("controller_state_source") == "sensor_estimate_previous_step"
++            and log.get("state_estimate_sources", {}).get("linear_velocity")
++            in ("imu_dead_reckoning", "decaying_velocity_hold")
++        ),
++        yaw_feedback_trusted=bool(
++            log.get("sensor_feedback_enabled", False)
++            and log.get("controller_state_source") == "sensor_estimate_previous_step"
++            and log.get("state_estimate_sources", {}).get("attitude") == "imu"
++            and log.get("state_estimate_sources", {}).get("angular_velocity") == "imu"
++            and "imu" not in untrusted_sensors
++            and log.get("sensor_health", {}).get("imu", {}).get("trust_level") == "trusted"
++            and log.get("sensor_health", {}).get("imu", {}).get("fault_type") == "normal"
++            and log.get("imu", {}).get("valid", True)
++            and _optional_vector(log.get("imu", {}), "orientation", 3) is not None
++            and _optional_vector(log.get("imu", {}), "angular_velocity", 3) is not None
++        ),
++        guidance_context_id=log.get("guidance_context_id", 0),
++        trajectory_tracking_active=(
++            False if tracking_metrics is None
++            else tracking_metrics["trajectory_tracking_active"]
++        ),
+         health_level=health_level,
+         confirmed_mode=confirmed_mode,
+         fault_probability=np.clip(fault_probability, 0.0, 1.0),
+--- a/math-model/src/simple_control/six_dof_controller.py
++++ b/math-model/src/simple_control/six_dof_controller.py
+@@ -5,6 +5,7 @@
+ import numpy as np
+ 
+ from environment.six_dof_dynamics import (
++    SixDOFDynamics,
+     SixDOFState,
+     euler_to_quaternion,
+     quaternion_multiply,
+@@ -56,6 +57,8 @@
+     linear_velocity_ned: np.ndarray = field(
+         default_factory=lambda: np.zeros(3)
+     )
++    # A trajectory sample is a position due now, not a distant destination.
++    reference_kind: str = "waypoint"
+ 
+     def __post_init__(self):
+         self.position_ned = _vector(self.position_ned, 3, "position_ned")
+@@ -69,10 +72,15 @@
+         if context_id != self.guidance_context_id or context_id < 0:
+             raise ValueError("guidance_context_id must be a non-negative integer")
+         self.guidance_context_id = context_id
++        if self.reference_kind not in ("waypoint", "trajectory"):
++            raise ValueError("reference_kind must be waypoint or trajectory")
+ 
+ 
+ @dataclass
+ class SixDOFControllerConfig:
++    # Fixed nominal plant parameters and measured body velocity, never truth
++    # or a per-mission randomized plant. Zero reproduces the legacy controller.
++    yaw_coriolis_feedforward_gain: float = field(default=1.0, kw_only=True)
+     position_kp: np.ndarray = field(
+         default_factory=lambda: np.array([0.55, 0.55, 0.45])
+     )
+@@ -117,6 +125,10 @@
+     )
+ 
+     def __post_init__(self):
++        gain = float(self.yaw_coriolis_feedforward_gain)
++        if not np.isfinite(gain) or not 0.0 <= gain <= 1.0:
++            raise ValueError("yaw_coriolis_feedforward_gain must be in [0, 1]")
++        self.yaw_coriolis_feedforward_gain = gain
+         self.max_horizontal_speed = float(self.max_horizontal_speed)
+         vector_fields = (
+             "position_kp",
+@@ -162,6 +174,7 @@
+ 
+     def __init__(self, config=None):
+         self.config = config or SixDOFControllerConfig()
++        self.nominal_dynamics = SixDOFDynamics()
+         self.position_error_integral = np.zeros(3)
+         self.attitude_error_integral = np.zeros(3)
+ 
+@@ -169,7 +182,10 @@
+         self.position_error_integral.fill(0.0)
+         self.attitude_error_integral.fill(0.0)
+ 
+-    def compute(self, state: SixDOFState, target: PoseTarget, dt):
++    def compute(self, state: SixDOFState, target: PoseTarget, dt, *,
++                navigation_velocity_feedback_trusted=True):
++        if not isinstance(navigation_velocity_feedback_trusted, (bool, np.bool_)):
++            raise ValueError("navigation_velocity_feedback_trusted must be boolean")
+         dt = float(dt)
+         if not np.isfinite(dt) or dt <= 0:
+             raise ValueError("dt must be finite and positive")
+@@ -187,10 +203,18 @@
+             cfg.max_velocity_ned,
+             cfg.max_horizontal_speed,
+         )
++        if not navigation_velocity_feedback_trusted:
++            # A mission pause cannot brake against an unobservable velocity.
++            # Remove horizontal propulsion demand; actual thrust is ramped by
++            # the simulator's existing actuator slew limiter. This is passive
++            # deceleration, not an absolute-position or zero-speed guarantee.
++            desired_velocity_ned[:2] = 0.0
+ 
+         current_velocity_ned = state.rotation_nb @ state.body_velocity[:3]
+         velocity_error_ned = desired_velocity_ned - current_velocity_ned
+         feedback_force_ned = cfg.velocity_kp * velocity_error_ned
++        if not navigation_velocity_feedback_trusted:
++            feedback_force_ned[:2] = 0.0
+         desired_velocity_body = state.rotation_nb.T @ desired_velocity_ned
+         damping_feedforward_body = (
+             cfg.linear_damping_feedforward * desired_velocity_body
+@@ -198,6 +222,10 @@
+             * np.abs(desired_velocity_body)
+             * desired_velocity_body
+         )
++        if not navigation_velocity_feedback_trusted:
++            feedforward_ned = state.rotation_nb @ damping_feedforward_body
++            feedforward_ned[:2] = 0.0
++            damping_feedforward_body = state.rotation_nb.T @ feedforward_ned
+         desired_force_body = (
+             state.rotation_nb.T @ feedback_force_ned
+             + damping_feedforward_body
+@@ -219,6 +247,17 @@
+         )
+         angular_velocity_error = desired_angular_velocity - state.body_velocity[3:]
+         desired_moment_body = cfg.angular_velocity_kp * angular_velocity_error
++        # Anisotropic added mass couples surge/sway into yaw (Munk moment).
++        # Rate feedback alone can reach its rate limit while opposing this
++        # healthy-plant torque. Compensate only yaw using a fixed nominal C.
++        nominal_coriolis_wrench = (
++            self.nominal_dynamics.coriolis_matrix(state.body_velocity)
++            @ state.body_velocity
++        )
++        if navigation_velocity_feedback_trusted:
++            desired_moment_body[2] += (
++                cfg.yaw_coriolis_feedforward_gain * nominal_coriolis_wrench[5]
++            )
+ 
+         return ControllerOutput(
+             desired_wrench_body=np.concatenate([

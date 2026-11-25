@@ -1,0 +1,70 @@
+{
+  "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_0_300m_focus_v3_4_seed43_calibrated_20260903/temporal_decision_config.json": {
+    "group": "config",
+    "sha256": "ba7bf4438155ccccaba419f70decb6d30aa0386fa104a87214402d5ddcca67cd"
+  },
+  "depth-sensor-fault-detection/depth_fault_detection/results/six_dof_hybrid_telemetry_0_300m_focus_v3_4_seed43_calibrated_20260903/maintenance_ticket_config.json": {
+    "group": "config",
+    "sha256": "eec43160b87f28ee9efd5b0aed5f3f882f77efb55de30ad7ebd0d42d0042027a"
+  },
+  "math-model/src/diagnosis/maintenance_ticket_policy.py": {
+    "group": "diagnosis",
+    "working_tree_sha256": "ffb847484b40af10555772dd71e2a02caa1bfd7165923af883f5626743a56cb2",
+    "absent_from_base": false
+  },
+  "math-model/src/diagnosis/online_maintenance_review.py": {
+    "group": "diagnosis",
+    "working_tree_sha256": "d7efa419bbb53f91bc411ece09b4994f6cff98d6a85746e883450b1eb02d3aed",
+    "absent_from_base": true
+  },
+  "math-model/src/diagnosis/sensor_health_monitor.py": {
+    "group": "nav",
+    "working_tree_sha256": "b076bc6eb43a78d3f2395722d2594ee1dffea810740fd7ed40e224064c5072dd",
+    "absent_from_base": false
+  },
+  "math-model/src/environment/six_dof_simulator.py": {
+    "group": "nav",
+    "working_tree_sha256": "35922eb737e4803937422ae212ffe2633f61acec7c05f36ee6275627fdc38220",
+    "absent_from_base": false
+  },
+  "math-model/src/estimation/six_dof_state_estimator.py": {
+    "group": "nav",
+    "working_tree_sha256": "afc3235d60fae71dc0e312d288df4a8441953b9feea8ff7df51eae56be0edc26",
+    "absent_from_base": false
+  },
+  "math-model/src/ftc/degraded_guidance.py": {
+    "group": "nav",
+    "working_tree_sha256": "869eac72c7fa519fedbd0fe54e1f080341978b9472ab21406a94dc5ba11b5f11",
+    "absent_from_base": false
+  },
+  "math-model/src/ftc/external_position_hold.py": {
+    "group": "nav",
+    "working_tree_sha256": "bd1abca952742546dea87d97087c16fb349e5da3de6e989e2e301ded59cb5e0a",
+    "absent_from_base": true
+  },
+  "math-model/src/ftc/mission_recovery.py": {
+    "group": "nav",
+    "working_tree_sha256": "836ef5c9b98c3fcbb87304e8c387b0ff114171abcc8e3b8e60661fd9f1386c68",
+    "absent_from_base": true
+  },
+  "math-model/src/ftc/safety_supervisor.py": {
+    "group": "nav",
+    "working_tree_sha256": "0741b69e7b7b7e8e0092031f4858c2d9779d94cc64c4352d127bfb486cc9b45c",
+    "absent_from_base": false
+  },
+  "math-model/src/presentation/advisory_context_gate.py": {
+    "group": "diagnosis",
+    "working_tree_sha256": "9a2cd3c35e76dac09160ce2ce09de35eb5993109189d90126c63f3355fda8431",
+    "absent_from_base": false
+  },
+  "math-model/src/presentation/six_dof_model_bridge.py": {
+    "group": "diagnosis",
+    "working_tree_sha256": "63e31eeb8a8cdfa539c797c965cccd456bc9dde44729c55cd8b8f4d0a430bfe4",
+    "absent_from_base": false
+  },
+  "math-model/src/simple_control/six_dof_controller.py": {
+    "group": "nav",
+    "working_tree_sha256": "75ad656b1058a5ae29244ff452d849e9932302587701888c48b59e217834c512",
+    "absent_from_base": false
+  }
+}
